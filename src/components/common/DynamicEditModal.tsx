@@ -1,5 +1,6 @@
 // src\components\common\DynamicEditModal.tsx
 "use client";
+
 import type React from "react";
 import { useState, useEffect } from "react";
 import { X, Save, Upload, Trash2, User } from "lucide-react";
@@ -258,7 +259,7 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
               onChange={(e) => handleInputChange(config.key, e.target.value)}
               placeholder={config.placeholder}
               className={cn(
-                "min-h-[100px] resize-y",
+                "min-h-[100px] resize-y border-primary/30 focus-visible:border-primary ",
                 hasError && "border-red-500 focus:border-red-500",
                 config.className
               )}
@@ -275,7 +276,8 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                 id={fieldId}
                 className={cn(
                   hasError && "border-red-500 focus:border-red-500",
-                  config.className
+                  config.className,
+                  "border-primary/30 rounded-md"
                 )}
               >
                 <SelectValue
@@ -472,7 +474,10 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
               id={fieldId}
               value={value?.toString() || ""}
               readOnly
-              className={cn("bg-gray-50 cursor-not-allowed", config.className)}
+              className={cn(
+                "bg-gray-50 cursor-not-allowed border-primary/30 focus-visible:border-primary",
+                config.className
+              )}
             />
           );
 
@@ -495,7 +500,7 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                 }
                 placeholder={config.placeholder}
                 className={cn(
-                  "pl-8",
+                  "pl-8 focus-visible:border-primary rounded-md",
                   hasError && "border-red-500 focus:border-red-500",
                   config.className
                 )}
@@ -521,7 +526,7 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                 }
                 placeholder={config.placeholder}
                 className={cn(
-                  "pr-8",
+                  "pr-8 focus-visible:border-primary rounded-md",
                   hasError && "border-red-500 focus:border-red-500",
                   config.className
                 )}
@@ -548,7 +553,8 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
               placeholder={config.placeholder}
               className={cn(
                 hasError && "border-red-500 focus:border-red-500",
-                config.className
+                config.className,
+                " border-primary/30 focus-visible:border-primary rounded-md"
               )}
             />
           );
@@ -648,31 +654,19 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                     </div>
                   )}
 
-                  <div className="grid gap-4">
-                    {sectionFields.map((config) => {
-                      const gridClass = {
-                        full: "col-span-full",
-                        half: "col-span-1 md:col-span-1",
-                        third: "col-span-1 md:col-span-1",
-                        quarter: "col-span-1",
-                      };
-
-                      return (
-                        <div
-                          key={config.key}
-                          className={cn(
-                            "grid grid-cols-1 md:grid-cols-2 gap-4",
-                            config.gridCol === "full" && "md:grid-cols-1",
-                            config.gridCol === "third" && "md:grid-cols-3",
-                            config.gridCol === "quarter" && "md:grid-cols-4"
-                          )}
-                        >
-                          <div className={gridClass[config.gridCol || "half"]}>
-                            {renderFormField(config)}
-                          </div>
-                        </div>
-                      );
-                    })}
+                  {/* Always use 2-column grid layout */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {sectionFields.map((config) => (
+                      <div
+                        key={config.key}
+                        className={cn(
+                          // All fields default to single column span unless specified
+                          config.gridCol === "full" && "md:col-span-2"
+                        )}
+                      >
+                        {renderFormField(config)}
+                      </div>
+                    ))}
                   </div>
                 </div>
               );

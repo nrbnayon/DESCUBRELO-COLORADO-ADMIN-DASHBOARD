@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     "src/types/**/*.d.ts",
     "src/app/(dashboard)/hr-test/hr-candidate-list/candidate-details"
-  ],
+, "src/app/(dashboard)/manage-categories/page.tsx"  ],
   "exclude": ["node_modules"]
 }

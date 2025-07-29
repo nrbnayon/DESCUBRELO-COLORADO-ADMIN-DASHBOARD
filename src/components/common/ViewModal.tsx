@@ -260,10 +260,10 @@ export const ViewModal: React.FC<ViewModalProps> = ({
           {/* Personal Information Section */}
           {personalFields.length > 0 && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <User className="w-5 h-5 text-blue-600" />
                 <h3 className="text-lg font-semibold">Personal Information</h3>
-              </div>
+              </div> */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {personalFields.map((column) => {
                   const value = item[column.key];

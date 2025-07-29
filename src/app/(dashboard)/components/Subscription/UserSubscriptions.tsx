@@ -1,4 +1,4 @@
-// src\app\(dashboard)\components\Overview\UserManagement.tsx
+// src\app\(dashboard)\components\Subscription\UserSubscriptions.tsx
 "use client";
 import { usersData } from "@/data/usersDataSets";
 import { useState } from "react";
@@ -12,7 +12,7 @@ import type {
   EditModalConfig,
 } from "@/types/dynamicTableTypes";
 import { DynamicTable } from "@/components/common/DynamicTable";
-import { Eye, Edit } from "lucide-react";
+import Lordicon from "@/components/lordicon/lordicon-wrapper";
 
 interface UserManagementProps {
   itemsPerPage?: number;
@@ -21,11 +21,11 @@ interface UserManagementProps {
   pageUrl?: string;
 }
 
-export default function UserManagement({
+export default function UserSubscriptions({
   itemsPerPage = 10,
-  title = "Recently Joined Users",
+  title = "Subscription user list",
   buttonText = "Show all",
-  pageUrl = "/manage-users",
+  pageUrl = "/users-subscription",
 }: UserManagementProps) {
   const [users, setUsers] = useState(usersData);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,7 +38,8 @@ export default function UserManagement({
       sortable: true,
       searchable: true,
       showAvatar: true,
-      width: "280px",
+      align: "left",
+      width: "100px",
     },
     {
       key: "email",
@@ -46,7 +47,7 @@ export default function UserManagement({
       type: "email",
       sortable: true,
       searchable: true,
-      width: "250px",
+      width: "100px",
     },
     {
       key: "status",
@@ -54,13 +55,28 @@ export default function UserManagement({
       type: "select",
       sortable: true,
       filterable: true,
-      width: "120px",
+      width: "100px",
       align: "center",
       options: [
         { value: "active", label: "Active", color: "#16a34a" },
         { value: "inactive", label: "Inactive", color: "#ca8a04" },
         { value: "blocked", label: "Blocked", color: "#dc2626" },
         { value: "pending", label: "Pending", color: "#6b7280" },
+      ],
+    },
+    {
+      key: "accountType",
+      label: "Subscription Status",
+      type: "select",
+      sortable: true,
+      filterable: true,
+      width: "100px",
+      align: "center",
+      options: [
+        { value: "free", label: "Free", color: "#9ca3af" },
+        { value: "basic", label: "Basic", color: "#10b981" },
+        { value: "premium", label: "Premium", color: "#f59e0b" },
+        { value: "enterprise", label: "Enterprise", color: "#1e40af" },
       ],
     },
   ];
@@ -192,19 +208,20 @@ export default function UserManagement({
         { value: "pending", label: "Pending" },
       ],
     },
-    {
-      key: "accountType",
-      label: "Account Type",
-      type: "select",
-      required: true,
-      section: "account",
-      gridCol: "half",
-      options: [
-        { value: "free", label: "Free" },
-        { value: "premium", label: "Premium" },
-        { value: "enterprise", label: "Enterprise" },
-      ],
-    },
+    // {
+    //   key: "accountType",
+    //   label: "User Subscription Status",
+    //   type: "select",
+    //   required: true,
+    //   section: "account",
+    //   gridCol: "half",
+    //   options: [
+    //     { value: "free", label: "Free" },
+    //     { value: "basic", label: "Basic" },
+    //     { value: "premium", label: "Premium" },
+    //     { value: "enterprise", label: "Enterprise" },
+    //   ],
+    // },
   ];
 
   // Filter Configuration for User Table
@@ -222,10 +239,11 @@ export default function UserManagement({
     },
     {
       key: "accountType",
-      label: "Account Type",
+      label: "Subscriptions",
       type: "select",
       options: [
         { value: "free", label: "Free" },
+        { value: "basic", label: "Basic" },
         { value: "premium", label: "Premium" },
         { value: "enterprise", label: "Enterprise" },
       ],
@@ -236,15 +254,37 @@ export default function UserManagement({
   const userActions: ActionConfig[] = [
     {
       key: "view",
-      label: "View",
-      icon: <Eye className="w-4 h-4" />,
+      label: "",
+      icon: (
+        <Lordicon
+          src="https://cdn.lordicon.com/knitbwfa.json"
+          trigger="hover"
+          size={20}
+          colors={{
+            primary: "#9ca3af",
+            secondary: "",
+          }}
+          stroke={4}
+        />
+      ),
       variant: "ghost",
       onClick: (item) => console.log("View user:", item.name),
     },
     {
       key: "edit",
       label: "Edit",
-      icon: <Edit className="w-4 h-4" />,
+      icon: (
+        <Lordicon
+          src="https://cdn.lordicon.com/cbtlerlm.json" //cbtlerlm
+          trigger="hover"
+          size={20}
+          colors={{
+            primary: "",
+            secondary: "",
+          }}
+          stroke={4}
+        />
+      ),
       variant: "ghost",
       onClick: (item) => console.log("Edit user:", item.name),
     },

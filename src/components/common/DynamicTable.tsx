@@ -11,6 +11,7 @@ import {
   RefreshCw,
   User,
   Trash2,
+  ArrowRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,7 @@ import type {
 } from "../../types/dynamicTableTypes";
 import { ViewModal } from "./ViewModal";
 import Lordicon from "../lordicon/lordicon-wrapper";
+import { useRouter } from "next/navigation";
 
 interface DynamicTableProps {
   data: GenericDataItem[];
@@ -77,6 +79,8 @@ interface DynamicTableProps {
   onItemsSelect?: (selectedIds: string[]) => void;
   onExport?: (data: GenericDataItem[]) => void;
   onRefresh?: () => void;
+  buttonText?: string;
+  pageUrl?: string;
   isLoading?: boolean;
 }
 
@@ -94,8 +98,12 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   onItemsSelect,
   onExport,
   onRefresh,
+  buttonText,
+  pageUrl,
   isLoading = false,
 }) => {
+  const router = useRouter();
+
   // State management
   const [localData, setLocalData] = useState<GenericDataItem[]>(data);
   const [searchTerm, setSearchTerm] = useState("");
@@ -121,7 +129,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
     itemId: "",
     itemName: "",
   });
-
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [viewItem, setViewItem] = useState<GenericDataItem | null>(null);
 
@@ -155,7 +162,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   const formatValue = useCallback(
     (value: unknown, column: ColumnConfig): string => {
       if (value === null || value === undefined) return "-";
-
       switch (column.type) {
         case "currency":
           const numValue =
@@ -197,7 +203,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   // Filter and search data
   const filteredData = useMemo(() => {
     let filtered = [...localData];
-
     // Apply search
     if (config.enableSearch && searchTerm) {
       filtered = filtered.filter((item) => {
@@ -218,13 +223,11 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
     if (config.enableFilters) {
       Object.entries(activeFilters).forEach(([filterKey, filterValue]) => {
         if (!filterValue || filterValue === "all") return;
-
         const filter = filters.find((f) => f.key === filterKey);
         if (!filter) return;
 
         filtered = filtered.filter((item) => {
           const itemValue = item[filterKey];
-
           switch (filter.type) {
             case "select":
               if (filter.multiple && Array.isArray(filterValue)) {
@@ -282,7 +285,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       filtered.sort((a, b) => {
         const aValue = a[sortConfig.key];
         const bValue = b[sortConfig.key];
-
         if (aValue === null || aValue === undefined) return 1;
         if (bValue === null || bValue === undefined) return -1;
 
@@ -401,7 +403,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       onDataChange?.(updatedData);
       onItemDelete?.(deleteConfirm.itemId);
     }
-
     setDeleteConfirm({ open: false, itemId: "", itemName: "" });
 
     // Adjust current page if necessary
@@ -412,6 +413,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
     );
     if (currentPage > newTotalPages && newTotalPages > 0) {
       setCurrentPage(newTotalPages);
+    }
+  };
+
+  // Handle redirect to see more page
+  const handleSeeMore = () => {
+    if (pageUrl) {
+      router.push(pageUrl);
     }
   };
 
@@ -450,7 +458,10 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
               );
             case "date":
               return (
-                <div key={filter.key} className="relative">
+                <div
+                  key={filter.key}
+                  className="relative border border-secondary"
+                >
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
                     type="date"
@@ -472,7 +483,8 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
         })}
         {Object.keys(activeFilters).length > 0 && (
           <Button
-            variant="outline"
+            variant="destructive"
+            className="py-4 mt-2"
             size="sm"
             onClick={() => setActiveFilters({})}
           >
@@ -494,17 +506,35 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
     // Handle name column with avatar
     if (column.key === "name" && column.showAvatar) {
       return (
-        <div className="flex items-center gap-3">
-          <Avatar className="w-8 h-8">
+        <div className="flex items-center gap-2">
+          <Avatar className="w-8 h-8 flex-shrink-0">
             <AvatarImage
               src={item.avatar || "/placeholder.svg"}
               alt={value?.toString() || "User"}
             />
             <AvatarFallback>
-              <User className="w-4 h-4" />
+              <Lordicon
+                src="https://cdn.lordicon.com/hhljfoaj.json"
+                trigger="hover"
+                size={24}
+                colors={{
+                  primary: "",
+                  secondary: "",
+                }}
+                stroke={1}
+              />
             </AvatarFallback>
           </Avatar>
-          <span className="font-medium">{formatValue(value, column)}</span>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-sm truncate">
+              {formatValue(value, column)}
+            </p>
+            {item.username && typeof item.username === "string" && (
+              <p className="font-normal text-xs text-gray-500 truncate">
+                @{item.username}
+              </p>
+            )}
+          </div>
         </div>
       );
     }
@@ -517,7 +547,12 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
     if (column.type === "select" || column.type === "multiselect") {
       const values = Array.isArray(value) ? value : [value];
       return (
-        <div className="flex flex-wrap gap-1">
+        <div
+          className={cn(
+            "flex flex-wrap gap-1",
+            column.align === "center" ? "justify-center" : "justify-start"
+          )}
+        >
           {values.map((val, index) => {
             const option = column.options?.find((opt) => opt.value === val);
             return (
@@ -602,15 +637,48 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   }
 
   return (
-    <div className={cn("space-y-5", config.className)}>
+    <div
+      className={cn(
+        "space-y-5 border border-primary/30 p-4 mt-4 rounded-2xl",
+        config.className
+      )}
+    >
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">{config.title}</h2>
+          <h2 className="text-xl text-foreground font-semibold">
+            {config.title}
+          </h2>
           {config.description && (
-            <p className="text-gray-600 mt-1">{config.description}</p>
+            <p className="text-gray-700 mt-1">{config.description}</p>
           )}
         </div>
+        {buttonText && pageUrl && (
+          <Button
+            variant="outline"
+            onClick={handleSeeMore}
+            className="flex items-center gap-2 bg-transparent"
+          >
+            {buttonText}
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
+        {config.enableSearch && (
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder={config.searchPlaceholder}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 border-secondary focus-visible:border-primary"
+            />
+          </div>
+        )}
+        {renderFilters()}
         <div className="flex items-center gap-2">
           {onRefresh && (
             <Button variant="outline" size="sm" onClick={onRefresh}>
@@ -630,25 +698,9 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        {config.enableSearch && (
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              placeholder={config.searchPlaceholder}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        )}
-        {renderFilters()}
-      </div>
-
       {/* Selection Info with Bulk Actions */}
       {config.enableSelection && selectedItems.length > 0 && (
-        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg text-black">
           <span className="text-sm text-blue-700">
             {selectedItems.length} item(s) selected
           </span>
@@ -698,13 +750,16 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       {/* Table */}
       <div className="border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="w-full">
             <TableHeader
-              className={cn(config.stickyHeader && "sticky top-0 z-10")}
+              className={cn(
+                config.stickyHeader && "sticky top-0 z-10",
+                "text-black bg-yellow-50"
+              )}
             >
               <TableRow className={cn(config.bordered && "border-b")}>
                 {config.enableSelection && (
-                  <TableHead className="w-12">
+                  <TableHead className="w-10 py-5 px-2 ">
                     <Checkbox
                       checked={
                         selectedItems.length === currentData.length &&
@@ -719,9 +774,10 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                     key={column.key}
                     className={cn(
                       column.headerClassName,
-                      column.sortable && "cursor-pointer hover:bg-gray-50",
+                      column.sortable && "cursor-pointer text-black",
                       column.align === "center" && "text-center",
-                      column.align === "right" && "text-right"
+                      column.align === "right" && "text-right ",
+                      "py-5 px-2"
                     )}
                     style={{
                       width: column.width,
@@ -730,7 +786,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                     }}
                     onClick={() => column.sortable && handleSort(column.key)}
                   >
-                    <div className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        "flex items-center gap-2",
+                        column.align === "center" && "justify-center",
+                        column.align === "right" && "justify-end"
+                      )}
+                    >
                       {column.label}
                       {column.sortable &&
                         sortConfig?.key === column.key &&
@@ -743,7 +805,9 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                   </TableHead>
                 ))}
                 {(actions.length > 0 || formFields.length > 0) && (
-                  <TableHead className="w-12">Actions</TableHead>
+                  <TableHead className="w-[150px] text-center px-3 text-black">
+                    Actions
+                  </TableHead>
                 )}
               </TableRow>
             </TableHeader>
@@ -759,7 +823,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                     )}
                   >
                     {config.enableSelection && (
-                      <TableCell>
+                      <TableCell className="w-[40px] px-2">
                         <Checkbox
                           checked={selectedItems.includes(item.id)}
                           onCheckedChange={(checked) =>
@@ -774,15 +838,21 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                         className={cn(
                           column.className,
                           column.align === "center" && "text-center",
-                          column.align === "right" && "text-right"
+                          column.align === "right" && "text-right",
+                          "px-3"
                         )}
+                        style={{
+                          width: column.width,
+                          minWidth: column.minWidth,
+                          maxWidth: column.maxWidth,
+                        }}
                       >
                         {renderCellContent(item, column)}
                       </TableCell>
                     ))}
                     {(actions.length > 0 || formFields.length > 0) && (
-                      <TableCell>
-                        <div className="flex items-center gap-1">
+                      <TableCell className="w-[150px] px-3">
+                        <div className="flex items-center justify-center gap-1">
                           {/* Only show Edit button if formFields exist and no custom edit action */}
                           {formFields.length > 0 &&
                             !actions.some(
@@ -796,7 +866,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                                 Edit
                               </Button>
                             )}
-
                           {/* Render custom actions */}
                           {actions.map((action) => {
                             if (action.show && !action.show(item)) return null;
@@ -821,7 +890,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                               </Button>
                             );
                           })}
-
                           {/* Only show Delete button if no custom delete action and onItemDelete exists */}
                           {onItemDelete &&
                             !actions.some(
