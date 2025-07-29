@@ -170,7 +170,7 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
                 <Logo open={open} />
               </div>
 
-              <div className="flex flex-col  gap-4">
+              <div className="flex flex-col  gap-2 md:gap-3">
                 {links.map((link, idx) => {
                   const isActive = pathname === link.href;
                   const isDark = theme === "dark";
@@ -191,7 +191,7 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
                         ),
                       }}
                       className={cn(
-                        "flex items-center gap-3 p-2 rounded-md transition-all duration-200 group",
+                        "flex items-center gap-3 px-2 rounded-md transition-all duration-200 group",
                         isActive
                           ? "flex items-center bg-primary/30 dark:bg-primary text-foreground font-semibold shadow-md"
                           : "flex items-center text-black/80 hover:text-black hover:font-medium hover:bg-primary/15 dark:hover:bg-primary/40"
@@ -222,7 +222,7 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
                     ),
                   }}
                   className={cn(
-                    "flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all duration-200",
+                    "flex items-center gap-3 px-2 py-1 rounded-lg transition-all duration-200",
                     pathname === "/profile"
                       ? "bg-primary/30 dark:bg-primary text-foreground font-semibold shadow-md"
                       : "text-black/80 hover:text-black hover:font-medium hover:bg-primary/15 dark:hover:bg-primary/40"
@@ -309,7 +309,7 @@ const Logo = ({ open }: { open: boolean }) => {
 const Dashboard = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex flex-1 bg-card min-h-0">
-      <div className="p-0 rounded-tl-2xl bg-white dark:bg-background flex flex-col gap-2 flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-custom">
+      <div className="p-0 rounded-tl-2xl bg-white dark:bg-background flex flex-col gap-2 flex-1 w-full overflow-y-auto overflow-x-hidden scrollbar-custom scrollbar-thin">
         {children}
       </div>
     </div>

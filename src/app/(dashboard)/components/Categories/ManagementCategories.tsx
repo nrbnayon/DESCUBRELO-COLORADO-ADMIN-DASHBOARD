@@ -15,24 +15,7 @@ import type {
 import { DynamicTable } from "@/components/common/DynamicTable";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { DynamicDataCreateModal } from "@/components/common/DynamicDataCreateModal";
 
 interface CategoryManagementProps {
   itemsPerPage?: number;
@@ -58,13 +41,7 @@ export default function ManagementCategories({
 }: CategoryManagementProps) {
   const [categories, setCategories] = useState(categoriesData);
   const [isLoading, setIsLoading] = useState(false);
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [newCategory, setNewCategory] = useState({
-    name: "",
-    avatar: "",
-    status: "active" as "active" | "inactive" | "blocked" | "pending",
-    description: "",
-  });
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // Column Configuration for Category Table
   const categoryColumns: ColumnConfig[] = [
@@ -137,6 +114,59 @@ export default function ManagementCategories({
         { value: "blocked", label: "Blocked" },
         { value: "pending", label: "Pending" },
       ],
+    },
+  ];
+
+  // Create Modal Form Fields
+  const createFormFields = [
+    {
+      key: "name",
+      label: "Category Name",
+      type: "text" as const,
+      required: true,
+      placeholder: "Enter category name",
+      validation: {
+        minLength: 2,
+        maxLength: 50,
+      },
+      gridCol: "full" as const,
+    },
+    {
+      key: "avatar",
+      label: "Category Images",
+      type: "image" as const,
+      required: false,
+      gridCol: "full" as const,
+    },
+    {
+      key: "description",
+      label: "Description",
+      type: "textarea" as const,
+      required: false,
+      placeholder: "Enter category description (optional)",
+      gridCol: "full" as const,
+    },
+    {
+      key: "status",
+      label: "Status",
+      type: "select" as const,
+      required: true,
+      options: [
+        { value: "active", label: "Active" },
+        { value: "inactive", label: "Inactive" },
+        { value: "blocked", label: "Blocked" },
+        { value: "pending", label: "Pending" },
+      ],
+      gridCol: "half" as const,
+    },
+  ];
+
+  // Create Modal Sections
+  const createModalSections = [
+    {
+      key: "basic",
+      title: "Basic Information",
+      description: "Enter the basic details for the new category",
     },
   ];
 
@@ -230,40 +260,28 @@ export default function ManagementCategories({
     ],
   };
 
-  // Handle adding new category
-  const handleAddCategory = () => {
-    if (!newCategory.name.trim()) {
-      alert("Please enter a category name");
-      return;
-    }
-
+  // Handle creating new category
+  const handleCreateCategory = (data: Record<string, unknown>) => {
     const newCategoryData = {
       id: `cat${Date.now()}`,
-      name: newCategory.name,
+      name: String(data.name || ""),
       avatar:
-        newCategory.avatar ||
-        `https://images.unsplash.com/photo-${Math.floor(
-          Math.random() * 1000000000
-        )}?w=40&h=40&fit=crop&crop=face`,
-      status: newCategory.status,
-      description: newCategory.description,
+        String(data.avatar || "") ||
+        `https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=40&h=40&fit=crop&crop=face`,
+      status: String(data.status || "active") as
+        | "active"
+        | "inactive"
+        | "blocked"
+        | "pending",
+      description: String(data.description || ""),
       createdAt: new Date().toISOString(),
-      isActive: newCategory.status === "active",
+      isActive: String(data.status || "active") === "active",
     };
 
     const updatedCategories = [newCategoryData, ...categories];
     setCategories(updatedCategories);
 
-    // Reset form
-    setNewCategory({
-      name: "",
-      avatar: "",
-      status: "active",
-      description: "",
-    });
-    setAddModalOpen(false);
-
-    console.log("New category added:", newCategoryData);
+    console.log("New category created:", newCategoryData);
   };
 
   const handleDataChange = (newData: GenericDataItem[]) => {
@@ -337,15 +355,15 @@ export default function ManagementCategories({
         <h2 className="text-foreground text-xl font-semibold">{title}</h2>
         <Button
           className="flex items-center gap-2"
-          onClick={() => setAddModalOpen(true)}
+          onClick={() => setCreateModalOpen(true)}
         >
           <Lordicon
             src="https://cdn.lordicon.com/ueoydrft.json"
             trigger="hover"
             size={20}
             colors={{
-              primary: "#ffffff",
-              secondary: "#ffffff",
+              primary: "",
+              secondary: "",
             }}
             stroke={1}
           />
@@ -372,92 +390,27 @@ export default function ManagementCategories({
         isLoading={isLoading}
       />
 
-      {/* Add Category Modal */}
-      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Add New Category</DialogTitle>
-            <DialogDescription>
-              Create a new category for your content organization.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name *
-              </Label>
-              <Input
-                id="name"
-                value={newCategory.name}
-                onChange={(e) =>
-                  setNewCategory({ ...newCategory, name: e.target.value })
-                }
-                className="col-span-3"
-                placeholder="Enter category name"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="avatar" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="avatar"
-                value={newCategory.avatar}
-                onChange={(e) =>
-                  setNewCategory({ ...newCategory, avatar: e.target.value })
-                }
-                className="col-span-3"
-                placeholder="Enter image URL (optional)"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Status
-              </Label>
-              <Select
-                value={newCategory.status}
-                onValueChange={(
-                  value: "active" | "inactive" | "blocked" | "pending"
-                ) => setNewCategory({ ...newCategory, status: value })}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="blocked">Blocked</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label htmlFor="description" className="text-right mt-2">
-                Description
-              </Label>
-              <Textarea
-                id="description"
-                value={newCategory.description}
-                onChange={(e) =>
-                  setNewCategory({
-                    ...newCategory,
-                    description: e.target.value,
-                  })
-                }
-                className="col-span-3"
-                placeholder="Enter category description (optional)"
-                rows={3}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleAddCategory}>Add Category</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Create Category Modal */}
+      <DynamicDataCreateModal
+        isOpen={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSave={handleCreateCategory}
+        title="Create New Category"
+        description="Add a new category to organize your content"
+        fields={createFormFields}
+        sections={createModalSections}
+        initialData={{ status: "active" }}
+        saveButtonText="Create Category"
+        cancelButtonText="Cancel"
+        maxImageSizeInMB={5}
+        maxImageUpload={1}
+        acceptedImageFormats={[
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/webp",
+        ]}
+      />
     </div>
   );
 }

@@ -189,7 +189,7 @@ export const SidebarLink = ({
     <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-md transition-colors",
+        "flex items-center justify-start gap-2 group/sidebar px-2 py-1 rounded-md transition-colors",
         isActive
           ? "bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
           : "hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200",
@@ -197,7 +197,7 @@ export const SidebarLink = ({
       )}
       {...props}
     >
-      {link.icon}
+      <span className="mt-1.5"> {link.icon}</span>
 
       <motion.span
         animate={{

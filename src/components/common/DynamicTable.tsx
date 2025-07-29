@@ -1048,8 +1048,8 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
         }}
         item={viewItem}
         columns={columns}
-        title="Employee Details"
-        description="Complete information about the selected employee"
+        title="Data Details"
+        description="Complete information about the selected data"
       />
     </div>
   );
