@@ -1,9 +1,11 @@
 // src\components\common\DynamicDataCreateModal.tsx
 "use client";
-import type React from "react";
-import { useState, useRef, useCallback } from "react";
+
+import React from "react";
+import type { ReactElement } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +28,7 @@ import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
+
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 interface FormField {
@@ -51,6 +54,7 @@ interface FormField {
     max?: number;
   };
   gridCol?: "full" | "half";
+  section?: string;
 }
 
 interface Section {
@@ -89,7 +93,7 @@ export function DynamicDataCreateModal({
   maxImageSizeInMB = 5,
   maxImageUpload = 5,
   acceptedImageFormats = ["image/jpeg", "image/jpg", "image/png", "image/webp"],
-}: DynamicDataCreateModalProps) {
+}: DynamicDataCreateModalProps): ReactElement {
   const [formData, setFormData] =
     useState<Record<string, unknown>>(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -125,7 +129,6 @@ export function DynamicDataCreateModal({
     e.preventDefault();
     e.stopPropagation();
     setDragActive((prev) => ({ ...prev, [fieldKey]: false }));
-
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const files = Array.from(e.dataTransfer.files);
       handleMultipleImageFiles(files, fieldKey);
@@ -156,7 +159,6 @@ export function DynamicDataCreateModal({
         : [];
 
       const remainingSlots = maxImageUpload - currentImages.length;
-
       if (remainingSlots <= 0) {
         setErrors((prev) => ({
           ...prev,
@@ -166,7 +168,6 @@ export function DynamicDataCreateModal({
       }
 
       const filesToProcess = files.slice(0, remainingSlots);
-
       if (files.length > remainingSlots) {
         setErrors((prev) => ({
           ...prev,
@@ -214,18 +215,15 @@ export function DynamicDataCreateModal({
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-
         setFormData((prev) => {
           const currentImages = Array.isArray(prev[fieldKey])
             ? (prev[fieldKey] as string[])
             : prev[fieldKey]
             ? [prev[fieldKey] as string]
             : [];
-
           const newImages = [...currentImages, result];
           return { ...prev, [fieldKey]: newImages };
         });
-
         setUploading((prev) => ({ ...prev, [fieldKey]: false }));
       };
       reader.onerror = () => {
@@ -248,7 +246,6 @@ export function DynamicDataCreateModal({
             : prev[fieldKey]
             ? [prev[fieldKey] as string]
             : [];
-
           const newImages = currentImages.filter(
             (_, index) => index !== imageIndex
           );
@@ -258,9 +255,7 @@ export function DynamicDataCreateModal({
           return { ...prev, [fieldKey]: [] };
         }
       });
-
       setErrors((prev) => ({ ...prev, [fieldKey]: "" }));
-
       if (fileInputRefs.current[fieldKey]) {
         fileInputRefs.current[fieldKey]!.value = "";
       }
@@ -414,7 +409,6 @@ export function DynamicDataCreateModal({
             />
           );
 
-        // Fix for the MDEditor onChange handler
         case "textarea":
           return (
             <MDEditor
@@ -450,7 +444,11 @@ export function DynamicDataCreateModal({
               value={getStringValue(value)}
               onValueChange={(val) => handleInputChange(field.key, val)}
             >
-              <SelectTrigger className={error ? "border-red-500" : ""}>
+              <SelectTrigger
+                className={
+                  error ? "border-red-500" : "border-primary/30 rounded-md"
+                }
+              >
                 <SelectValue
                   placeholder={field.placeholder || `Select ${field.label}`}
                 />
@@ -466,24 +464,27 @@ export function DynamicDataCreateModal({
           );
 
         case "image":
-          const imageValues = Array.isArray(value)
+          // FIXED: Properly handle existing images and new uploads
+          const existingImages = Array.isArray(value)
             ? (value as string[])
-            : value
+            : value && typeof value === "string" && value.trim() !== ""
             ? [value as string]
             : [];
 
-          const canUploadMore = imageValues.length < maxImageUpload;
+          const canUploadMore = existingImages.length < maxImageUpload;
 
           return (
             <div className="space-y-4">
-              {/* Image Previews - Separate from upload area */}
-              {imageValues.length > 0 && (
+              {/* Image Previews - FIXED: Better handling of existing images */}
+              {existingImages.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium text-gray-700">
-                      Uploaded Images ({imageValues.length}/{maxImageUpload})
+                      {existingImages.length === 1
+                        ? "Current Image"
+                        : `Images (${existingImages.length}/${maxImageUpload})`}
                     </p>
-                    {imageValues.length > 1 && (
+                    {existingImages.length > 1 && (
                       <Button
                         type="button"
                         variant="outline"
@@ -495,18 +496,30 @@ export function DynamicDataCreateModal({
                       </Button>
                     )}
                   </div>
-
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-4 bg-gray-50/50 rounded-lg border">
-                    {imageValues.map((imageUrl, index) => (
+                    {existingImages.map((imageUrl, index) => (
                       <div key={index} className="relative group">
                         <div className="aspect-square rounded-lg overflow-hidden border-2 border-white shadow-sm bg-white hover:shadow-md transition-shadow">
                           <Image
-                            src={imageUrl || "/placeholder.svg"}
+                            src={
+                              imageUrl ||
+                              "/placeholder.svg?height=120&width=120&query=image" ||
+                              "/placeholder.svg"
+                            }
                             alt={`Preview ${index + 1}`}
                             width={120}
                             height={120}
                             className="w-full h-full object-cover"
-                            unoptimized={imageUrl?.startsWith("data:")}
+                            unoptimized={
+                              imageUrl?.startsWith("data:") ||
+                              imageUrl?.startsWith("blob:")
+                            }
+                            onError={(e) => {
+                              // Fallback to placeholder if image fails to load
+                              const target = e.target as HTMLImageElement;
+                              target.src =
+                                "/placeholder.svg?height=120&width=120";
+                            }}
                           />
                         </div>
                         <Button
@@ -527,90 +540,85 @@ export function DynamicDataCreateModal({
                 </div>
               )}
 
-              {/* Upload Area - Clean and separate */}
-              <div
-                className={cn(
-                  "relative border-2 border-dashed rounded-lg transition-all duration-200",
-                  isDragActive
-                    ? "border-primary bg-primary/5 scale-[1.02]"
-                    : "border-gray-300 hover:border-gray-400 hover:bg-gray-50/50",
-                  isUploading && "pointer-events-none opacity-50",
-                  error && "border-red-500 bg-red-50/30",
-                  canUploadMore
-                    ? "cursor-pointer"
-                    : "cursor-not-allowed opacity-40"
-                )}
-                onDragEnter={(e) => canUploadMore && handleDrag(e, field.key)}
-                onDragLeave={(e) => canUploadMore && handleDrag(e, field.key)}
-                onDragOver={(e) => canUploadMore && handleDrag(e, field.key)}
-                onDrop={(e) => canUploadMore && handleDrop(e, field.key)}
-                onClick={() => canUploadMore && openFileDialog(field.key)}
-              >
-                <input
-                  ref={(el) => {
-                    fileInputRefs.current[field.key] = el;
-                  }}
-                  type="file"
-                  accept={acceptedImageFormats.join(",")}
-                  multiple
-                  onChange={(e) => handleFileChange(e, field.key)}
-                  className="hidden"
-                />
-
-                <div className="p-8 text-center">
-                  <div className="space-y-3">
-                    {/* Icon */}
-                    <div className="mx-auto w-12 h-12 text-gray-400">
-                      {isUploading ? (
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-                      ) : canUploadMore ? (
-                        <Upload className="w-12 h-12" />
-                      ) : (
-                        <ImageIcon className="w-12 h-12" />
-                      )}
-                    </div>
-
-                    {/* Text */}
-                    <div className="space-y-1">
-                      <p className="text-base font-medium text-gray-900">
-                        {isUploading
-                          ? "Processing images..."
-                          : canUploadMore
-                          ? imageValues.length > 0
-                            ? "Add more images"
-                            : "Upload images"
-                          : "Upload limit reached"}
-                      </p>
-
-                      <p className="text-sm text-gray-600">
-                        {canUploadMore ? (
-                          <>
-                            Drop files here or{" "}
-                            <span className="text-primary font-medium">
-                              browse
-                            </span>
-                          </>
+              {/* Upload Area - FIXED: Better conditional rendering */}
+              {canUploadMore && (
+                <div
+                  className={cn(
+                    "relative border-2 border-dashed rounded-lg transition-all duration-200",
+                    isDragActive
+                      ? "border-primary bg-primary/5 scale-[1.02]"
+                      : "border-gray-300 hover:border-gray-400 hover:bg-gray-50/50",
+                    isUploading && "pointer-events-none opacity-50",
+                    error && "border-red-500 bg-red-50/30",
+                    "cursor-pointer"
+                  )}
+                  onDragEnter={(e) => handleDrag(e, field.key)}
+                  onDragLeave={(e) => handleDrag(e, field.key)}
+                  onDragOver={(e) => handleDrag(e, field.key)}
+                  onDrop={(e) => handleDrop(e, field.key)}
+                  onClick={() => openFileDialog(field.key)}
+                >
+                  <input
+                    ref={(el) => {
+                      fileInputRefs.current[field.key] = el;
+                    }}
+                    type="file"
+                    accept={acceptedImageFormats.join(",")}
+                    multiple={maxImageUpload > 1}
+                    onChange={(e) => handleFileChange(e, field.key)}
+                    className="hidden"
+                  />
+                  <div className="p-8 text-center">
+                    <div className="space-y-3">
+                      {/* Icon */}
+                      <div className="mx-auto w-12 h-12 text-gray-400">
+                        {isUploading ? (
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                         ) : (
-                          `Maximum ${maxImageUpload} images uploaded`
+                          <Upload className="w-12 h-12" />
                         )}
-                      </p>
-
-                      {canUploadMore && (
+                      </div>
+                      {/* Text */}
+                      <div className="space-y-1">
+                        <p className="text-base font-medium text-gray-900">
+                          {isUploading
+                            ? "Processing images..."
+                            : existingImages.length > 0
+                            ? "Replace or add more images"
+                            : "Upload images"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Drop files here or{" "}
+                          <span className="text-primary font-medium">
+                            browse
+                          </span>
+                        </p>
                         <p className="text-xs text-gray-500 mt-2">
                           {acceptedImageFormats
                             .map((format) => format.split("/")[1].toUpperCase())
                             .join(", ")}{" "}
-                          • Max {maxImageSizeInMB}MB each{" "}
-                          {imageValues.length > 0 &&
-                            `• ${
-                              maxImageUpload - imageValues.length
+                          • Max {maxImageSizeInMB}MB each
+                          {existingImages.length > 0 &&
+                            ` • ${
+                              maxImageUpload - existingImages.length
                             } remaining`}
                         </p>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Show message when upload limit reached */}
+              {!canUploadMore && existingImages.length >= maxImageUpload && (
+                <div className="text-center p-4 bg-gray-50 rounded-lg border">
+                  <p className="text-sm text-gray-600">
+                    Maximum {maxImageUpload} image
+                    {maxImageUpload > 1 ? "s" : ""} uploaded. Remove an image to
+                    add a new one.
+                  </p>
+                </div>
+              )}
             </div>
           );
 
@@ -635,22 +643,25 @@ export function DynamicDataCreateModal({
     ]
   );
 
-  // Group fields by section
-  const fieldsBySection =
-    sections.length > 0
-      ? sections.map((section) => ({
-          ...section,
-          fields: fields.filter(
-            (field) =>
-              field.key.startsWith(section.key) ||
-              fields.some((f) => f.key === field.key)
-          ),
-        }))
-      : [{ key: "default", title: "", description: "", fields }];
+  // Group fields by section - FIXED: Proper section filtering
+  const fieldsBySection = useMemo(() => {
+    if (sections.length > 0) {
+      return sections.map((section) => ({
+        ...section,
+        fields: fields.filter((field) => field.section === section.key),
+      }));
+    }
+    return [{ key: "default", title: "", description: "", fields }];
+  }, [sections, fields]);
+
+  // Update form data when initialData changes
+  React.useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto scrollbar-custom">
+      <DialogContent className="max-w-full md:min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
@@ -669,14 +680,16 @@ export function DynamicDataCreateModal({
                   )}
                 </div>
               )}
-
-              <div className="grid gap-4">
+              {/* FIXED: Improved grid layout matching DynamicEditModal */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {section.fields.map((field) => (
                   <div
                     key={field.key}
                     className={cn(
-                      "grid gap-2",
-                      field.gridCol === "half" ? "grid-cols-2" : "grid-cols-1"
+                      // Full width fields span both columns, half width fields use single column
+                      field.gridCol === "full"
+                        ? "md:col-span-2"
+                        : "md:col-span-1"
                     )}
                   >
                     <div className="space-y-2">

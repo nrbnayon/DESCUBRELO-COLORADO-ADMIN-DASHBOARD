@@ -687,16 +687,18 @@ export default function ManagementPosts({
           className="flex items-center gap-2"
           onClick={() => setCreateModalOpen(true)}
         >
-          <Lordicon
-            src="https://cdn.lordicon.com/ueoydrft.json"
-            trigger="hover"
-            size={20}
-            colors={{
-              primary: "#ffffff",
-              secondary: "#ffffff",
-            }}
-            stroke={1}
-          />
+          <span className="mt-1.5">
+            <Lordicon
+              src="https://cdn.lordicon.com/ueoydrft.json"
+              trigger="hover"
+              size={20}
+              colors={{
+                primary: "",
+                secondary: "",
+              }}
+              stroke={1}
+            />
+          </span>
           <span>Add Post</span>
         </Button>
       </div>
