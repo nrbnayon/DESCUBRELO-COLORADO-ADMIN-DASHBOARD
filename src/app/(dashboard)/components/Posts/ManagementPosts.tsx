@@ -1,5 +1,5 @@
-// src\app\(dashboard)\components\Posts\ManagementPosts.tsx
 "use client";
+
 import { postsData } from "@/data/postsData";
 import { useState } from "react";
 import type {
@@ -10,11 +10,12 @@ import type {
   FormField,
   SearchFilterConfig,
 } from "@/types/dynamicCardTypes";
-import { DynamicCard } from "@/components/common/DynamicCard";
+import { DynamicCard3D } from "@/components/common/DynamicCard3D";
 import { DynamicDataCreateModal } from "@/components/common/DynamicDataCreateModal";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
+// import { DynamicCard } from "@/components/common/DynamicCard";
 
 interface PostManagementProps {
   itemsPerPage?: number;
@@ -55,7 +56,7 @@ export default function ManagementPosts({
   title = "All Posts",
 }: PostManagementProps) {
   const [posts, setPosts] = useState(postsData);
-  const [isLoading, ] = useState(false);
+  const [isLoading] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<PostDataItem | null>(null);
@@ -69,8 +70,8 @@ export default function ManagementPosts({
       searchable: true,
       align: "left",
       render: (value, item) => (
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+        <div className='flex items-center gap-3'>
+          <div className='w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0'>
             <Image
               src={
                 typeof item.image === "string" && item.image.trim() !== ""
@@ -78,15 +79,15 @@ export default function ManagementPosts({
                   : "/placeholder.svg?height=48&width=48"
               }
               alt={String(value)}
-              className="w-full h-full object-cover"
+              className='w-full h-full object-cover'
               width={48}
               height={48}
             />
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-sm truncate">{String(value)}</p>
+          <div className='min-w-0 flex-1'>
+            <p className='font-medium text-sm truncate'>{String(value)}</p>
             {typeof item.subtitle === "string" && item.subtitle && (
-              <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+              <p className='text-xs text-gray-500 truncate'>{item.subtitle}</p>
             )}
           </div>
         </div>
@@ -175,44 +176,44 @@ export default function ManagementPosts({
       render: (value) => {
         const socialLinks = value as PostDataItem["socialLinks"];
         if (!socialLinks || Object.keys(socialLinks).length === 0) {
-          return <span className="text-gray-400">No links</span>;
+          return <span className='text-gray-400'>No links</span>;
         }
         const linkCount = Object.keys(socialLinks).length;
         return (
-          <div className="flex items-center gap-1">
-            <div className="flex -space-x-1">
+          <div className='flex items-center gap-1'>
+            <div className='flex -space-x-1'>
               {socialLinks.facebook && (
-                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
+                <div className='w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs'>
                   F
                 </div>
               )}
               {socialLinks.linkedin && (
-                <div className="w-6 h-6 bg-blue-700 rounded-full flex items-center justify-center text-white text-xs">
+                <div className='w-6 h-6 bg-blue-700 rounded-full flex items-center justify-center text-white text-xs'>
                   L
                 </div>
               )}
               {socialLinks.twitter && (
-                <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs">
+                <div className='w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs'>
                   X
                 </div>
               )}
               {socialLinks.instagram && (
-                <div className="w-6 h-6 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs">
+                <div className='w-6 h-6 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs'>
                   I
                 </div>
               )}
               {socialLinks.tiktok && (
-                <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs">
+                <div className='w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs'>
                   T
                 </div>
               )}
               {socialLinks.website && (
-                <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs">
+                <div className='w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs'>
                   W
                 </div>
               )}
             </div>
-            <span className="text-xs text-gray-500 ml-1">{linkCount}</span>
+            <span className='text-xs text-gray-500 ml-1'>{linkCount}</span>
           </div>
         );
       },
@@ -340,8 +341,8 @@ export default function ManagementPosts({
       label: "View Details",
       icon: (
         <Lordicon
-          src="https://cdn.lordicon.com/knitbwfa.json"
-          trigger="hover"
+          src='https://cdn.lordicon.com/knitbwfa.json'
+          trigger='hover'
           size={16}
           colors={{
             primary: "#9ca3af",
@@ -358,8 +359,8 @@ export default function ManagementPosts({
       label: "Edit Post",
       icon: (
         <Lordicon
-          src="https://cdn.lordicon.com/cbtlerlm.json"
-          trigger="hover"
+          src='https://cdn.lordicon.com/cbtlerlm.json'
+          trigger='hover'
           size={16}
           colors={{
             primary: "#9ca3af",
@@ -376,12 +377,12 @@ export default function ManagementPosts({
       label: "Delete Post",
       icon: (
         <Lordicon
-          src="https://cdn.lordicon.com/jmkrnisq.json"
-          trigger="hover"
+          src='https://cdn.lordicon.com/jmkrnisz.json'
+          trigger='hover'
           size={16}
           colors={{
-            primary: "#dc2626",
-            secondary: "",
+            primary: "#FF0000",
+            secondary: "#FFFFFF",
           }}
           stroke={4}
         />
@@ -427,7 +428,6 @@ export default function ManagementPosts({
       section: "basic",
       gridCol: "full",
     },
-
     // Content Section
     {
       key: "description",
@@ -438,7 +438,6 @@ export default function ManagementPosts({
       section: "content",
       gridCol: "full",
     },
-
     // Targeting Section
     {
       key: "targetUsers",
@@ -510,7 +509,6 @@ export default function ManagementPosts({
       section: "targeting",
       gridCol: "half",
     },
-
     // SEO Section
     {
       key: "tags",
@@ -533,7 +531,6 @@ export default function ManagementPosts({
       gridCol: "full",
       helpText: "Separate multiple keywords with commas",
     },
-
     // Social Links Section - Fixed with proper field names
     {
       key: "socialLinks.facebook",
@@ -720,7 +717,6 @@ export default function ManagementPosts({
 
     const updatedPosts = [newPostData, ...posts];
     setPosts(updatedPosts);
-
     console.log("New post created:", newPostData);
   };
 
@@ -780,7 +776,6 @@ export default function ManagementPosts({
       post.id === editingPost.id ? updatedPostData : post
     );
     setPosts(updatedPosts);
-
     setEditingPost(null);
     console.log("Post updated:", updatedPostData);
   };
@@ -792,7 +787,7 @@ export default function ManagementPosts({
     console.log("Post deleted:", postId);
   };
 
-  // Handle data change from DynamicCard
+  // Handle data change from DynamicCard3D
   const handleDataChange = (newData: GenericDataItem[]) => {
     setPosts(newData as PostDataItem[]);
   };
@@ -816,18 +811,18 @@ export default function ManagementPosts({
   };
 
   return (
-    <div className="w-full mx-auto">
-      <div className="w-full flex justify-between items-center mb-6">
-        <h2 className="text-foreground text-xl font-semibold">{title}</h2>
+    <div className='w-full mx-auto'>
+      <div className='w-full flex justify-between items-center mb-6'>
+        <h2 className='text-foreground text-xl font-semibold'>{title}</h2>
         <Button
-          className="flex items-center gap-2 border-primary/30 rounded-md"
-          size="lg"
+          className='flex items-center gap-2 border-primary/30 rounded-md'
+          size='lg'
           onClick={() => setCreateModalOpen(true)}
         >
-          <span className="mt-1.5">
+          <span className='mt-1.5'>
             <Lordicon
-              src="https://cdn.lordicon.com/ueoydrft.json"
-              trigger="hover"
+              src='https://cdn.lordicon.com/ueoydrft.json'
+              trigger='hover'
               size={20}
               colors={{
                 primary: "",
@@ -835,13 +830,13 @@ export default function ManagementPosts({
               }}
               stroke={1}
             />
-            </span>
+          </span>
           <span>Add Post</span>
         </Button>
       </div>
 
-      {/* Dynamic Card Component */}
-      <DynamicCard
+      {/* Dynamic 3D Card Component */}
+      <DynamicCard3D
         data={posts}
         columns={postColumns}
         cardConfig={cardConfig}
@@ -849,7 +844,7 @@ export default function ManagementPosts({
         searchFilterConfig={searchFilterConfig}
         onDataChange={handleDataChange}
         loading={isLoading}
-        emptyMessage="No posts found"
+        emptyMessage='No posts found'
         itemsPerPage={itemsPerPage}
       />
 
@@ -858,8 +853,8 @@ export default function ManagementPosts({
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onSave={handleCreatePost}
-        title="Create New Post"
-        description="Create and publish posts with rich content and social media integration"
+        title='Create New Post'
+        description='Create and publish posts with rich content and social media integration'
         fields={createFormFields}
         sections={createModalSections}
         initialData={{
@@ -871,8 +866,8 @@ export default function ManagementPosts({
             .toISOString()
             .split("T")[0],
         }}
-        saveButtonText="Create Post"
-        cancelButtonText="Cancel"
+        saveButtonText='Create Post'
+        cancelButtonText='Cancel'
         maxImageSizeInMB={5}
         maxImageUpload={1}
         acceptedImageFormats={[
@@ -892,13 +887,13 @@ export default function ManagementPosts({
             setEditingPost(null);
           }}
           onSave={handleUpdatePost}
-          title="Edit Post"
-          description="Update post information and settings"
+          title='Edit Post'
+          description='Update post information and settings'
           fields={createFormFields}
           sections={createModalSections}
           initialData={getEditInitialData()}
-          saveButtonText="Update Post"
-          cancelButtonText="Cancel"
+          saveButtonText='Update Post'
+          cancelButtonText='Cancel'
           maxImageSizeInMB={5}
           maxImageUpload={1}
           acceptedImageFormats={[

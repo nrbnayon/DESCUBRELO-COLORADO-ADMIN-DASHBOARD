@@ -1,8 +1,9 @@
-// src\components\common\DynamicCard.tsx
 "use client";
-import React, { useState, useMemo } from "react";
+
+import type React from "react";
+import { useState, useMemo } from "react";
 import Image from "next/image";
-import { Eye, Calendar, User, MoreHorizontal } from "lucide-react";
+import { Eye, Calendar, User, Edit, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -12,16 +13,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-
+import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { DynamicDetailsModal } from "./DynamicDetailsModal";
 import { SearchFilterBar } from "./SearchFilterBar";
-
 import type {
   GenericDataItem,
   ColumnConfig,
@@ -30,8 +34,9 @@ import type {
   SearchFilterState,
   SearchFilterConfig,
 } from "@/types/dynamicCardTypes";
+import Lordicon from "../lordicon/lordicon-wrapper";
 
-interface DynamicCardProps {
+interface DynamicCard3DProps {
   data: GenericDataItem[];
   columns: ColumnConfig[];
   cardConfig: CardConfig;
@@ -44,7 +49,7 @@ interface DynamicCardProps {
   itemsPerPage?: number;
 }
 
-export function DynamicCard({
+export function DynamicCard3D({
   data,
   columns,
   cardConfig,
@@ -54,10 +59,11 @@ export function DynamicCard({
   loading = false,
   emptyMessage = "No items found",
   itemsPerPage = 12,
-}: DynamicCardProps) {
+}: DynamicCard3DProps) {
   const [selectedItem, setSelectedItem] = useState<GenericDataItem | null>(
     null
   );
+  const [deleteItem, setDeleteItem] = useState<GenericDataItem | null>(null);
   const [searchFilterState, setSearchFilterState] = useState<SearchFilterState>(
     {
       search: "",
@@ -110,20 +116,16 @@ export function DynamicCard({
       result.sort((a, b) => {
         const aValue = a[searchFilterState.sortBy!];
         const bValue = b[searchFilterState.sortBy!];
-
         if (aValue === bValue) return 0;
-
         if (
           (typeof aValue === "string" && typeof bValue === "string") ||
           (typeof aValue === "number" && typeof bValue === "number")
         ) {
           const comparison = aValue < bValue ? -1 : 1;
-
           return searchFilterState.sortOrder === "desc"
             ? -comparison
             : comparison;
         }
-
         return 0;
       });
     }
@@ -154,7 +156,6 @@ export function DynamicCard({
     if (value === null || value === undefined) return null;
 
     const column = columns.find((col) => col.key === key);
-
     if (column?.render) {
       return column.render(value, {} as GenericDataItem);
     }
@@ -188,169 +189,223 @@ export function DynamicCard({
     return String(value);
   };
 
-  // Render single card
+  // Handle delete confirmation
+  const handleDeleteConfirm = () => {
+    if (!deleteItem) return;
+
+    const deleteAction = actions.find((action) => action.key === "delete");
+    if (deleteAction) {
+      deleteAction.onClick(deleteItem);
+    }
+    setDeleteItem(null);
+  };
+
+  // Get available actions for an item
+  const getAvailableActions = (item: GenericDataItem) => {
+    return actions.filter(
+      (action) => !action.condition || action.condition(item)
+    );
+  };
+
+  // Render single 3D card
   const renderCard = (item: GenericDataItem) => {
     const title = getFieldValue(item, cardConfig.titleKey);
     const subtitle = getFieldValue(item, cardConfig.subtitleKey);
     const image = getFieldValue(item, cardConfig.imageKey);
     const description = getFieldValue(item, cardConfig.descriptionKey);
     const status = getFieldValue(item, cardConfig.statusKey);
+    const availableActions = getAvailableActions(item);
 
-    const availableActions = actions.filter(
-      (action) => !action.condition || action.condition(item)
+    const editAction = availableActions.find((action) => action.key === "edit");
+    const deleteAction = availableActions.find(
+      (action) => action.key === "delete"
     );
 
     return (
-      <Card
+      <CardContainer
         key={item.id}
-        className='group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 border-primary/30 hover:border-primary'
+        className='inter-var w-full h-full border rounded-md border-primary/30 hover:border-primary'
       >
-        <CardHeader>
-          <div className='flex items-start justify-between'>
-            <div className='flex-1 min-w-0'>
-              <h3 className='font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors'>
-                {String(title)}
-              </h3>
-              {typeof subtitle === "string" && subtitle && (
-                <p className='text-sm text-muted-foreground mt-1 line-clamp-1'>
-                  {subtitle}
-                </p>
-              )}
-            </div>
+        <CardBody className='bg-white relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] dark:bg-gray-900 dark:border-gray-700 w-full max-w-sm h-auto rounded-md overflow-hidden hover:shadow-xl transition-all duration-300'>
+          {/* Status Badge - Fixed Position */}
+          <div className='absolute top-4 right-4 z-10'>
+            <CardItem translateZ='100'>
+              {(typeof status === "string" || typeof status === "number") &&
+                renderFieldValue(status, cardConfig.statusKey!)}
+            </CardItem>
+          </div>
 
-            {(typeof status === "string" || typeof status === "number") && (
-              <div className='ml-2'>
-                {renderFieldValue(status, cardConfig.statusKey!)}
+          {/* Card Header */}
+          <CardItem translateZ='50' className='w-full'>
+            <CardHeader className='pb-3'>
+              <div className='pr-20'>
+                <CardItem
+                  translateZ='60'
+                  className='text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover/card:text-primary transition-colors'
+                >
+                  {String(title)}
+                </CardItem>
+                {typeof subtitle === "string" && subtitle && (
+                  <CardItem
+                    translateZ='40'
+                    as='p'
+                    className='text-gray-600 text-sm mt-1 dark:text-gray-300 line-clamp-1'
+                  >
+                    {subtitle}
+                  </CardItem>
+                )}
               </div>
-            )}
-          </div>
-        </CardHeader>
+            </CardHeader>
+          </CardItem>
 
-        <CardContent className='px-3 pb-4'>
-          {typeof image === "string" && image && (
-            <div className='mb-4 overflow-hidden rounded-lg'>
-              <Image
-                src={image}
-                alt={typeof title === "string" ? title : "Image"}
-                width={300}
-                height={200}
-                className='w-full h-48 object-cover transition-transform group-hover:scale-105'
-                unoptimized={
-                  image.startsWith("data:") || image.startsWith("blob:")
-                }
-              />
-            </div>
-          )}
+          {/* Card Content */}
+          <CardItem translateZ='50' className='w-full'>
+            <CardContent className='pb-4'>
+              {/* Image */}
+              {typeof image === "string" && image && (
+                <CardItem translateZ='100' className='w-full mb-4 rounded-xl'>
+                  <Image
+                    src={image || "/placeholder.svg"}
+                    alt={typeof title === "string" ? title : "Image"}
+                    width={400}
+                    height={200}
+                    className='w-full h-48 object-cover rounded-xl transition-transform group-hover/card:scale-105 duration-300'
+                    unoptimized={
+                      image.startsWith("data:") || image.startsWith("blob:")
+                    }
+                  />
+                </CardItem>
+              )}
 
-          {typeof description === "string" && description && (
-            <p className='text-sm text-muted-foreground line-clamp-3 mb-4'>
-              {description}
-            </p>
-          )}
+              {/* Description */}
+              {typeof description === "string" && description && (
+                <CardItem
+                  translateZ='60'
+                  as='p'
+                  className='text-gray-600 text-sm dark:text-gray-300 line-clamp-3 mb-4'
+                >
+                  {description}
+                </CardItem>
+              )}
 
-          {/* Badge Keys */}
-          {cardConfig.badgeKeys && cardConfig.badgeKeys.length > 0 && (
-            <div className='flex flex-wrap gap-2 mb-4'>
-              {cardConfig.badgeKeys.map((key) => {
-                const value = getFieldValue(item, key);
-                if (!value) return null;
-                return <div key={key}>{renderFieldValue(value, key)}</div>;
-              })}
-            </div>
-          )}
-
-          {/* Meta Information */}
-          {cardConfig.metaKeys && cardConfig.metaKeys.length > 0 && (
-            <div className='space-y-2 text-xs text-muted-foreground'>
-              {cardConfig.metaKeys.map((key) => {
-                const value = getFieldValue(item, key);
-                if (!value) return null;
-
-                const column = columns.find((col) => col.key === key);
-                const icon =
-                  key.includes("date") || key.includes("time") ? (
-                    <Calendar className='h-3 w-3' />
-                  ) : key.includes("author") || key.includes("user") ? (
-                    <User className='h-3 w-3' />
-                  ) : key.includes("view") ? (
-                    <Eye className='h-3 w-3' />
-                  ) : null;
-
-                return (
-                  <div key={key} className='flex items-center gap-1'>
-                    {icon}
-                    <span className='capitalize'>{column?.label || key}:</span>
-                    <span>{renderFieldValue(value, key)}</span>
+              {/* Badge Keys */}
+              {cardConfig.badgeKeys && cardConfig.badgeKeys.length > 0 && (
+                <CardItem translateZ='40' className='mb-4'>
+                  <div className='flex flex-wrap gap-2'>
+                    {cardConfig.badgeKeys.map((key) => {
+                      const value = getFieldValue(item, key);
+                      if (!value) return null;
+                      return (
+                        <div key={key}>{renderFieldValue(value, key)}</div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
+                </CardItem>
+              )}
 
-        <CardFooter className='px-3 pt-0 flex items-center justify-between'>
-          <div className='flex gap-2'>
-            {/* Details Button */}
-            {cardConfig.showDetailsButton !== false && (
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => setSelectedItem(item)}
-                className='flex items-center gap-1'
-              >
-                <Eye className='h-3 w-3' />
-                Details
-              </Button>
-            )}
+              {/* Meta Information */}
+              {cardConfig.metaKeys && cardConfig.metaKeys.length > 0 && (
+                <CardItem
+                  translateZ='30'
+                  className='space-y-2 text-xs text-gray-500 dark:text-gray-400'
+                >
+                  {cardConfig.metaKeys.map((key) => {
+                    const value = getFieldValue(item, key);
+                    if (!value) return null;
+                    const column = columns.find((col) => col.key === key);
+                    const icon =
+                      key.includes("date") || key.includes("time") ? (
+                        <Calendar className='h-3 w-3' />
+                      ) : key.includes("author") || key.includes("user") ? (
+                        <User className='h-3 w-3' />
+                      ) : key.includes("view") ? (
+                        <Eye className='h-3 w-3' />
+                      ) : null;
 
-            {/* Primary Action */}
-            {cardConfig.primaryAction && (
-              <Button
-                variant={cardConfig.primaryAction.variant || "default"}
-                size='sm'
-                onClick={() => cardConfig.primaryAction!.onClick(item)}
-                className='flex items-center gap-1'
-              >
-                {cardConfig.primaryAction.icon}
-                {cardConfig.primaryAction.label}
-              </Button>
-            )}
-          </div>
+                    return (
+                      <div key={key} className='flex items-center gap-1'>
+                        {icon}
+                        <span className='capitalize'>
+                          {column?.label || key}:
+                        </span>
+                        <span>{renderFieldValue(value, key)}</span>
+                      </div>
+                    );
+                  })}
+                </CardItem>
+              )}
+            </CardContent>
+          </CardItem>
 
-          {/* Secondary Actions */}
-          {(availableActions.length > 0 || cardConfig.secondaryActions) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
-                  <MoreHorizontal className='h-4 w-4' />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end'>
-                {cardConfig.secondaryActions?.map((action) => (
-                  <DropdownMenuItem
-                    key={action.key}
-                    onClick={() => action.onClick(item)}
-                    className='flex items-center gap-2'
+          {/* Card Footer with Action Buttons */}
+          <CardItem translateZ='60' className='w-full'>
+            <CardFooter className='px-6 pt-0 pb-6 flex items-center justify-between gap-2'>
+              {/* Primary Actions */}
+              <div className='flex gap-2'>
+                {/* Details Button */}
+                {cardConfig.showDetailsButton !== false && (
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedItem(item);
+                    }}
+                    className='flex items-center gap-1 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors'
                   >
-                    {action.icon}
-                    {action.label}
-                  </DropdownMenuItem>
-                ))}
-                {availableActions.map((action) => (
-                  <DropdownMenuItem
-                    key={action.key}
-                    onClick={() => action.onClick(item)}
-                    className='flex items-center gap-2'
+                    <Eye className='h-3 w-3' />
+                    Details
+                  </Button>
+                )}
+              </div>
+
+              {/* Action Icons */}
+              <div className='flex items-center gap-1'>
+                {/* Edit Button */}
+                {editAction && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      editAction.onClick(item);
+                    }}
+                    className='h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-full'
+                    title='Edit'
                   >
-                    {action.icon}
-                    {action.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </CardFooter>
-      </Card>
+                    <Edit className='h-4 w-4' />
+                  </Button>
+                )}
+
+                {/* Delete Button */}
+                {deleteAction && (
+                  <Button
+                    variant='ghost'
+                    size='sm'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteItem(item);
+                    }}
+                    className='h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors rounded-full'
+                    title='Delete'
+                  >
+                    <Lordicon
+                      src='https://cdn.lordicon.com/jmkrnisz.json'
+                      trigger='hover'
+                      size={20}
+                      colors={{
+                        primary: "#FF0000",
+                        secondary: "#ffffff",
+                      }}
+                      stroke={3}
+                    />
+                  </Button>
+                )}
+              </div>
+            </CardFooter>
+          </CardItem>
+        </CardBody>
+      </CardContainer>
     );
   };
 
@@ -369,7 +424,6 @@ export function DynamicCard({
           )}{" "}
           of {filteredData.length} results
         </div>
-
         <div className='flex items-center gap-2'>
           <Button
             variant='outline'
@@ -381,7 +435,6 @@ export function DynamicCard({
           >
             Previous
           </Button>
-
           <div className='flex items-center gap-1'>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const pageNumber = i + 1;
@@ -407,7 +460,6 @@ export function DynamicCard({
               );
             })}
           </div>
-
           <Button
             variant='outline'
             size='sm'
@@ -461,13 +513,12 @@ export function DynamicCard({
         />
       )}
 
-      {/* Cards Grid */}
+      {/* 3D Cards Grid */}
       {paginatedData.length > 0 ? (
         <>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
             {paginatedData.map(renderCard)}
           </div>
-
           {/* Pagination */}
           {renderPagination()}
         </>
@@ -506,6 +557,35 @@ export function DynamicCard({
           actions={actions}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <AlertDialog open={!!deleteItem} onOpenChange={() => setDeleteItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete{" "}
+              <span className='font-semibold text-red-600'>
+                &ldquo;
+                {deleteItem &&
+                  String(getFieldValue(deleteItem, cardConfig.titleKey))}
+                &rdquo;
+              </span>
+              and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className='bg-red-600 hover:bg-red-700 focus:ring-red-600'
+            >
+              <Trash2 className='h-4 w-4 mr-2' />
+              Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
