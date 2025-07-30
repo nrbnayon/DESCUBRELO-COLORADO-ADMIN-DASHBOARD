@@ -189,7 +189,7 @@ export const SidebarLink = ({
     <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-2 group/sidebar px-2 py-1 rounded-md transition-colors",
+        "flex items-center justify-start gap-2 group/sidebar px-2 pt-1 pb-0.5 rounded-md transition-colors",
         isActive
           ? "bg-neutral-200 dark:bg-neutral-700 text-neutral-900 dark:text-neutral-100"
           : "hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200",
@@ -201,10 +201,10 @@ export const SidebarLink = ({
 
       <motion.span
         animate={{
-          display: animate ? (open ? "inline-block" : "none") : "inline-block",
+          display: animate ? (open ? "flex" : "none") : "flex",
           opacity: animate ? (open ? 1 : 0) : 1,
         }}
-        className="text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
+        className="text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre flex !p-0 !m-0"
       >
         {link.label}
       </motion.span>
