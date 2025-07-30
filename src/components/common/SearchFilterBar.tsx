@@ -177,13 +177,13 @@ export function SearchFilterBar({
       {/* Search and Filter Row */}
       <div className="flex flex-col sm:flex-row gap-3">
         {/* Search Input */}
-        <div className="relative flex-1">
+        <div className="relative flex-1 border border-primary/30 focus-visible:border-primary rounded-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             placeholder={config.searchPlaceholder || "Search..."}
             value={state.search}
             onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-9 h-10"
+            className="pl-8 rounded-md focus-visible:border-primary"
           />
           {state.search && (
             <Button
@@ -248,7 +248,7 @@ export function SearchFilterBar({
                 value={state.sortBy || ""}
                 onValueChange={(val) => val && handleSortChange(val)}
               >
-                <SelectTrigger className="w-[140px] h-10">
+                <SelectTrigger className="w-34 h-10">
                   <div className="flex items-center gap-1">
                     {state.sortOrder === "desc" ? (
                       <SortDesc className="h-3 w-3" />
@@ -278,7 +278,7 @@ export function SearchFilterBar({
           {/* Search Badge */}
           {state.search && (
             <Badge variant="secondary" className="gap-1">
-              Search: "{state.search}"
+              Search: &ldquo;{state.search}&ldquo;
               <X
                 className="h-3 w-3 cursor-pointer"
                 onClick={() => handleSearchChange("")}
