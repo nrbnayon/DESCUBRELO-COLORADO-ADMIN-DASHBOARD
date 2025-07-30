@@ -1,4 +1,3 @@
-// src\components\common\DynamicEditModal.tsx
 "use client";
 
 import type React from "react";
@@ -55,11 +54,14 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
 }) => {
   const [formData, setFormData] = useState<GenericDataItem | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [uploadedFiles, setUploadedFiles] = useState<Record<string, File[]>>(
+  const [uploadedFile, setUploadedFile] = useState<Record<string, File | null>>(
     {}
   );
-  const [filePreviewUrls, setFilePreviewUrls] = useState<
-    Record<string, string[]>
+  const [filePreviewUrl, setFilePreviewUrl] = useState<
+    Record<string, string | null>
+  >({});
+  const [existingImage, setExistingImage] = useState<
+    Record<string, string | null>
   >({});
 
   // Initialize form data when item changes
@@ -67,28 +69,41 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
     if (item) {
       setFormData({ ...item });
       setErrors({});
-      setUploadedFiles({});
-      setFilePreviewUrls({});
+      setUploadedFile({});
+
+      // Initialize existing images and preview URLs
+      const newExistingImage: Record<string, string | null> = {};
+      const newFilePreviewUrl: Record<string, string | null> = {};
+
+      fieldConfigs.forEach((config) => {
+        if (config.type === "file" || config.type === "image") {
+          const value = item[config.key];
+          if (value && typeof value === "string") {
+            // Single image URL
+            newExistingImage[config.key] = value;
+            newFilePreviewUrl[config.key] = value;
+          }
+        }
+      });
+
+      setExistingImage(newExistingImage);
+      setFilePreviewUrl(newFilePreviewUrl);
     }
-  }, [item]);
+  }, [item, fieldConfigs]);
 
   // Handle input changes
   const handleInputChange = (key: string, value: unknown) => {
     if (!formData) return;
-
     setFormData((prev) => {
       if (!prev) return prev;
       const updated = { ...prev, [key]: value };
-
       // Apply transform if defined
       const fieldConfig = fieldConfigs.find((config) => config.key === key);
       if (fieldConfig?.transform) {
         updated[key] = fieldConfig.transform(value);
       }
-
       return updated;
     });
-
     // Clear error when user starts typing
     if (errors[key]) {
       setErrors((prev) => {
@@ -102,12 +117,10 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
   // Validate form data
   const validateForm = (): boolean => {
     if (!formData) return false;
-
     const newErrors: Record<string, string> = {};
 
     fieldConfigs.forEach((config) => {
       const value = formData[config.key];
-
       // Required validation
       if (
         config.required &&
@@ -168,52 +181,77 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
 
   // Handle file upload
   const handleFileUpload = (fieldKey: string, files: FileList | null) => {
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    const newFiles = Array.from(files).slice(0, 5);
-    setUploadedFiles((prev) => ({
+    const file = files[0]; // Only take the first file
+    setUploadedFile((prev) => ({
       ...prev,
-      [fieldKey]: [...(prev[fieldKey] || []), ...newFiles].slice(0, 5),
+      [fieldKey]: file,
     }));
 
-    // Create preview URLs
-    newFiles.forEach((file) => {
-      const url = URL.createObjectURL(file);
-      setFilePreviewUrls((prev) => ({
-        ...prev,
-        [fieldKey]: [...(prev[fieldKey] || []), url].slice(0, 5),
-      }));
-    });
+    // Create preview URL for new file
+    const url = URL.createObjectURL(file);
+    setFilePreviewUrl((prev) => ({
+      ...prev,
+      [fieldKey]: url,
+    }));
+
+    // Clear existing image when new file is uploaded
+    setExistingImage((prev) => ({
+      ...prev,
+      [fieldKey]: null,
+    }));
   };
 
-  // Remove file
-  const removeFile = (fieldKey: string, index: number) => {
-    setUploadedFiles((prev) => ({
+  // Remove file (handles both existing and newly uploaded files)
+  const removeFile = (fieldKey: string) => {
+    // Clear existing image
+    setExistingImage((prev) => ({
       ...prev,
-      [fieldKey]: prev[fieldKey]?.filter((_, i) => i !== index) || [],
+      [fieldKey]: null,
     }));
 
-    setFilePreviewUrls((prev) => {
-      const urls = prev[fieldKey] || [];
-      if (urls[index]) {
-        URL.revokeObjectURL(urls[index]);
-      }
-      return {
-        ...prev,
-        [fieldKey]: urls.filter((_, i) => i !== index),
-      };
-    });
+    // Clear uploaded file
+    setUploadedFile((prev) => ({
+      ...prev,
+      [fieldKey]: null,
+    }));
+
+    // Revoke and clear preview URL
+    const currentPreview = filePreviewUrl[fieldKey];
+    if (currentPreview && currentPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(currentPreview);
+    }
+    setFilePreviewUrl((prev) => ({
+      ...prev,
+      [fieldKey]: null,
+    }));
   };
 
   // Handle save
   const handleSave = async () => {
     if (!formData || !validateForm()) return;
 
-    // Add uploaded files to form data
+    // Prepare final data
     const finalData = { ...formData };
-    Object.keys(uploadedFiles).forEach((key) => {
-      if (uploadedFiles[key].length > 0) {
-        finalData[key] = uploadedFiles[key];
+
+    // Handle file fields
+    fieldConfigs.forEach((config) => {
+      if (config.type === "file" || config.type === "image") {
+        const fieldKey = config.key;
+        const existingImageForField = existingImage[fieldKey];
+        const uploadedFileForField = uploadedFile[fieldKey];
+
+        if (uploadedFileForField) {
+          // If there's a new file, use it
+          finalData[fieldKey] = uploadedFileForField;
+        } else if (existingImageForField) {
+          // Keep existing image
+          finalData[fieldKey] = existingImageForField;
+        } else {
+          // No image
+          finalData[fieldKey] = null;
+        }
       }
     });
 
@@ -224,15 +262,16 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
   const handleClose = () => {
     setFormData(null);
     setErrors({});
-    setUploadedFiles({});
+    setUploadedFile({});
+    setExistingImage({});
 
-    // Clean up preview URLs
-    Object.values(filePreviewUrls)
-      .flat()
-      .forEach((url) => {
+    // Clean up preview URLs (only blob URLs)
+    Object.values(filePreviewUrl).forEach((url) => {
+      if (url && url.startsWith("blob:")) {
         URL.revokeObjectURL(url);
-      });
-    setFilePreviewUrls({});
+      }
+    });
+    setFilePreviewUrl({});
     onClose();
   };
 
@@ -415,54 +454,58 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
           );
 
         case "file":
-          const fieldPreviews = filePreviewUrls[config.key] || [];
+        case "image":
+          const currentPreview = filePreviewUrl[config.key];
+          const hasImage =
+            currentPreview !== null && currentPreview !== undefined;
+
           return (
             <div className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload(config.key, e.target.files)}
-                  className="hidden"
-                  id={fieldId}
-                />
-                <label htmlFor={fieldId} className="cursor-pointer">
-                  <div className="space-y-2">
-                    <div className="w-12 h-12 mx-auto bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Upload className="w-6 h-6 text-gray-500" />
+              {hasImage ? (
+                // Show image preview with remove option
+                <div className="relative inline-block">
+                  <Image
+                    src={currentPreview || "/placeholder.svg"}
+                    alt="Preview"
+                    className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                    width={128}
+                    height={128}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeFile(config.key)}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                // Show upload section
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) =>
+                      handleFileUpload(config.key, e.target.files)
+                    }
+                    className="hidden"
+                    id={fieldId}
+                  />
+                  <label htmlFor={fieldId} className="cursor-pointer">
+                    <div className="space-y-2">
+                      <div className="w-12 h-12 mx-auto bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Upload className="w-6 h-6 text-gray-500" />
+                      </div>
+                      <div>
+                        <span className="text-blue-600 font-medium">
+                          Browse files
+                        </span>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {config.placeholder || "Max file size 50MB"}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-blue-600 font-medium">
-                        Browse files
-                      </span>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {config.placeholder || "Max file size 50MB"}
-                      </p>
-                    </div>
-                  </div>
-                </label>
-              </div>
-              {fieldPreviews.length > 0 && (
-                <div className="flex gap-3 flex-wrap">
-                  {fieldPreviews.map((url, index) => (
-                    <div key={index} className="relative group">
-                      <Image
-                        src={url || "/placeholder.svg"}
-                        alt={`Upload ${index + 1}`}
-                        className="w-20 h-20 object-cover rounded-lg border border-gray-200"
-                        width={80}
-                        height={80}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeFile(config.key, index)}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                  </label>
                 </div>
               )}
             </div>
@@ -653,7 +696,6 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                       )}
                     </div>
                   )}
-
                   {/* Always use 2-column grid layout */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {sectionFields.map((config) => (

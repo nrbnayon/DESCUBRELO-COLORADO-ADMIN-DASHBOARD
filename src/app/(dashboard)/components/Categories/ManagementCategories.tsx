@@ -79,7 +79,7 @@ export default function ManagementCategories({
       type: "text",
       required: true,
       section: "details",
-      gridCol: "half",
+      gridCol: "full",
       validation: {
         minLength: 2,
         maxLength: 50,
@@ -90,7 +90,7 @@ export default function ManagementCategories({
       label: "Category Picture",
       type: "file",
       section: "details",
-      gridCol: "half",
+      gridCol: "full",
       placeholder: "Upload category picture (max 5MB)",
     },
     {
@@ -357,7 +357,7 @@ export default function ManagementCategories({
           className="flex items-center gap-2"
           onClick={() => setCreateModalOpen(true)}
         >
-          <Lordicon
+          <span className="mt-1.5"><Lordicon
             src="https://cdn.lordicon.com/ueoydrft.json"
             trigger="hover"
             size={20}
@@ -366,7 +366,7 @@ export default function ManagementCategories({
               secondary: "",
             }}
             stroke={1}
-          />
+          /></span>
           <span>Add Category</span>
         </Button>
       </div>

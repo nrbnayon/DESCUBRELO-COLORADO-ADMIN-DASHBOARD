@@ -59,7 +59,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
   const TrendIcon = trend === "up" ? TrendingUp : TrendingDown;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 relative shadow-sm hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-lg border border-primary/30 p-6 relative shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-gray-600 text-sm font-medium">{title}</h3>
         <button
