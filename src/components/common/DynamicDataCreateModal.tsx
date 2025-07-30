@@ -1,6 +1,5 @@
 // src\components\common\DynamicDataCreateModal.tsx
 "use client";
-
 import React from "react";
 import type { ReactElement } from "react";
 import { useState, useRef, useCallback, useMemo } from "react";
@@ -28,39 +27,15 @@ import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
+import { FormField } from "@/types/dynamicCardTypes";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
-
-interface FormField {
-  key: string;
-  label: string;
-  type:
-    | "text"
-    | "email"
-    | "tel"
-    | "textarea"
-    | "select"
-    | "image"
-    | "date"
-    | "number";
-  required?: boolean;
-  placeholder?: string;
-  options?: { value: string; label: string }[];
-  validation?: {
-    minLength?: number;
-    maxLength?: number;
-    pattern?: string;
-    min?: number;
-    max?: number;
-  };
-  gridCol?: "full" | "half";
-  section?: string;
-}
 
 interface Section {
   key: string;
   title: string;
   description?: string;
+  [key: string]: string | unknown;
 }
 
 interface DynamicDataCreateModalProps {
@@ -77,6 +52,7 @@ interface DynamicDataCreateModalProps {
   maxImageSizeInMB?: number;
   maxImageUpload?: number;
   acceptedImageFormats?: string[];
+  [key: string]: string | unknown;
 }
 
 export function DynamicDataCreateModal({
@@ -376,9 +352,11 @@ export function DynamicDataCreateModal({
         case "email":
         case "tel":
         case "date":
+        case "password":
+        case "url":
           return (
             <Input
-              type={field.type}
+              type={field.type === "url" ? "text" : field.type} // Map 'url' to 'text' input
               value={getStringValue(value)}
               onChange={(e) => handleInputChange(field.key, e.target.value)}
               placeholder={field.placeholder}
@@ -623,7 +601,7 @@ export function DynamicDataCreateModal({
           );
 
         default:
-          return null;
+          return null; // Ignore unsupported field types
       }
     },
     [

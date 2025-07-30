@@ -10,8 +10,6 @@ export default function ManagePostsPage() {
         <ManagementPosts
           itemsPerPage={20}
           title="All Posts"
-          buttonText="" // button not needed here
-          pageUrl=""
         />
       </div>
     </div>

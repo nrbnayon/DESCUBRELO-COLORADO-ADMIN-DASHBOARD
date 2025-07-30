@@ -441,7 +441,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                     }))
                   }
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-48 border-primary/30 rounded-md">
                     <SelectValue placeholder={filter.label} />
                   </SelectTrigger>
                   <SelectContent>
@@ -458,7 +458,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
               return (
                 <div
                   key={filter.key}
-                  className="relative border border-secondary"
+                  className="relative border w-48 border-primary/30 rounded-md"
                 >
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
@@ -666,30 +666,36 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       {/* Search and Filters */}
       <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
         {config.enableSearch && (
-          <div className="relative flex-1 max-w-sm">
+          <div className="relative flex-1 max-w-sm border-primary/30 rounded-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder={config.searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 border-secondary focus-visible:border-primary"
+              className="pl-8 border-primary/30 rounded-md focus-visible:border-primary"
             />
           </div>
         )}
         {renderFilters()}
         <div className="flex items-center gap-2">
           {onRefresh && (
-            <Button variant="outline" size="sm" onClick={onRefresh}>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={onRefresh}
+              className="border-primary/30 rounded-md"
+            >
               <RefreshCw className="w-4 h-4" />
             </Button>
           )}
           {onExport && (
             <Button
               variant="outline"
-              size="sm"
+              size="lg"
               onClick={() => onExport(filteredData)}
+              className="border-primary/30 rounded-md"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-4 h-4" />
               Export
             </Button>
           )}

@@ -16,6 +16,7 @@ import { DynamicTable } from "@/components/common/DynamicTable";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
 import { Button } from "@/components/ui/button";
 import { DynamicDataCreateModal } from "@/components/common/DynamicDataCreateModal";
+import type { FormField } from "@/types/dynamicCardTypes";
 
 interface CategoryManagementProps {
   itemsPerPage?: number;
@@ -118,38 +119,42 @@ export default function ManagementCategories({
   ];
 
   // Create Modal Form Fields
-  const createFormFields = [
+  const createFormFields: FormField[] = [
     {
       key: "name",
       label: "Category Name",
-      type: "text" as const,
+      type: "text",
       required: true,
       placeholder: "Enter category name",
       validation: {
         minLength: 2,
         maxLength: 50,
       },
-      gridCol: "full" as const,
+      section: "basic",
+      gridCol: "full",
     },
     {
       key: "avatar",
-      label: "Category Images",
-      type: "image" as const,
+      label: "Category Picture",
+      type: "image", // Changed to "image" to match DynamicDataCreateModal's image handling
       required: false,
-      gridCol: "full" as const,
+      placeholder: "Upload category picture (max 5MB)",
+      section: "basic",
+      gridCol: "full",
     },
     {
       key: "description",
       label: "Description",
-      type: "textarea" as const,
+      type: "textarea",
       required: false,
       placeholder: "Enter category description (optional)",
-      gridCol: "full" as const,
+      section: "basic",
+      gridCol: "full",
     },
     {
       key: "status",
       label: "Status",
-      type: "select" as const,
+      type: "select",
       required: true,
       options: [
         { value: "active", label: "Active" },
@@ -157,7 +162,8 @@ export default function ManagementCategories({
         { value: "blocked", label: "Blocked" },
         { value: "pending", label: "Pending" },
       ],
-      gridCol: "half" as const,
+      section: "basic",
+      gridCol: "half",
     },
   ];
 
@@ -354,19 +360,22 @@ export default function ManagementCategories({
       <div className="w-full flex justify-between items-center mb-6">
         <h2 className="text-foreground text-xl font-semibold">{title}</h2>
         <Button
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-primary/30 rounded-md"
+          size="lg"
           onClick={() => setCreateModalOpen(true)}
         >
-          <span className="mt-1.5"><Lordicon
-            src="https://cdn.lordicon.com/ueoydrft.json"
-            trigger="hover"
-            size={20}
-            colors={{
-              primary: "",
-              secondary: "",
-            }}
-            stroke={1}
-          /></span>
+          <span className="mt-1.5">
+            <Lordicon
+              src="https://cdn.lordicon.com/ueoydrft.json"
+              trigger="hover"
+              size={20}
+              colors={{
+                primary: "",
+                secondary: "",
+              }}
+              stroke={1}
+            />
+          </span>
           <span>Add Category</span>
         </Button>
       </div>
@@ -397,8 +406,8 @@ export default function ManagementCategories({
         onSave={handleCreateCategory}
         title="Create New Category"
         description="Add a new category to organize your content"
-        fields={createFormFields}
-        sections={createModalSections}
+        fields={createFormFields} // Using the corrected createFormFields
+        sections={createModalSections} // Using the existing createModalSections
         initialData={{ status: "active" }}
         saveButtonText="Create Category"
         cancelButtonText="Cancel"

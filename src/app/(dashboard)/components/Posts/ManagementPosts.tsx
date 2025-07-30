@@ -1,25 +1,20 @@
 // src\app\(dashboard)\components\Posts\ManagementPosts.tsx
 "use client";
 import { postsData } from "@/data/postsData";
-import { categoriesData } from "@/data/categoriesData";
 import { useState } from "react";
 import type {
   GenericDataItem,
   ColumnConfig,
-  FilterConfig,
   ActionConfig,
-  TableConfig,
-  FormFieldConfig,
-  EditModalConfig,
-  FieldType,
-} from "@/types/dynamicTableTypes";
-import { DynamicTable } from "@/components/common/DynamicTable";
-import Lordicon from "@/components/lordicon/lordicon-wrapper";
-import { Button } from "@/components/ui/button";
+  CardConfig,
+  FormField,
+  SearchFilterConfig,
+} from "@/types/dynamicCardTypes";
+import { DynamicCard } from "@/components/common/DynamicCard";
 import { DynamicDataCreateModal } from "@/components/common/DynamicDataCreateModal";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Lordicon from "@/components/lordicon/lordicon-wrapper";
 
 interface PostManagementProps {
   itemsPerPage?: number;
@@ -56,25 +51,23 @@ interface PostDataItem extends GenericDataItem {
 }
 
 export default function ManagementPosts({
-  itemsPerPage = 10,
+  itemsPerPage = 12,
   title = "All Posts",
-  buttonText = "Show all",
-  pageUrl = "/manage-posts",
 }: PostManagementProps) {
   const [posts, setPosts] = useState(postsData);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, ] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<PostDataItem | null>(null);
 
-  // Column Configuration for Posts Table
+  // Column Configuration for Posts
   const postColumns: ColumnConfig[] = [
     {
       key: "title",
-      label: "Post Name",
+      label: "Post Title",
       sortable: true,
       searchable: true,
-      showAvatar: true,
       align: "left",
-      width: "300px",
       render: (value, item) => (
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -82,7 +75,7 @@ export default function ManagementPosts({
               src={
                 typeof item.image === "string" && item.image.trim() !== ""
                   ? item.image
-                  : "/placeholder.svg?height=48&width=48&query=post"
+                  : "/placeholder.svg?height=48&width=48"
               }
               alt={String(value)}
               className="w-full h-full object-cover"
@@ -92,76 +85,55 @@ export default function ManagementPosts({
           </div>
           <div className="min-w-0 flex-1">
             <p className="font-medium text-sm truncate">{String(value)}</p>
-            {item.subtitle && (
-              <p className="text-xs text-gray-500 truncate">
-                {String(item.subtitle)}
-              </p>
+            {typeof item.subtitle === "string" && item.subtitle && (
+              <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
             )}
           </div>
         </div>
       ),
     },
     {
+      key: "subtitle",
+      label: "Subtitle",
+      sortable: false,
+      searchable: true,
+    },
+    {
+      key: "description",
+      label: "Description",
+      type: "textarea",
+      sortable: false,
+      searchable: true,
+    },
+    {
+      key: "image",
+      label: "Image",
+      type: "image",
+      sortable: false,
+    },
+    {
       key: "targetUsers",
-      label: "Targeted Users",
+      label: "Target Users",
+      type: "select",
       sortable: true,
       filterable: true,
-      width: "140px",
-      align: "center",
-      render: (value) => {
-        const targetUser = String(value);
-        const config = {
-          new: { label: "New Users", color: "#3b82f6", icon: "👋" },
-          old: { label: "Old Users", color: "#10b981", icon: "🤝" },
-          both: { label: "All Users", color: "#8b5cf6", icon: "👥" },
-        };
-        const userConfig =
-          config[targetUser as keyof typeof config] || config.both;
-
-        return (
-          <div className="flex items-center justify-center">
-            <Badge
-              variant="secondary"
-              className="text-xs px-2 py-1"
-              style={{
-                backgroundColor: userConfig.color + "20",
-                color: userConfig.color,
-              }}
-            >
-              <span className="mr-1">{userConfig.icon}</span>
-              {userConfig.label}
-            </Badge>
-          </div>
-        );
-      },
+      options: [
+        { value: "new", label: "New Users", color: "#3b82f6", icon: "👋" },
+        { value: "old", label: "Old Users", color: "#10b981", icon: "🤝" },
+        { value: "both", label: "All Users", color: "#8b5cf6", icon: "👥" },
+      ],
     },
     {
       key: "startDate",
-      label: "Starting Date",
+      label: "Start Date",
       type: "date",
       sortable: true,
-      width: "130px",
-      align: "center",
-      render: (value) => (
-        <div className="flex items-center justify-center gap-1 text-sm">
-          <Calendar className="w-3 h-3 text-gray-400" />
-          {new Date(String(value)).toLocaleDateString()}
-        </div>
-      ),
     },
     {
       key: "endDate",
       label: "End Date",
       type: "date",
       sortable: true,
-      width: "130px",
-      align: "center",
-      render: (value) => (
-        <div className="flex items-center justify-center gap-1 text-sm">
-          <Calendar className="w-3 h-3 text-gray-400" />
-          {new Date(String(value)).toLocaleDateString()}
-        </div>
-      ),
     },
     {
       key: "status",
@@ -169,8 +141,6 @@ export default function ManagementPosts({
       type: "select",
       sortable: true,
       filterable: true,
-      width: "120px",
-      align: "center",
       options: [
         { value: "active", label: "Active", color: "#16a34a" },
         { value: "inactive", label: "Inactive", color: "#ca8a04" },
@@ -179,318 +149,200 @@ export default function ManagementPosts({
         { value: "expired", label: "Expired", color: "#dc2626" },
       ],
     },
-  ];
-
-  // FIXED: Properly organized form fields with correct sections
-  const createFormFields = [
-    // Basic Information Section Fields
-    {
-      key: "title",
-      label: "Post Title",
-      type: "text" as const,
-      required: true,
-      placeholder: "Enter post title",
-      validation: {
-        minLength: 5,
-        maxLength: 100,
-      },
-      section: "basic",
-      gridCol: "full" as const,
-    },
-    {
-      key: "subtitle",
-      label: "Subtitle",
-      type: "text" as const,
-      required: false,
-      placeholder: "Enter subtitle (optional)",
-      validation: {
-        maxLength: 150,
-      },
-      section: "basic",
-      gridCol: "full" as const,
-    },
-    {
-      key: "image",
-      label: "Post Image",
-      type: "image" as const,
-      required: true,
-      section: "basic",
-      gridCol: "full" as const,
-    },
-
-    // Content Section Fields
-    {
-      key: "description",
-      label: "Description",
-      type: "textarea" as const,
-      required: true,
-      placeholder: "Enter post description with markdown support...",
-      section: "content",
-      gridCol: "full" as const,
-    },
-
-    // Targeting Section Fields
-    {
-      key: "targetUsers",
-      label: "Target Users",
-      type: "select" as const,
-      required: true,
-      options: [
-        { value: "new", label: "New Users" },
-        { value: "old", label: "Old Users" },
-        { value: "both", label: "All Users" },
-      ],
-      section: "targeting",
-      gridCol: "half" as const,
-    },
-    {
-      key: "category",
-      label: "Category",
-      type: "select" as const,
-      required: true,
-      options: categoriesData.map((cat) => ({
-        value: cat.name,
-        label: cat.name,
-      })),
-      section: "targeting",
-      gridCol: "half" as const,
-    },
-    {
-      key: "startDate",
-      label: "Start Date",
-      type: "date" as const,
-      required: true,
-      section: "targeting",
-      gridCol: "half" as const,
-    },
-    {
-      key: "endDate",
-      label: "End Date",
-      type: "date" as const,
-      required: true,
-      section: "targeting",
-      gridCol: "half" as const,
-    },
-    {
-      key: "priority",
-      label: "Priority",
-      type: "select" as const,
-      required: true,
-      options: [
-        { value: "low", label: "Low" },
-        { value: "medium", label: "Medium" },
-        { value: "high", label: "High" },
-      ],
-      section: "targeting",
-      gridCol: "half" as const,
-    },
-    {
-      key: "status",
-      label: "Status",
-      type: "select" as const,
-      required: true,
-      options: [
-        { value: "draft", label: "Draft" },
-        { value: "scheduled", label: "Scheduled" },
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-      ],
-      section: "targeting",
-      gridCol: "half" as const,
-    },
-
-    // SEO Section Fields
     {
       key: "tags",
       label: "Tags",
-      type: "text" as const,
-      required: false,
-      placeholder:
-        "Enter tags separated by commas (e.g., technology, innovation, post)",
-      section: "seo",
-      gridCol: "full" as const,
+      sortable: false,
+      searchable: true,
     },
     {
       key: "keywords",
       label: "Keywords",
-      type: "text" as const,
-      required: false,
-      placeholder: "Enter keywords separated by commas for SEO",
-      section: "seo",
-      gridCol: "full" as const,
-    },
-
-    // Social Links Section Fields
-    {
-      key: "facebook",
-      label: "Facebook",
-      type: "text" as const,
-      required: false,
-      placeholder: "https://facebook.com/company",
-      section: "social",
-      gridCol: "half" as const,
-    },
-    {
-      key: "linkedin",
-      label: "LinkedIn",
-      type: "text" as const,
-      required: false,
-      placeholder: "https://linkedin.com/company",
-      section: "social",
-      gridCol: "half" as const,
-    },
-    {
-      key: "twitter",
-      label: "X (Twitter)",
-      type: "text" as const,
-      required: false,
-      placeholder: "https://twitter.com/company",
-      section: "social",
-      gridCol: "half" as const,
-    },
-    {
-      key: "instagram",
-      label: "Instagram",
-      type: "text" as const,
-      required: false,
-      placeholder: "https://instagram.com/company",
-      section: "social",
-      gridCol: "half" as const,
-    },
-    {
-      key: "tiktok",
-      label: "TikTok",
-      type: "text" as const,
-      required: false,
-      placeholder: "https://tiktok.com/@company",
-      section: "social",
-      gridCol: "half" as const,
-    },
-    {
-      key: "website",
-      label: "Website",
-      type: "text" as const,
-      required: false,
-      placeholder: "https://website.com/company",
-      section: "social",
-      gridCol: "half" as const,
-    },
-  ];
-
-  // FIXED: Form fields for edit modal (for DynamicTable edit functionality)
-  const postFormFields: FormFieldConfig[] = createFormFields.map((field) => ({
-    ...field,
-    type: field.type as FieldType, // Type assertion for compatibility
-  }));
-
-  // Create Modal Sections
-  const createModalSections = [
-    {
-      key: "basic",
-      title: "Basic Information",
-      description: "Enter the basic details for the post",
-    },
-    {
-      key: "content",
-      title: "Content & Media",
-      description: "Add description and images for the post",
-    },
-    {
-      key: "targeting",
-      title: "Targeting & Scheduling",
-      description: "Configure target audience and publication schedule",
-    },
-    {
-      key: "seo",
-      title: "SEO & Tags",
-      description: "Add tags and keywords for better discoverability",
-    },
-    {
-      key: "social",
-      title: "Social & External Links",
-      description: "Add social media and external links (optional)",
-    },
-  ];
-
-  // FIXED: Edit Modal Configuration
-  const postEditModalConfig: EditModalConfig = {
-    title: "Edit Post",
-    description: "Update post information and settings",
-    width: "xl",
-    sections: [
-      {
-        key: "basic",
-        title: "Basic Information",
-        description: "Basic post details and information",
-      },
-      {
-        key: "content",
-        title: "Content & Media",
-        description: "Post content and media files",
-      },
-      {
-        key: "targeting",
-        title: "Targeting & Scheduling",
-        description: "Target audience and scheduling settings",
-      },
-      {
-        key: "seo",
-        title: "SEO & Tags",
-        description: "SEO optimization and tags",
-      },
-      {
-        key: "social",
-        title: "Social Links",
-        description: "Social media and external links",
-      },
-    ],
-  };
-
-  // Filter Configuration for Posts Table
-  const postFilters: FilterConfig[] = [
-    {
-      key: "status",
-      label: "Status",
-      type: "select",
-      options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        { value: "draft", label: "Draft" },
-        { value: "scheduled", label: "Scheduled" },
-        { value: "expired", label: "Expired" },
-      ],
-    },
-    {
-      key: "targetUsers",
-      label: "Target Users",
-      type: "select",
-      options: [
-        { value: "new", label: "New Users" },
-        { value: "old", label: "Old Users" },
-        { value: "both", label: "All Users" },
-      ],
+      sortable: false,
+      searchable: true,
     },
     {
       key: "category",
       label: "Category",
       type: "select",
-      options: categoriesData.map((cat) => ({
-        value: cat.name,
-        label: cat.name,
-      })),
+      sortable: true,
+      filterable: true,
+    },
+    {
+      key: "socialLinks",
+      label: "Social Links",
+      sortable: false,
+      render: (value) => {
+        const socialLinks = value as PostDataItem["socialLinks"];
+        if (!socialLinks || Object.keys(socialLinks).length === 0) {
+          return <span className="text-gray-400">No links</span>;
+        }
+        const linkCount = Object.keys(socialLinks).length;
+        return (
+          <div className="flex items-center gap-1">
+            <div className="flex -space-x-1">
+              {socialLinks.facebook && (
+                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
+                  F
+                </div>
+              )}
+              {socialLinks.linkedin && (
+                <div className="w-6 h-6 bg-blue-700 rounded-full flex items-center justify-center text-white text-xs">
+                  L
+                </div>
+              )}
+              {socialLinks.twitter && (
+                <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs">
+                  X
+                </div>
+              )}
+              {socialLinks.instagram && (
+                <div className="w-6 h-6 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs">
+                  I
+                </div>
+              )}
+              {socialLinks.tiktok && (
+                <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs">
+                  T
+                </div>
+              )}
+              {socialLinks.website && (
+                <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs">
+                  W
+                </div>
+              )}
+            </div>
+            <span className="text-xs text-gray-500 ml-1">{linkCount}</span>
+          </div>
+        );
+      },
+    },
+    {
+      key: "createdAt",
+      label: "Created At",
+      type: "date",
+      sortable: true,
+    },
+    {
+      key: "author",
+      label: "Author",
+      sortable: true,
+      searchable: true,
+    },
+    {
+      key: "views",
+      label: "Views",
+      type: "number",
+      sortable: true,
+    },
+    {
+      key: "priority",
+      label: "Priority",
+      type: "select",
+      sortable: true,
+      filterable: true,
+      options: [
+        { value: "low", label: "Low", color: "#6b7280" },
+        { value: "medium", label: "Medium", color: "#ca8a04" },
+        { value: "high", label: "High", color: "#dc2626" },
+      ],
     },
   ];
 
-  // Action Configuration for Posts Table
+  // Card Configuration
+  const cardConfig: CardConfig = {
+    titleKey: "title",
+    subtitleKey: "subtitle",
+    imageKey: "image",
+    descriptionKey: "description",
+    statusKey: "status",
+    badgeKeys: ["targetUsers", "priority"],
+    metaKeys: ["createdAt", "author", "views"],
+    showDetailsButton: true,
+    primaryAction: {
+      key: "edit",
+      label: "Edit",
+      variant: "outline",
+      onClick: (item) => handleEditPost(item as PostDataItem),
+    },
+  };
+
+  // Search Filter Configuration
+  const searchFilterConfig: SearchFilterConfig = {
+    searchPlaceholder: "Search posts by title, description, category...",
+    searchKeys: [
+      "title",
+      "subtitle",
+      "description",
+      "category",
+      "author",
+      "tags",
+      "keywords",
+    ],
+    enableSort: true,
+    sortOptions: [
+      { key: "title", label: "Title" },
+      { key: "createdAt", label: "Created Date" },
+      { key: "startDate", label: "Start Date" },
+      { key: "views", label: "Views" },
+    ],
+    filters: [
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        options: [
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
+          { value: "draft", label: "Draft" },
+          { value: "scheduled", label: "Scheduled" },
+          { value: "expired", label: "Expired" },
+        ],
+      },
+      {
+        key: "targetUsers",
+        label: "Target Users",
+        type: "select",
+        options: [
+          { value: "new", label: "New Users" },
+          { value: "old", label: "Old Users" },
+          { value: "both", label: "All Users" },
+        ],
+      },
+      {
+        key: "priority",
+        label: "Priority",
+        type: "select",
+        options: [
+          { value: "low", label: "Low" },
+          { value: "medium", label: "Medium" },
+          { value: "high", label: "High" },
+        ],
+      },
+      {
+        key: "category",
+        label: "Category",
+        type: "select",
+        options: Array.from(
+          new Set(postsData.map((post) => post.category))
+        ).map((cat) => ({
+          value: cat,
+          label: cat,
+        })),
+      },
+    ],
+  };
+
+  // Actions Configuration
   const postActions: ActionConfig[] = [
     {
       key: "view",
-      label: "",
+      label: "View Details",
       icon: (
         <Lordicon
           src="https://cdn.lordicon.com/knitbwfa.json"
           trigger="hover"
-          size={20}
+          size={16}
           colors={{
             primary: "#9ca3af",
             secondary: "",
@@ -503,12 +355,12 @@ export default function ManagementPosts({
     },
     {
       key: "edit",
-      label: "",
+      label: "Edit Post",
       icon: (
         <Lordicon
           src="https://cdn.lordicon.com/cbtlerlm.json"
           trigger="hover"
-          size={20}
+          size={16}
           colors={{
             primary: "#9ca3af",
             secondary: "",
@@ -517,98 +369,353 @@ export default function ManagementPosts({
         />
       ),
       variant: "ghost",
-      onClick: (item) => console.log("Edit post:", item.title),
+      onClick: (item) => handleEditPost(item as PostDataItem),
+    },
+    {
+      key: "delete",
+      label: "Delete Post",
+      icon: (
+        <Lordicon
+          src="https://cdn.lordicon.com/jmkrnisq.json"
+          trigger="hover"
+          size={16}
+          colors={{
+            primary: "#dc2626",
+            secondary: "",
+          }}
+          stroke={4}
+        />
+      ),
+      variant: "ghost",
+      onClick: (item) => handleDeletePost(item.id),
     },
   ];
 
-  // Table Configuration for Posts Management
-  const postTableConfig: TableConfig = {
-    title: "",
-    description: "",
-    searchPlaceholder: "Search posts by title, category, or author",
-    itemsPerPage: itemsPerPage,
-    enableSearch: true,
-    enableFilters: true,
-    enablePagination: true,
-    enableSelection: true,
-    enableSorting: true,
-    striped: true,
-    emptyMessage: "No posts found",
-    loadingMessage: "Loading posts...",
+  // Form Fields Configuration
+  const createFormFields: FormField[] = [
+    // Basic Information Section
+    {
+      key: "title",
+      label: "Post Title",
+      type: "text",
+      required: true,
+      placeholder: "Enter post title",
+      validation: {
+        minLength: 5,
+        maxLength: 100,
+      },
+      section: "basic",
+      gridCol: "full",
+    },
+    {
+      key: "subtitle",
+      label: "Subtitle",
+      type: "text",
+      required: false,
+      placeholder: "Enter subtitle (optional)",
+      validation: {
+        maxLength: 150,
+      },
+      section: "basic",
+      gridCol: "full",
+    },
+    {
+      key: "image",
+      label: "Post Image",
+      type: "image",
+      required: true,
+      section: "basic",
+      gridCol: "full",
+    },
+
+    // Content Section
+    {
+      key: "description",
+      label: "Description",
+      type: "textarea",
+      required: true,
+      placeholder: "Enter post description with markdown support...",
+      section: "content",
+      gridCol: "full",
+    },
+
+    // Targeting Section
+    {
+      key: "targetUsers",
+      label: "Target Users",
+      type: "select",
+      required: true,
+      options: [
+        { value: "new", label: "New Users" },
+        { value: "old", label: "Old Users" },
+        { value: "both", label: "All Users" },
+      ],
+      section: "targeting",
+      gridCol: "half",
+    },
+    {
+      key: "category",
+      label: "Category",
+      type: "select",
+      required: true,
+      options: Array.from(new Set(postsData.map((post) => post.category))).map(
+        (cat) => ({
+          value: cat,
+          label: cat,
+        })
+      ),
+      section: "targeting",
+      gridCol: "half",
+    },
+    {
+      key: "startDate",
+      label: "Start Date",
+      type: "date",
+      required: true,
+      section: "targeting",
+      gridCol: "half",
+    },
+    {
+      key: "endDate",
+      label: "End Date",
+      type: "date",
+      required: true,
+      section: "targeting",
+      gridCol: "half",
+    },
+    {
+      key: "priority",
+      label: "Priority",
+      type: "select",
+      required: true,
+      options: [
+        { value: "low", label: "Low" },
+        { value: "medium", label: "Medium" },
+        { value: "high", label: "High" },
+      ],
+      section: "targeting",
+      gridCol: "half",
+    },
+    {
+      key: "status",
+      label: "Status",
+      type: "select",
+      required: true,
+      options: [
+        { value: "active", label: "Active" },
+        { value: "draft", label: "Draft" },
+        { value: "scheduled", label: "Scheduled" },
+        { value: "inactive", label: "Inactive" },
+      ],
+      section: "targeting",
+      gridCol: "half",
+    },
+
+    // SEO Section
+    {
+      key: "tags",
+      label: "Tags",
+      type: "text",
+      required: false,
+      placeholder:
+        "Enter tags separated by commas (e.g., technology, innovation)",
+      section: "seo",
+      gridCol: "full",
+      helpText: "Separate multiple tags with commas",
+    },
+    {
+      key: "keywords",
+      label: "Keywords",
+      type: "text",
+      required: false,
+      placeholder: "Enter keywords separated by commas for SEO",
+      section: "seo",
+      gridCol: "full",
+      helpText: "Separate multiple keywords with commas",
+    },
+
+    // Social Links Section - Fixed with proper field names
+    {
+      key: "socialLinks.facebook",
+      label: "Facebook",
+      type: "url",
+      required: false,
+      placeholder: "https://facebook.com/company",
+      section: "social",
+      gridCol: "half",
+    },
+    {
+      key: "socialLinks.linkedin",
+      label: "LinkedIn",
+      type: "url",
+      required: false,
+      placeholder: "https://linkedin.com/company",
+      section: "social",
+      gridCol: "half",
+    },
+    {
+      key: "socialLinks.twitter",
+      label: "X (Twitter)",
+      type: "url",
+      required: false,
+      placeholder: "https://twitter.com/company",
+      section: "social",
+      gridCol: "half",
+    },
+    {
+      key: "socialLinks.instagram",
+      label: "Instagram",
+      type: "url",
+      required: false,
+      placeholder: "https://instagram.com/company",
+      section: "social",
+      gridCol: "half",
+    },
+    {
+      key: "socialLinks.tiktok",
+      label: "TikTok",
+      type: "url",
+      required: false,
+      placeholder: "https://tiktok.com/@company",
+      section: "social",
+      gridCol: "half",
+    },
+    {
+      key: "socialLinks.website",
+      label: "Website",
+      type: "url",
+      required: false,
+      placeholder: "https://website.com",
+      section: "social",
+      gridCol: "half",
+    },
+  ];
+
+  // Form Sections
+  const createModalSections = [
+    {
+      key: "basic",
+      title: "Basic Information",
+      description: "Enter the basic details for the post",
+      icon: "📝",
+    },
+    {
+      key: "content",
+      title: "Content & Media",
+      description: "Add description and images for the post",
+      icon: "🎨",
+    },
+    {
+      key: "targeting",
+      title: "Targeting & Scheduling",
+      description: "Configure target audience and publication schedule",
+      icon: "🎯",
+    },
+    {
+      key: "seo",
+      title: "SEO & Tags",
+      description: "Add tags and keywords for better discoverability",
+      icon: "🔍",
+      collapsible: true,
+      defaultCollapsed: true,
+    },
+    {
+      key: "social",
+      title: "Social & External Links",
+      description: "Add social media and external links (optional)",
+      icon: "🔗",
+      collapsible: true,
+      defaultCollapsed: true,
+    },
+  ];
+
+  // Utility function to process form data and extract social links
+  const processFormData = (data: Record<string, unknown>) => {
+    const processedData: Record<string, unknown> = {};
+    const socialLinks: Record<string, string> = {};
+
+    // Process each field
+    Object.entries(data).forEach(([key, value]) => {
+      if (key.startsWith("socialLinks.")) {
+        // Extract social link field
+        const socialKey = key.replace("socialLinks.", "");
+        if (typeof value === "string" && value.trim()) {
+          socialLinks[socialKey] = value.trim();
+        }
+      } else {
+        // Regular field
+        processedData[key] = value;
+      }
+    });
+
+    // Add socialLinks object if there are any social links
+    if (Object.keys(socialLinks).length > 0) {
+      processedData.socialLinks = socialLinks;
+    }
+
+    return processedData;
+  };
+
+  // Utility function to process tags and keywords
+  const processTags = (value: unknown): string[] => {
+    if (typeof value === "string" && value.trim()) {
+      return value
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+    }
+    return [];
   };
 
   // Handle creating new post
   const handleCreatePost = (data: Record<string, unknown>) => {
-    // Process tags and keywords
-    const processTags = (value: unknown): string[] => {
-      if (typeof value === "string" && value.trim()) {
-        return value
-          .split(",")
-          .map((tag) => tag.trim())
-          .filter((tag) => tag.length > 0);
-      }
-      return [];
-    };
-
-    // Process social links
-    const processSocialLinks = (data: Record<string, unknown>) => {
-      const socialLinks: Record<string, string> = {};
-      const socialKeys = [
-        "facebook",
-        "linkedin",
-        "twitter",
-        "instagram",
-        "tiktok",
-        "website",
-      ];
-
-      socialKeys.forEach((key) => {
-        const value = data[key];
-        if (typeof value === "string" && value.trim()) {
-          socialLinks[key] = value.trim();
-        }
-      });
-
-      return Object.keys(socialLinks).length > 0 ? socialLinks : undefined;
-    };
+    const processedData = processFormData(data);
 
     // Handle image - single image only for posts
     const imageValue =
-      Array.isArray(data.image) && data.image.length > 0
-        ? data.image[0]
-        : typeof data.image === "string"
-        ? data.image
+      Array.isArray(processedData.image) && processedData.image.length > 0
+        ? processedData.image[0]
+        : typeof processedData.image === "string"
+        ? processedData.image
         : "";
 
     const newPostData = {
       id: `post${Date.now()}`,
-      title: String(data.title || ""),
-      subtitle: data.subtitle ? String(data.subtitle) : undefined,
-      description: String(data.description || ""),
+      title: String(processedData.title || ""),
+      subtitle: processedData.subtitle
+        ? String(processedData.subtitle)
+        : undefined,
+      description: String(processedData.description || ""),
       image:
         imageValue ||
         `https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop`,
-      targetUsers: String(data.targetUsers || "both") as "new" | "old" | "both",
-      startDate: String(data.startDate || new Date().toISOString()),
+      targetUsers: String(processedData.targetUsers || "both") as
+        | "new"
+        | "old"
+        | "both",
+      startDate: String(processedData.startDate || new Date().toISOString()),
       endDate: String(
-        data.endDate ||
+        processedData.endDate ||
           new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       ),
-      status: String(data.status || "draft") as
+      status: String(processedData.status || "draft") as
         | "active"
         | "inactive"
         | "draft"
         | "scheduled"
         | "expired",
-      tags: processTags(data.tags),
-      keywords: processTags(data.keywords),
-      category: String(data.category || "General"),
-      socialLinks: processSocialLinks(data),
+      tags: processTags(processedData.tags),
+      keywords: processTags(processedData.keywords),
+      category: String(processedData.category || "General"),
+      socialLinks: processedData.socialLinks as PostDataItem["socialLinks"],
       createdAt: new Date().toISOString(),
-      isActive: String(data.status || "draft") === "active",
+      isActive: String(processedData.status || "draft") === "active",
       author: "Current User",
       views: 0,
-      priority: String(data.priority || "medium") as "low" | "medium" | "high",
+      priority: String(processedData.priority || "medium") as
+        | "low"
+        | "medium"
+        | "high",
     };
 
     const updatedPosts = [newPostData, ...posts];
@@ -617,66 +724,95 @@ export default function ManagementPosts({
     console.log("New post created:", newPostData);
   };
 
+  // Handle editing post
+  const handleEditPost = (post: PostDataItem) => {
+    setEditingPost(post);
+    setEditModalOpen(true);
+  };
+
+  // Handle updating post
+  const handleUpdatePost = (data: Record<string, unknown>) => {
+    if (!editingPost) return;
+
+    const processedData = processFormData(data);
+
+    // Handle image
+    const imageValue =
+      Array.isArray(processedData.image) && processedData.image.length > 0
+        ? processedData.image[0]
+        : typeof processedData.image === "string"
+        ? processedData.image
+        : editingPost.image;
+
+    const updatedPostData = {
+      ...editingPost,
+      title: String(processedData.title || ""),
+      subtitle: processedData.subtitle
+        ? String(processedData.subtitle)
+        : undefined,
+      description: String(processedData.description || ""),
+      image: imageValue,
+      targetUsers: String(processedData.targetUsers || "both") as
+        | "new"
+        | "old"
+        | "both",
+      startDate: String(processedData.startDate || editingPost.startDate),
+      endDate: String(processedData.endDate || editingPost.endDate),
+      status: String(processedData.status || "draft") as
+        | "active"
+        | "inactive"
+        | "draft"
+        | "scheduled"
+        | "expired",
+      tags: processTags(processedData.tags),
+      keywords: processTags(processedData.keywords),
+      category: String(processedData.category || "General"),
+      socialLinks: processedData.socialLinks as PostDataItem["socialLinks"],
+      updatedAt: new Date().toISOString(),
+      isActive: String(processedData.status || "draft") === "active",
+      priority: String(processedData.priority || "medium") as
+        | "low"
+        | "medium"
+        | "high",
+    };
+
+    const updatedPosts = posts.map((post) =>
+      post.id === editingPost.id ? updatedPostData : post
+    );
+    setPosts(updatedPosts);
+
+    setEditingPost(null);
+    console.log("Post updated:", updatedPostData);
+  };
+
+  // Handle deleting post
+  const handleDeletePost = (postId: string) => {
+    const updatedPosts = posts.filter((post) => post.id !== postId);
+    setPosts(updatedPosts);
+    console.log("Post deleted:", postId);
+  };
+
+  // Handle data change from DynamicCard
   const handleDataChange = (newData: GenericDataItem[]) => {
     setPosts(newData as PostDataItem[]);
-    console.log("Posts data changed:", newData);
   };
 
-  const handlePostEdit = (postItem: GenericDataItem) => {
-    console.log("Post edited:", postItem);
-    // Here you would typically make an API call to update the post
-  };
+  // Prepare initial data for edit modal
+  const getEditInitialData = () => {
+    if (!editingPost) return {};
 
-  const handlePostDelete = (postId: string) => {
-    console.log("Post deleted:", postId);
-    // Here you would typically make an API call to delete the post
-  };
-
-  const handlePostSelect = (selectedIds: string[]) => {
-    console.log("Selected posts:", selectedIds);
-    // Handle bulk operations
-  };
-
-  const handleExport = (exportData: GenericDataItem[]) => {
-    console.log("Exporting posts:", exportData);
-    // Convert data to CSV format
-    const headers = postColumns.map((col) => col.label).join(",");
-    const csvData = (exportData as PostDataItem[])
-      .map((postItem) =>
-        postColumns
-          .map((col) => {
-            const value = postItem[col.key];
-            if (Array.isArray(value)) return `"${value.join("; ")}"`;
-            if (typeof value === "string" && value.includes(","))
-              return `"${value}"`;
-            return value || "";
-          })
-          .join(",")
-      )
-      .join("\n");
-
-    const csv = `${headers}\n${csvData}`;
-
-    // Create and download file
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `posts-export-${new Date().toISOString().split("T")[0]}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  };
-
-  const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setPosts([...postsData]);
-      setIsLoading(false);
-      console.log("Posts data refreshed");
-    }, 1000);
+    const socialLinksData = editingPost.socialLinks || {};
+    return {
+      ...editingPost,
+      tags: editingPost.tags?.join(", ") || "",
+      keywords: editingPost.keywords?.join(", ") || "",
+      "socialLinks.facebook": socialLinksData.facebook || "",
+      "socialLinks.linkedin": socialLinksData.linkedin || "",
+      "socialLinks.twitter": socialLinksData.twitter || "",
+      "socialLinks.instagram": socialLinksData.instagram || "",
+      "socialLinks.tiktok": socialLinksData.tiktok || "",
+      "socialLinks.website": socialLinksData.website || "",
+    };
   };
 
   return (
@@ -684,7 +820,8 @@ export default function ManagementPosts({
       <div className="w-full flex justify-between items-center mb-6">
         <h2 className="text-foreground text-xl font-semibold">{title}</h2>
         <Button
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 border-primary/30 rounded-md"
+          size="lg"
           onClick={() => setCreateModalOpen(true)}
         >
           <span className="mt-1.5">
@@ -698,29 +835,22 @@ export default function ManagementPosts({
               }}
               stroke={1}
             />
-          </span>
+            </span>
           <span>Add Post</span>
         </Button>
       </div>
 
-      {/* FIXED: Added formFields and editModalConfig for edit functionality */}
-      <DynamicTable
+      {/* Dynamic Card Component */}
+      <DynamicCard
         data={posts}
         columns={postColumns}
-        formFields={postFormFields}
-        filters={postFilters}
+        cardConfig={cardConfig}
         actions={postActions}
-        tableConfig={postTableConfig}
-        editModalConfig={postEditModalConfig}
+        searchFilterConfig={searchFilterConfig}
         onDataChange={handleDataChange}
-        onItemEdit={handlePostEdit}
-        onItemDelete={handlePostDelete}
-        onItemsSelect={handlePostSelect}
-        onExport={handleExport}
-        onRefresh={handleRefresh}
-        buttonText={buttonText}
-        pageUrl={pageUrl}
-        isLoading={isLoading}
+        loading={isLoading}
+        emptyMessage="No posts found"
+        itemsPerPage={itemsPerPage}
       />
 
       {/* Create Post Modal */}
@@ -733,7 +863,7 @@ export default function ManagementPosts({
         fields={createFormFields}
         sections={createModalSections}
         initialData={{
-          status: "draft",
+          status: "active",
           targetUsers: "both",
           priority: "medium",
           startDate: new Date().toISOString().split("T")[0],
@@ -752,6 +882,33 @@ export default function ManagementPosts({
           "image/webp",
         ]}
       />
+
+      {/* Edit Post Modal */}
+      {editingPost && (
+        <DynamicDataCreateModal
+          isOpen={editModalOpen}
+          onClose={() => {
+            setEditModalOpen(false);
+            setEditingPost(null);
+          }}
+          onSave={handleUpdatePost}
+          title="Edit Post"
+          description="Update post information and settings"
+          fields={createFormFields}
+          sections={createModalSections}
+          initialData={getEditInitialData()}
+          saveButtonText="Update Post"
+          cancelButtonText="Cancel"
+          maxImageSizeInMB={5}
+          maxImageUpload={1}
+          acceptedImageFormats={[
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp",
+          ]}
+        />
+      )}
     </div>
   );
 }
