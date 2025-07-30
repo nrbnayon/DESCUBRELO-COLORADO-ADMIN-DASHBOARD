@@ -130,6 +130,7 @@ export function DynamicDataCreateModal({
       const files = Array.from(e.dataTransfer.files);
       handleMultipleImageFiles(files, fieldKey);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle file input change for image upload
@@ -141,6 +142,7 @@ export function DynamicDataCreateModal({
         handleMultipleImageFiles(files, fieldKey);
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -179,6 +181,7 @@ export function DynamicDataCreateModal({
         handleImageFile(file, fieldKey);
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [formData, maxImageUpload]
   );
 
@@ -335,6 +338,7 @@ export function DynamicDataCreateModal({
       onSave(formData);
       handleClose();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, validateForm, onSave]);
 
   // Handle close

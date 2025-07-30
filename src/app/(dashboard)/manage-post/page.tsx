@@ -1,3 +1,4 @@
+// src\app\(dashboard)\manage-post\page.tsx
 import DashboardHeader from "../components/dashboard-header";
 import ManagementPosts from "../components/Posts/ManagementPosts";
 

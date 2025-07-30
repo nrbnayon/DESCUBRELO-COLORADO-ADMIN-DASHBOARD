@@ -1,3 +1,4 @@
+// src\data\postsData.ts
 import type { GenericDataItem } from "../types/dynamicTableTypes";
 
 export interface PostDataItem extends GenericDataItem {

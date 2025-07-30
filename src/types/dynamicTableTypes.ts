@@ -7,6 +7,7 @@ export interface GenericDataItem {
   id: string;
   name?: string;
   avatar?: string;
+  subtitle?: string;
   [key: string]: DataValue | DataValue[] | File[] | unknown;
 }
 
@@ -24,17 +25,28 @@ export type FieldType =
   | "checkbox"
   | "radio"
   | "file"
+  | "image"
   | "readonly"
   | "currency"
   | "percentage"
   | "url"
   | "tel"
-  | "color";
+  | "color"
+  | "switch"
+  | "rating"
+  | "richtext"
+  | "json"
+  | "tags"
+  | "daterange"
+  | "slider"
+  | "autocomplete"
+  | "hidden";
 
 export interface SelectOption {
   value: string;
   label: string;
   color?: string;
+  [key: string]:DataValue | DataValue[] | File[] | unknown| string | undefined;
 }
 
 export interface ColumnConfig {
@@ -53,6 +65,13 @@ export interface ColumnConfig {
   headerClassName?: string;
   options?: SelectOption[];
   showAvatar?: boolean; // New property for avatar display
+  [key: string]:
+    | DataValue
+    | DataValue[]
+    | File[]
+    | unknown
+    | string
+    | undefined;
 }
 
 export interface FormFieldConfig {
@@ -84,11 +103,25 @@ export interface FilterConfig {
   type: "select" | "date" | "daterange" | "number" | "text";
   options?: SelectOption[];
   multiple?: boolean;
+  [key: string]:
+    | DataValue
+    | DataValue[]
+    | File[]
+    | unknown
+    | string
+    | undefined;
 }
 
 export interface DateRangeFilter {
   start?: string;
   end?: string;
+  [key: string]:
+    | DataValue
+    | DataValue[]
+    | File[]
+    | unknown
+    | string
+    | undefined;
 }
 
 export interface ActionConfig {
@@ -106,6 +139,13 @@ export interface ActionConfig {
   onClick: (item: GenericDataItem) => void;
   show?: (item: GenericDataItem) => boolean;
   className?: string;
+  [key: string]:
+    | DataValue
+    | DataValue[]
+    | File[]
+    | unknown
+    | string
+    | undefined;
 }
 
 export interface TableConfig {
@@ -125,6 +165,13 @@ export interface TableConfig {
   className?: string;
   emptyMessage?: string;
   loadingMessage?: string;
+  [key: string]:
+    | DataValue
+    | DataValue[]
+    | File[]
+    | unknown
+    | string
+    | undefined;
 }
 
 export interface EditModalConfig {
@@ -137,4 +184,11 @@ export interface EditModalConfig {
     description?: string;
     className?: string;
   }>;
+  [key: string]:
+    | DataValue
+    | DataValue[]
+    | File[]
+    | unknown
+    | string
+    | undefined;
 }

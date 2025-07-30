@@ -1,5 +1,5 @@
+// src\app\(dashboard)\components\Posts\ManagementPosts.tsx
 "use client";
-
 import { postsData } from "@/data/postsData";
 import { categoriesData } from "@/data/categoriesData";
 import { useState } from "react";
@@ -11,6 +11,7 @@ import type {
   TableConfig,
   FormFieldConfig,
   EditModalConfig,
+  FieldType,
 } from "@/types/dynamicTableTypes";
 import { DynamicTable } from "@/components/common/DynamicTable";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
@@ -18,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { DynamicDataCreateModal } from "@/components/common/DynamicDataCreateModal";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
+import Image from "next/image";
 
 interface PostManagementProps {
   itemsPerPage?: number;
@@ -76,12 +78,16 @@ export default function ManagementPosts({
       render: (value, item) => (
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-            <img
+            <Image
               src={
-                item.image || "/placeholder.svg?height=48&width=48&query=post"
+                typeof item.image === "string" && item.image.trim() !== ""
+                  ? item.image
+                  : "/placeholder.svg?height=48&width=48&query=post"
               }
               alt={String(value)}
               className="w-full h-full object-cover"
+              width={48}
+              height={48}
             />
           </div>
           <div className="min-w-0 flex-1">
@@ -374,7 +380,7 @@ export default function ManagementPosts({
   // FIXED: Form fields for edit modal (for DynamicTable edit functionality)
   const postFormFields: FormFieldConfig[] = createFormFields.map((field) => ({
     ...field,
-    type: field.type as any, // Type assertion for compatibility
+    type: field.type as FieldType, // Type assertion for compatibility
   }));
 
   // Create Modal Sections

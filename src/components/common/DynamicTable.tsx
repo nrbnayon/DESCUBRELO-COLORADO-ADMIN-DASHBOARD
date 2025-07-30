@@ -1,6 +1,5 @@
 // src\components\common\DynamicTable.tsx
 "use client";
-
 import React, { useState, useMemo, useCallback } from "react";
 import {
   Search,
@@ -9,7 +8,6 @@ import {
   ChevronDown,
   Download,
   RefreshCw,
-  User,
   Trash2,
   ArrowRight,
 } from "lucide-react";
@@ -529,9 +527,9 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
             <p className="font-medium text-sm truncate">
               {formatValue(value, column)}
             </p>
-            {item.username && typeof item.username === "string" && (
+            {typeof item.username === "string" && (
               <p className="font-normal text-xs text-gray-500 truncate">
-                @{item.username}
+                @{String(item.username)}
               </p>
             )}
           </div>
