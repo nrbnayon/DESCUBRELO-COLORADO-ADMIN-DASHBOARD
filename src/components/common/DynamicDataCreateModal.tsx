@@ -1,8 +1,7 @@
-// src\components\common\DynamicDataCreateModal.tsx
 "use client";
 import React from "react";
 import type { ReactElement } from "react";
-import { useState, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { Upload, X } from "lucide-react";
 import {
@@ -70,8 +69,7 @@ export function DynamicDataCreateModal({
   maxImageUpload = 5,
   acceptedImageFormats = ["image/jpeg", "image/jpg", "image/png", "image/webp"],
 }: DynamicDataCreateModalProps): ReactElement {
-  const [formData, setFormData] =
-    useState<Record<string, unknown>>(initialData);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dragActive, setDragActive] = useState<Record<string, boolean>>({});
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
@@ -314,7 +312,7 @@ export function DynamicDataCreateModal({
 
   // Handle close
   const handleClose = useCallback(() => {
-    setFormData(initialData);
+    setFormData({});
     setErrors({});
     setDragActive({});
     setUploading({});
@@ -323,7 +321,7 @@ export function DynamicDataCreateModal({
       if (input) input.value = "";
     });
     onClose();
-  }, [initialData, onClose]);
+  }, [onClose]);
 
   // Helper function to safely convert value to string
   const getStringValue = (value: unknown): string => {
@@ -371,7 +369,7 @@ export function DynamicDataCreateModal({
         case "number":
           return (
             <Input
-              type="number"
+              type='number'
               value={getNumberValue(value)}
               onChange={(e) =>
                 handleInputChange(field.key, Number(e.target.value))
@@ -392,10 +390,10 @@ export function DynamicDataCreateModal({
             <MDEditor
               value={getStringValue(value)}
               onChange={(val) => handleInputChange(field.key, val || "")}
-              preview="edit"
+              preview='edit'
               hideToolbar={false}
               visibleDragbar={false}
-              data-color-mode="light"
+              data-color-mode='light'
               textareaProps={{
                 placeholder:
                   field.placeholder ||
@@ -452,32 +450,32 @@ export function DynamicDataCreateModal({
           const canUploadMore = existingImages.length < maxImageUpload;
 
           return (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               {/* Image Previews - FIXED: Better handling of existing images */}
               {existingImages.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-gray-700">
+                <div className='space-y-3'>
+                  <div className='flex items-center justify-between'>
+                    <p className='text-sm font-medium text-gray-700'>
                       {existingImages.length === 1
                         ? "Current Image"
                         : `Images (${existingImages.length}/${maxImageUpload})`}
                     </p>
                     {existingImages.length > 1 && (
                       <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
+                        type='button'
+                        variant='outline'
+                        size='sm'
                         onClick={() => handleRemoveImage(field.key)}
-                        className="text-xs h-7"
+                        className='text-xs h-7'
                       >
                         Clear All
                       </Button>
                     )}
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-4 bg-gray-50/50 rounded-lg border">
+                  <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-4 bg-gray-50/50 rounded-lg border'>
                     {existingImages.map((imageUrl, index) => (
-                      <div key={index} className="relative group">
-                        <div className="aspect-square rounded-lg overflow-hidden border-2 border-white shadow-sm bg-white hover:shadow-md transition-shadow">
+                      <div key={index} className='relative group'>
+                        <div className='aspect-square rounded-lg overflow-hidden border-2 border-white shadow-sm bg-white hover:shadow-md transition-shadow'>
                           <Image
                             src={
                               imageUrl ||
@@ -487,7 +485,7 @@ export function DynamicDataCreateModal({
                             alt={`Preview ${index + 1}`}
                             width={120}
                             height={120}
-                            className="w-full h-full object-cover"
+                            className='w-full h-full object-cover'
                             unoptimized={
                               imageUrl?.startsWith("data:") ||
                               imageUrl?.startsWith("blob:")
@@ -501,16 +499,16 @@ export function DynamicDataCreateModal({
                           />
                         </div>
                         <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute -top-1 -right-1 h-5 w-5 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                          type='button'
+                          variant='destructive'
+                          size='sm'
+                          className='absolute -top-1 -right-1 h-5 w-5 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg'
                           onClick={(e) => {
                             e.stopPropagation();
                             handleRemoveImage(field.key, index);
                           }}
                         >
-                          <X className="h-2.5 w-2.5" />
+                          <X className='h-2.5 w-2.5' />
                         </Button>
                       </div>
                     ))}
@@ -540,38 +538,38 @@ export function DynamicDataCreateModal({
                     ref={(el) => {
                       fileInputRefs.current[field.key] = el;
                     }}
-                    type="file"
+                    type='file'
                     accept={acceptedImageFormats.join(",")}
                     multiple={maxImageUpload > 1}
                     onChange={(e) => handleFileChange(e, field.key)}
-                    className="hidden"
+                    className='hidden'
                   />
-                  <div className="p-8 text-center">
-                    <div className="space-y-3">
+                  <div className='p-8 text-center'>
+                    <div className='space-y-3'>
                       {/* Icon */}
-                      <div className="mx-auto w-12 h-12 text-gray-400">
+                      <div className='mx-auto w-12 h-12 text-gray-400'>
                         {isUploading ? (
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary'></div>
                         ) : (
-                          <Upload className="w-12 h-12" />
+                          <Upload className='w-12 h-12' />
                         )}
                       </div>
                       {/* Text */}
-                      <div className="space-y-1">
-                        <p className="text-base font-medium text-gray-900">
+                      <div className='space-y-1'>
+                        <p className='text-base font-medium text-gray-900'>
                           {isUploading
                             ? "Processing images..."
                             : existingImages.length > 0
                             ? "Replace or add more images"
                             : "Upload images"}
                         </p>
-                        <p className="text-sm text-gray-600">
+                        <p className='text-sm text-gray-600'>
                           Drop files here or{" "}
-                          <span className="text-primary font-medium">
+                          <span className='text-primary font-medium'>
                             browse
                           </span>
                         </p>
-                        <p className="text-xs text-gray-500 mt-2">
+                        <p className='text-xs text-gray-500 mt-2'>
                           {acceptedImageFormats
                             .map((format) => format.split("/")[1].toUpperCase())
                             .join(", ")}{" "}
@@ -589,8 +587,8 @@ export function DynamicDataCreateModal({
 
               {/* Show message when upload limit reached */}
               {!canUploadMore && existingImages.length >= maxImageUpload && (
-                <div className="text-center p-4 bg-gray-50 rounded-lg border">
-                  <p className="text-sm text-gray-600">
+                <div className='text-center p-4 bg-gray-50 rounded-lg border'>
+                  <p className='text-sm text-gray-600'>
                     Maximum {maxImageUpload} image
                     {maxImageUpload > 1 ? "s" : ""} uploaded. Remove an image to
                     add a new one.
@@ -632,34 +630,58 @@ export function DynamicDataCreateModal({
     return [{ key: "default", title: "", description: "", fields }];
   }, [sections, fields]);
 
-  // Update form data when initialData changes
-  React.useEffect(() => {
-    setFormData(initialData);
-  }, [initialData]);
+  // FIXED: Initialize form data properly to prevent infinite re-renders
+  useEffect(() => {
+    if (isOpen) {
+      // Only set form data if initialData has actual values
+      const hasInitialData = initialData && Object.keys(initialData).length > 0;
+      setFormData(hasInitialData ? { ...initialData } : {});
+
+      // Reset other states when modal opens
+      setErrors({});
+      setDragActive({});
+      setUploading({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]); 
+
+  // FIXED: Reset formData when modal closes completely
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({});
+      setErrors({});
+      setDragActive({});
+      setUploading({});
+      // Clear file inputs
+      Object.values(fileInputRefs.current).forEach((input) => {
+        if (input) input.value = "";
+      });
+    }
+  }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-full md:min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom">
+      <DialogContent className='max-w-full md:min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom'>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className='space-y-6 py-4'>
           {fieldsBySection.map((section) => (
-            <div key={section.key} className="space-y-4">
+            <div key={section.key} className='space-y-4'>
               {section.title && (
-                <div className="space-y-1">
-                  <h3 className="text-lg font-medium">{section.title}</h3>
+                <div className='space-y-1'>
+                  <h3 className='text-lg font-medium'>{section.title}</h3>
                   {section.description && (
-                    <p className="text-sm text-gray-600">
+                    <p className='text-sm text-gray-600'>
                       {section.description}
                     </p>
                   )}
                 </div>
               )}
               {/* FIXED: Improved grid layout matching DynamicEditModal */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 {section.fields.map((field) => (
                   <div
                     key={field.key}
@@ -670,16 +692,16 @@ export function DynamicDataCreateModal({
                         : "md:col-span-1"
                     )}
                   >
-                    <div className="space-y-2">
+                    <div className='space-y-2'>
                       <Label htmlFor={field.key}>
                         {field.label}
                         {field.required && (
-                          <span className="text-red-500 ml-1">*</span>
+                          <span className='text-red-500 ml-1'>*</span>
                         )}
                       </Label>
                       {renderField(field)}
                       {errors[field.key] && (
-                        <p className="text-sm text-red-600">
+                        <p className='text-sm text-red-600'>
                           {errors[field.key]}
                         </p>
                       )}
@@ -692,7 +714,7 @@ export function DynamicDataCreateModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
+          <Button variant='outline' onClick={handleClose}>
             {cancelButtonText}
           </Button>
           <Button onClick={handleSave}>{saveButtonText}</Button>

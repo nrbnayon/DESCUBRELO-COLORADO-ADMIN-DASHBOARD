@@ -2,6 +2,7 @@ import { ModeToggle } from "@/components/ui/mode-toggle";
 // import { Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
+import Link from "next/link";
 
 export default function DashboardHeader({
   title = "Welcome",
@@ -25,7 +26,7 @@ export default function DashboardHeader({
           <div className='flex items-center cursor-pointer space-x-2'>
             <ModeToggle />
             {/* <Bell className='hover:ring-1 cursor-pointer hover:ring-success w-8 h-8 font-bold p-1 rounded-full' /> */}
-            <div className='hover:ring-1 cursor-pointer hover:ring-success w-8 h-8 font-bold p-1 rounded-full'>
+            <Link href='/notifications' className='hover:ring-1 cursor-pointer hover:ring-success w-8 h-8 font-bold p-1 rounded-full'>
               <Lordicon
                 src='https://cdn.lordicon.com/ndydpcaq.json'
                 trigger='loop-on-hover'
@@ -33,7 +34,7 @@ export default function DashboardHeader({
                 stroke={3}
                 size={26}
               />
-            </div>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,16 +1,16 @@
+// src\app\(dashboard)\components\Settings\SettingsLayout.tsx
 "use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import SettingsSidebar from "./SettingsSidebar";
 import ProfileSettings from "./ProfileSettings";
-import SecuritySettings from "./ChangePassword";
-import NotificationSettings from "./NotificationSettings";
+import Notifications from "./Notifications";
 import AboutPage from "./AboutPage";
 import TermsPage from "./TermsPage";
+import ChangePassword from "./ChangePassword";
 
 export type SettingsSection =
   | "profile"
-  | "general"
-  | "security"
+  | "change-password"
   | "notifications"
   | "about"
   | "terms";
@@ -23,11 +23,10 @@ export default function SettingsLayout() {
     switch (activeSection) {
       case "profile":
         return <ProfileSettings />;
-     
-      case "security":
-        return <SecuritySettings />;
+      case "change-password":
+        return <ChangePassword />;
       case "notifications":
-        return <NotificationSettings />;
+        return <Notifications />;
       case "about":
         return <AboutPage />;
       case "terms":

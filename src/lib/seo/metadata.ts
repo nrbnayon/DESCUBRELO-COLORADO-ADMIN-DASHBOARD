@@ -2,9 +2,9 @@
 import type { Metadata } from "next";
 
 export const siteConfig = {
-  name: "Saas Based CRM Admin Dashboard",
+  name: "Colorado Admin Dashboard",
   shortName: "SBCRMAD",
-  description: "Saas Based CRM Admin Dashboard",
+  description: "Colorado Admin Dashboard",
   url: "https://fun-engagement-dashboard.vercel.app",
   ogImage: "/logo.png",
   logo: {
@@ -13,7 +13,7 @@ export const siteConfig = {
     favicon: "/favicon.ico",
     apple: "/logo.png",
     external: "https://i.postimg.cc/g2SgRtQk/logo.png",
-    altText: "Saas Based CRM Admin Dashboard",
+    altText: "Colorado Admin Dashboard",
   },
   creator: "@nrbnayon",
   author: "gabrielepassam",
@@ -41,7 +41,7 @@ export const siteConfig = {
   },
 
   // Features for documentation/marketing
-  features: ["Saas Based CRM Admin Dashboard"],
+  features: ["Colorado Admin Dashboard"],
 
   keywords: ["SaaS-Based CRM Platform"],
 

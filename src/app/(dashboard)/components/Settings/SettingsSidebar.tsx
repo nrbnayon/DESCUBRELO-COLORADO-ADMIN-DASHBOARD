@@ -1,13 +1,5 @@
-import React from "react";
-import {
-  User,
-  Settings,
-  Shield,
-  Bell,
-  Info,
-  FileText,
-  ChevronRight,
-} from "lucide-react";
+// src\app\(dashboard)\components\Settings\SettingsSidebar.tsx
+import { User, Bell, Info, FileText, ChevronRight, Lock } from "lucide-react";
 import { SettingsSection } from "./SettingsLayout";
 
 interface SettingsSidebarProps {
@@ -23,15 +15,9 @@ const settingsItems = [
     description: "Manage your profile information",
   },
   {
-    id: "general" as SettingsSection,
-    label: "General",
-    icon: Settings,
-    description: "App preferences and settings",
-  },
-  {
-    id: "security" as SettingsSection,
-    label: "Security",
-    icon: Shield,
+    id: "change-password" as SettingsSection,
+    label: "Change Password",
+    icon: Lock,
     description: "Password and security settings",
   },
   {
@@ -59,14 +45,14 @@ export default function SettingsSidebar({
   onSectionChange,
 }: SettingsSidebarProps) {
   return (
-    <div className="bg-background rounded-lg shadow-sm border border-primary/30">
-      <div className="p-4 border-b border-primary/30">
-        <h2 className="text-lg font-semibold text-foreground">Settings</h2>
-        <p className="text-sm text-foreground/80 mt-1">
+    <div className='bg-background rounded-lg shadow-sm border border-primary/30'>
+      <div className='p-4 border-b border-primary/30'>
+        <h2 className='text-lg font-semibold text-foreground'>Settings</h2>
+        <p className='text-sm text-foreground/80 mt-1'>
           Manage your account and preferences
         </p>
       </div>
-      <nav className="p-2 space-y-3">
+      <nav className='p-2 space-y-3'>
         {settingsItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
@@ -81,7 +67,7 @@ export default function SettingsSidebar({
                   : "text-foreground hover:bg-primary/30 hover:border-primary/80"
               }`}
             >
-              <div className="flex items-center space-x-3">
+              <div className='flex items-center space-x-3'>
                 <Icon
                   className={`w-5 h-5 ${
                     isActive
@@ -90,8 +76,8 @@ export default function SettingsSidebar({
                   }`}
                 />
                 <div>
-                  <div className="font-medium">{item.label}</div>
-                  <div className="text-xs text-foreground/80 hidden sm:block">
+                  <div className='font-medium'>{item.label}</div>
+                  <div className='text-xs text-foreground/80 hidden sm:block'>
                     {item.description}
                   </div>
                 </div>
