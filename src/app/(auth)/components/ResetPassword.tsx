@@ -152,19 +152,17 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-primary-dark font-manrope">
+    <div className="min-h-screen flex bg-white dark:bg-primary-dark">
       {/* Left Side - Welcome Message */}
       <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white">
         <div className="max-w-md text-center space-y-6">
-          <h1 className="text-4xl font-manrope-bold leading-tight">
-            Create New Password
-          </h1>
-          <p className="text-lg font-manrope-regular opacity-90">
+          <h1 className="text-4xl   leading-tight">Create New Password</h1>
+          <p className="text-lg   opacity-90">
             Your new password must be different from your previous password and
             contain at least 8 characters
           </p>
           <div className="pt-4 space-y-3">
-            <div className="flex items-center justify-center space-x-2 text-sm font-manrope-regular opacity-75">
+            <div className="flex items-center justify-center space-x-2 text-sm   opacity-75">
               <Shield className="h-4 w-4" />
               <span>Create a strong, secure password</span>
             </div>
@@ -173,7 +171,7 @@ export default function ResetPassword() {
       </div>
 
       {/* Right Side - Reset Password Form */}
-      <div className="flex-1 bg-white dark:bg-primary-dark font-manrope flex items-center justify-center p-8">
+      <div className="flex-1 bg-white dark:bg-primary-dark flex items-center justify-center p-8">
         <Card className="w-full p-2 lg:p-10 max-w-2xl rounded-4xl border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-800">
           <CardHeader className="text-center pb-6">
             <div className="flex items-center justify-center mb-4">
@@ -184,10 +182,10 @@ export default function ResetPassword() {
                 <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </Link>
             </div>
-            <h2 className="text-2xl font-manrope-semibold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-2xl   text-gray-900 dark:text-white mb-2">
               Reset Password
             </h2>
-            <p className="text-muted-foreground text-sm font-manrope-regular">
+            <p className="text-muted-foreground text-sm  ">
               Enter your new password below
             </p>
           </CardHeader>
@@ -196,7 +194,7 @@ export default function ResetPassword() {
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               {/* Email Field (Read-only) */}
               <div className="space-y-2">
-                <label className="text-foreground font-manrope-medium text-sm block">
+                <label className="text-foreground   text-sm block">
                   Email Address
                 </label>
                 <div className="relative">
@@ -207,7 +205,7 @@ export default function ResetPassword() {
                     value={email}
                     readOnly
                     disabled
-                    className="pl-10 h-12 bg-gray-50 dark:bg-gray-700 border-border text-muted-foreground cursor-not-allowed font-manrope-regular"
+                    className="pl-10 h-12 bg-gray-50 dark:bg-gray-700 border-border text-muted-foreground cursor-not-allowed  "
                     placeholder="Email address"
                   />
                 </div>
@@ -215,7 +213,7 @@ export default function ResetPassword() {
 
               {/* New Password Field */}
               <div className="space-y-2">
-                <label className="text-foreground font-manrope-medium text-sm block">
+                <label className="text-foreground   text-sm block">
                   New Password
                 </label>
                 <div className="relative">
@@ -223,7 +221,7 @@ export default function ResetPassword() {
                   <Input
                     {...register("newPassword")}
                     type={showNewPassword ? "text" : "password"}
-                    className="pl-10 pr-10 h-12 border-border bg-input text-foreground font-manrope-regular focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="pl-10 pr-10 h-12 border-border bg-input text-foreground   focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="Enter your new password"
                     disabled={isLoading}
                   />
@@ -241,7 +239,7 @@ export default function ResetPassword() {
                   </button>
                 </div>
                 {errors.newPassword && (
-                  <p className="text-error text-xs mt-1 font-manrope-regular">
+                  <p className="text-error text-xs mt-1  ">
                     {errors.newPassword.message}
                   </p>
                 )}
@@ -249,7 +247,7 @@ export default function ResetPassword() {
 
               {/* Confirm Password Field */}
               <div className="space-y-2">
-                <label className="text-foreground font-manrope-medium text-sm block">
+                <label className="text-foreground   text-sm block">
                   Confirm New Password
                 </label>
                 <div className="relative">
@@ -257,7 +255,7 @@ export default function ResetPassword() {
                   <Input
                     {...register("confirmPassword")}
                     type={showConfirmPassword ? "text" : "password"}
-                    className="pl-10 pr-10 h-12 border-border bg-input text-foreground font-manrope-regular focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="pl-10 pr-10 h-12 border-border bg-input text-foreground   focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="Confirm your new password"
                     disabled={isLoading}
                   />
@@ -275,7 +273,7 @@ export default function ResetPassword() {
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-error text-xs mt-1 font-manrope-regular">
+                  <p className="text-error text-xs mt-1  ">
                     {errors.confirmPassword.message}
                   </p>
                 )}
@@ -283,7 +281,7 @@ export default function ResetPassword() {
 
               {/* Password Strength Indicator */}
               <div className="space-y-2">
-                <div className="text-xs text-muted-foreground font-manrope-regular">
+                <div className="text-xs text-muted-foreground  ">
                   <p className="mb-2">Password must contain:</p>
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
@@ -323,7 +321,7 @@ export default function ResetPassword() {
               {/* Reset Password Button */}
               <Button
                 type="submit"
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full h-12 bg-primary/80 hover:bg-primary text-white   rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
                 disabled={isLoading || isSubmitting}
               >
                 {isLoading ? (
@@ -339,11 +337,11 @@ export default function ResetPassword() {
 
             {/* Additional Info */}
             <div className="mt-6 text-center">
-              <p className="text-xs text-muted-foreground font-manrope-regular">
+              <p className="text-xs text-muted-foreground  ">
                 Having trouble?{" "}
                 <Link
                   href="/support"
-                  className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300 font-manrope-medium"
+                  className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300  "
                 >
                   Contact Support
                 </Link>

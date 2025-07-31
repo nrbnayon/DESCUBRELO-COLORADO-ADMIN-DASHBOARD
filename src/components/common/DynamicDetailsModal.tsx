@@ -279,7 +279,7 @@ export function DynamicDetailsModal({
               <Label className="text-sm font-medium text-muted-foreground">
                 {column.label}
               </Label>
-              <div className="min-h-[24px]">
+              <div className="min-h-6">
                 {formatValue(item[column.key], column)}
               </div>
             </div>
@@ -298,7 +298,7 @@ export function DynamicDetailsModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "max-w-4xl max-h-[90vh] overflow-y-auto scrollbar-custom",
+          "mx-4 min-w-full md:min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom",
           className
         )}
       >
@@ -342,7 +342,7 @@ export function DynamicDetailsModal({
 
         {/* Actions */}
         {actions.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-4 border-t">
+          <div className="flex flex-wrap gap-2 pt-4 border-t justify-end">
             {actions
               .filter((action) => !action.condition || action.condition(item))
               .map((action) => (
@@ -350,11 +350,11 @@ export function DynamicDetailsModal({
                   key={action.key}
                   variant={action.variant || "outline"}
                   size="sm"
+                  className="flex items-center gap-2 border border-primary/50 rounded-md"
                   onClick={() => {
                     action.onClick(item);
                     onClose();
                   }}
-                  className="flex items-center gap-2"
                 >
                   {action.icon}
                   {action.label}

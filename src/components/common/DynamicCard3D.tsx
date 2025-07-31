@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
+import { cn, truncateText } from "@/lib/utils";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
 import { DynamicDetailsModal } from "./DynamicDetailsModal";
 import { SearchFilterBar } from "./SearchFilterBar";
@@ -145,6 +145,29 @@ export function DynamicCard3D({
     filteredData.length / searchFilterState.itemsPerPage
   );
 
+  // Helper function to format date/time values
+  const formatDateTime = (value: unknown): string => {
+    if (!value) return "";
+
+    // Handle different date formats
+    const date = new Date(String(value));
+
+    // Check if it's a valid date
+    if (isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    // Format as human-readable date
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(date);
+  };
+
   // Helper function to get field value with fallback
   const getFieldValue = (item: GenericDataItem, key?: string): unknown => {
     if (!key) return null;
@@ -165,7 +188,7 @@ export function DynamicCard3D({
       if (option) {
         return (
           <Badge
-            variant='secondary'
+            variant="secondary"
             style={
               option.color
                 ? {
@@ -175,11 +198,21 @@ export function DynamicCard3D({
                 : undefined
             }
           >
-            {option.icon && <span className='mr-1'>{option.icon}</span>}
+            {option.icon && <span className="mr-1">{option.icon}</span>}
             {option.label}
           </Badge>
         );
       }
+    }
+
+    // Format date/time fields
+    if (
+      key.includes("date") ||
+      key.includes("time") ||
+      key.includes("created") ||
+      key.includes("updated")
+    ) {
+      return formatDateTime(value);
     }
 
     if (Array.isArray(value)) {
@@ -224,52 +257,52 @@ export function DynamicCard3D({
     return (
       <CardContainer
         key={item.id}
-        className='inter-var w-full h-full border rounded-md border-primary/30 hover:border-primary'
+        className="inter-var w-full h-full border rounded-md border-primary/30 hover:border-primary"
       >
-        <CardBody className='bg-white relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] dark:bg-gray-900 dark:border-gray-700 w-full max-w-sm h-auto rounded-md overflow-hidden hover:shadow-xl transition-all duration-300'>
+        <CardBody className="bg-white relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] dark:bg-gray-900 dark:border-gray-700 w-full h-full rounded-md overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col">
           {/* Status Badge - Fixed Position */}
-          <div className='absolute top-4 right-4 z-10'>
-            <CardItem translateZ='100'>
+          <div className="absolute top-4 right-4 z-10">
+            <CardItem translateZ="100">
               {(typeof status === "string" || typeof status === "number") &&
                 renderFieldValue(status, cardConfig.statusKey!)}
             </CardItem>
           </div>
 
           {/* Card Header */}
-          <CardItem translateZ='50' className='w-full'>
-            <CardHeader className='pb-3'>
-              <div className='pr-20'>
+          <CardItem translateZ="50" className="w-full pt-3">
+            <CardHeader className="pb-3">
+              <div className="pr-20">
                 <CardItem
-                  translateZ='60'
-                  className='text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover/card:text-primary transition-colors'
+                  translateZ="60"
+                  className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover/card:text-primary transition-colors"
                 >
-                  {String(title)}
+                  {truncateText(String(title), 25)}
                 </CardItem>
                 {typeof subtitle === "string" && subtitle && (
                   <CardItem
-                    translateZ='40'
-                    as='p'
-                    className='text-gray-600 text-sm mt-1 dark:text-gray-300 line-clamp-1'
+                    translateZ="40"
+                    as="p"
+                    className="text-gray-600 text-sm mt-1 dark:text-gray-300 line-clamp-1"
                   >
-                    {subtitle}
+                    {truncateText(String(subtitle), 25)}
                   </CardItem>
                 )}
               </div>
             </CardHeader>
           </CardItem>
 
-          {/* Card Content */}
-          <CardItem translateZ='50' className='w-full'>
-            <CardContent className='pb-4'>
+          {/* Card Content - Flexible */}
+          <CardItem translateZ="50" className="w-full flex-1">
+            <CardContent className="px-3 pb-0">
               {/* Image */}
               {typeof image === "string" && image && (
-                <CardItem translateZ='100' className='w-full mb-4 rounded-xl'>
+                <CardItem translateZ="100" className="w-full mb-4 rounded-xl">
                   <Image
                     src={image || "/placeholder.svg"}
                     alt={typeof title === "string" ? title : "Image"}
                     width={400}
                     height={200}
-                    className='w-full h-48 object-cover rounded-xl transition-transform group-hover/card:scale-105 duration-300'
+                    className="w-full h-48 object-cover rounded-xl transition-transform group-hover/card:scale-105 duration-300"
                     unoptimized={
                       image.startsWith("data:") || image.startsWith("blob:")
                     }
@@ -280,18 +313,18 @@ export function DynamicCard3D({
               {/* Description */}
               {typeof description === "string" && description && (
                 <CardItem
-                  translateZ='60'
-                  as='p'
-                  className='text-gray-600 text-sm dark:text-gray-300 line-clamp-3 mb-4'
+                  translateZ="60"
+                  as="p"
+                  className="text-gray-600 text-sm dark:text-gray-300 line-clamp-3 mb-2"
                 >
-                  {description}
+                  {truncateText(String(description), 80)}
                 </CardItem>
               )}
 
               {/* Badge Keys */}
               {cardConfig.badgeKeys && cardConfig.badgeKeys.length > 0 && (
-                <CardItem translateZ='40' className='mb-4'>
-                  <div className='flex flex-wrap gap-2'>
+                <CardItem translateZ="40" className="mb-2">
+                  <div className="flex flex-wrap gap-2">
                     {cardConfig.badgeKeys.map((key) => {
                       const value = getFieldValue(item, key);
                       if (!value) return null;
@@ -306,8 +339,8 @@ export function DynamicCard3D({
               {/* Meta Information */}
               {cardConfig.metaKeys && cardConfig.metaKeys.length > 0 && (
                 <CardItem
-                  translateZ='30'
-                  className='space-y-2 text-xs text-gray-500 dark:text-gray-400'
+                  translateZ="30"
+                  className="space-y-2 text-xs text-gray-500 dark:text-gray-400 mb-4"
                 >
                   {cardConfig.metaKeys.map((key) => {
                     const value = getFieldValue(item, key);
@@ -315,17 +348,17 @@ export function DynamicCard3D({
                     const column = columns.find((col) => col.key === key);
                     const icon =
                       key.includes("date") || key.includes("time") ? (
-                        <Calendar className='h-3 w-3' />
+                        <Calendar className="h-3 w-3" />
                       ) : key.includes("author") || key.includes("user") ? (
-                        <User className='h-3 w-3' />
+                        <User className="h-3 w-3" />
                       ) : key.includes("view") ? (
-                        <Eye className='h-3 w-3' />
+                        <Eye className="h-3 w-3" />
                       ) : null;
 
                     return (
-                      <div key={key} className='flex items-center gap-1'>
+                      <div key={key} className="flex items-center gap-1">
                         {icon}
-                        <span className='capitalize'>
+                        <span className="capitalize">
                           {column?.label || key}:
                         </span>
                         <span>{renderFieldValue(value, key)}</span>
@@ -337,72 +370,74 @@ export function DynamicCard3D({
             </CardContent>
           </CardItem>
 
-          {/* Card Footer with Action Buttons */}
-          <CardItem translateZ='60' className='w-full'>
-            <CardFooter className='px-6 pt-0 pb-6 flex items-center justify-between gap-2'>
-              {/* Primary Actions */}
-              <div className='flex gap-2'>
-                {/* Details Button */}
-                {cardConfig.showDetailsButton !== false && (
-                  <Button
-                    variant='outline'
-                    size='sm'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedItem(item);
-                    }}
-                    className='flex items-center gap-1 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors'
-                  >
-                    <Eye className='h-3 w-3' />
-                    Details
-                  </Button>
-                )}
-              </div>
-
-              {/* Action Icons */}
-              <div className='flex items-center gap-1'>
-                {/* Edit Button */}
-                {editAction && (
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      editAction.onClick(item);
-                    }}
-                    className='h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-full'
-                    title='Edit'
-                  >
-                    <Edit className='h-4 w-4' />
-                  </Button>
-                )}
-
-                {/* Delete Button */}
-                {deleteAction && (
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteItem(item);
-                    }}
-                    className='h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 transition-colors rounded-full'
-                    title='Delete'
-                  >
-                    <Lordicon
-                      src='https://cdn.lordicon.com/jmkrnisz.json'
-                      trigger='hover'
-                      size={20}
-                      colors={{
-                        primary: "#FF0000",
-                        secondary: "#ffffff",
+          {/* Card Footer - Fixed at Bottom */}
+          <CardItem translateZ="60" className="w-full mt-auto">
+            <div className="bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+              <CardFooter className="p-3 flex items-center justify-between gap-2">
+                {/* Primary Actions */}
+                <div className="flex gap-2">
+                  {/* Details Button */}
+                  {cardConfig.showDetailsButton !== false && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedItem(item);
                       }}
-                      stroke={3}
-                    />
-                  </Button>
-                )}
-              </div>
-            </CardFooter>
+                      className="flex items-center gap-1 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors border-primary/20 bg-white dark:bg-gray-900"
+                    >
+                      <Eye className="h-3 w-3" />
+                      Details
+                    </Button>
+                  )}
+                </div>
+
+                {/* Action Icons */}
+                <div className="flex items-center gap-1">
+                  {/* Edit Button */}
+                  {editAction && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        editAction.onClick(item);
+                      }}
+                      className="h-9 w-9 p-0 hover:bg-blue-50 hover:text-blue-600 transition-colors rounded-xl"
+                      title="Edit"
+                    >
+                      <Edit className="h-5 w-5" />
+                    </Button>
+                  )}
+
+                  {/* Delete Button */}
+                  {deleteAction && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteItem(item);
+                      }}
+                      className="h-9 w-9 hover:bg-red-50 hover:text-red-600 transition-colors rounded-xl"
+                      title="Delete"
+                    >
+                      <Lordicon
+                        src="https://cdn.lordicon.com/jmkrnisz.json"
+                        trigger="hover"
+                        size={20}
+                        colors={{
+                          primary: "#FF0000",
+                          secondary: "#ffffff",
+                        }}
+                        stroke={4}
+                      />
+                    </Button>
+                  )}
+                </div>
+              </CardFooter>
+            </div>
           </CardItem>
         </CardBody>
       </CardContainer>
@@ -413,62 +448,105 @@ export function DynamicCard3D({
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
+    const getVisiblePages = () => {
+      const current = searchFilterState.page;
+      const total = totalPages;
+      const delta = 2;
+      const range = [];
+      const rangeWithDots = [];
+
+      for (
+        let i = Math.max(2, current - delta);
+        i <= Math.min(total - 1, current + delta);
+        i++
+      ) {
+        range.push(i);
+      }
+
+      if (current - delta > 2) {
+        rangeWithDots.push(1, "...");
+      } else {
+        rangeWithDots.push(1);
+      }
+
+      rangeWithDots.push(...range);
+
+      if (current + delta < total - 1) {
+        rangeWithDots.push("...", total);
+      } else if (total > 1) {
+        rangeWithDots.push(total);
+      }
+
+      return rangeWithDots;
+    };
+
     return (
-      <div className='flex items-center justify-between mt-8'>
-        <div className='text-sm text-muted-foreground'>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+        <div className="text-sm text-muted-foreground">
           Showing{" "}
-          {(searchFilterState.page - 1) * searchFilterState.itemsPerPage + 1} to{" "}
-          {Math.min(
-            searchFilterState.page * searchFilterState.itemsPerPage,
-            filteredData.length
-          )}{" "}
-          of {filteredData.length} results
+          <span className="font-medium text-gray-900 dark:text-gray-100">
+            {(searchFilterState.page - 1) * searchFilterState.itemsPerPage + 1}
+          </span>{" "}
+          to{" "}
+          <span className="font-medium text-gray-900 dark:text-gray-100">
+            {Math.min(
+              searchFilterState.page * searchFilterState.itemsPerPage,
+              filteredData.length
+            )}
+          </span>{" "}
+          of{" "}
+          <span className="font-medium text-gray-900 dark:text-gray-100">
+            {filteredData.length}
+          </span>{" "}
+          results
         </div>
-        <div className='flex items-center gap-2'>
+        <div className="flex items-center gap-2">
           <Button
-            variant='outline'
-            size='sm'
+            variant="outline"
+            size="sm"
             onClick={() =>
               setSearchFilterState((prev) => ({ ...prev, page: prev.page - 1 }))
             }
             disabled={searchFilterState.page <= 1}
+            className="flex items-center gap-1"
           >
-            Previous
+            ← Previous
           </Button>
-          <div className='flex items-center gap-1'>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNumber = i + 1;
-              return (
-                <Button
-                  key={pageNumber}
-                  variant={
-                    pageNumber === searchFilterState.page
-                      ? "default"
-                      : "outline"
-                  }
-                  size='sm'
-                  onClick={() =>
-                    setSearchFilterState((prev) => ({
-                      ...prev,
-                      page: pageNumber,
-                    }))
-                  }
-                  className='w-8 h-8 p-0'
-                >
-                  {pageNumber}
-                </Button>
-              );
-            })}
+          <div className="flex items-center gap-1">
+            {getVisiblePages().map((page, index) => (
+              <div key={index}>
+                {page === "..." ? (
+                  <span className="px-2 py-1 text-gray-500">...</span>
+                ) : (
+                  <Button
+                    variant={
+                      page === searchFilterState.page ? "default" : "outline"
+                    }
+                    size="sm"
+                    onClick={() =>
+                      setSearchFilterState((prev) => ({
+                        ...prev,
+                        page: page as number,
+                      }))
+                    }
+                    className="w-10 h-8 p-0"
+                  >
+                    {page}
+                  </Button>
+                )}
+              </div>
+            ))}
           </div>
           <Button
-            variant='outline'
-            size='sm'
+            variant="outline"
+            size="sm"
             onClick={() =>
               setSearchFilterState((prev) => ({ ...prev, page: prev.page + 1 }))
             }
             disabled={searchFilterState.page >= totalPages}
+            className="flex items-center gap-1"
           >
-            Next
+            Next →
           </Button>
         </div>
       </div>
@@ -479,22 +557,25 @@ export function DynamicCard3D({
     return (
       <div className={cn("space-y-6", className)}>
         {searchFilterConfig && (
-          <div className='animate-pulse'>
-            <div className='h-10 bg-muted rounded w-full mb-4' />
+          <div className="animate-pulse">
+            <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg w-full mb-4" />
           </div>
         )}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className='animate-pulse'>
-              <CardHeader>
-                <div className='h-4 bg-muted rounded w-3/4 mb-2' />
-                <div className='h-3 bg-muted rounded w-1/2' />
+            <Card key={i} className="animate-pulse h-96 flex flex-col">
+              <CardHeader className="flex-shrink-0">
+                <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
               </CardHeader>
-              <CardContent>
-                <div className='h-32 bg-muted rounded mb-4' />
-                <div className='h-3 bg-muted rounded w-full mb-2' />
-                <div className='h-3 bg-muted rounded w-2/3' />
+              <CardContent className="flex-grow">
+                <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded mb-4" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
               </CardContent>
+              <CardFooter className="flex-shrink-0 border-t bg-gray-50 dark:bg-gray-800">
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-20" />
+              </CardFooter>
             </Card>
           ))}
         </div>
@@ -516,29 +597,29 @@ export function DynamicCard3D({
       {/* 3D Cards Grid */}
       {paginatedData.length > 0 ? (
         <>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {paginatedData.map(renderCard)}
           </div>
           {/* Pagination */}
           {renderPagination()}
         </>
       ) : (
-        <div className='text-center py-12'>
-          <div className='mx-auto w-24 h-24 text-muted-foreground mb-4'>
+        <div className="text-center py-12">
+          <div className="mx-auto w-24 h-24 text-muted-foreground mb-4">
             <svg
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='1'
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1"
             >
-              <circle cx='11' cy='11' r='8' />
-              <path d='m21 21-4.35-4.35' />
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
             </svg>
           </div>
-          <h3 className='text-lg font-medium text-muted-foreground mb-2'>
+          <h3 className="text-lg font-medium text-muted-foreground mb-2">
             {emptyMessage}
           </h3>
-          <p className='text-sm text-muted-foreground'>
+          <p className="text-sm text-muted-foreground">
             {searchFilterState.search ||
             Object.keys(searchFilterState.filters).length > 0
               ? "Try adjusting your search or filters"
@@ -565,7 +646,7 @@ export function DynamicCard3D({
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete{" "}
-              <span className='font-semibold text-red-600'>
+              <span className="font-semibold text-red-600">
                 &ldquo;
                 {deleteItem &&
                   String(getFieldValue(deleteItem, cardConfig.titleKey))}
@@ -578,9 +659,9 @@ export function DynamicCard3D({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className='bg-red-600 hover:bg-red-700 focus:ring-red-600'
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
-              <Trash2 className='h-4 w-4 mr-2' />
+              <Trash2 className="h-4 w-4 mr-2" />
               Delete Permanently
             </AlertDialogAction>
           </AlertDialogFooter>

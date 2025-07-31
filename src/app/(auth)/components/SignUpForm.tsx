@@ -173,29 +173,27 @@ export default function SignUpForm() {
   const passwordStrength = getPasswordStrength(password);
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-primary-dark font-manrope">
+    <div className="min-h-screen flex bg-white dark:bg-primary-dark">
       {/* Left Side - Welcome Message */}
       <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white">
         <div className="max-w-md text-center space-y-6">
-          <h1 className="text-4xl font-manrope-bold leading-tight">
-            Join Us Today!
-          </h1>
-          <p className="text-lg font-manrope-regular opacity-90">
+          <h1 className="text-4xl   leading-tight">Join Us Today!</h1>
+          <p className="text-lg   opacity-90">
             Create your account and get started with our amazing platform
           </p>
           <div className="pt-4 space-y-3">
             <Button
               variant="outline"
               onClick={handleDemoSignup}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full font-manrope-medium backdrop-blur-sm"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full   backdrop-blur-sm"
             >
               Fill Demo Information
             </Button>
-            <p className="text-sm font-manrope-regular opacity-75">
+            <p className="text-sm   opacity-75">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-white underline font-manrope-medium hover:opacity-80"
+                className="text-white underline   hover:opacity-80"
               >
                 Sign In
               </Link>
@@ -205,17 +203,17 @@ export default function SignUpForm() {
       </div>
 
       {/* Right Side - Signup Form */}
-      <div className="flex-1 bg-white dark:bg-primary-dark font-manrope flex items-center justify-center p-8">
+      <div className="flex-1 bg-white dark:bg-primary-dark flex items-center justify-center p-8">
         <Card className="w-full p-2 lg:p-10 max-w-2xl rounded-4xl border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-800">
           <CardHeader className="text-center pb-6">
-            <h2 className="text-2xl font-manrope-semibold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-2xl   text-gray-900 dark:text-white mb-2">
               Create Your Account
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-sm font-manrope-regular">
+            <p className="text-gray-600 dark:text-gray-400 text-sm  ">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="text-indigo-600 dark:text-indigo-400 underline font-manrope-medium hover:text-indigo-500 dark:hover:text-indigo-300"
+                className="text-indigo-600 dark:text-indigo-400 underline   hover:text-indigo-500 dark:hover:text-indigo-300"
               >
                 Sign In
               </Link>
@@ -228,7 +226,7 @@ export default function SignUpForm() {
               <div className="space-y-2">
                 <label
                   htmlFor="name"
-                  className="text-gray-900 dark:text-white font-manrope-medium text-sm block"
+                  className="text-gray-900 dark:text-white   text-sm block"
                 >
                   Full Name
                 </label>
@@ -237,7 +235,7 @@ export default function SignUpForm() {
                     id="name"
                     type="text"
                     placeholder="Enter your full name"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 font-manrope-regular border ${
+                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
                       errors.name
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
@@ -248,7 +246,7 @@ export default function SignUpForm() {
                   <User className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 {errors.name && (
-                  <p className="text-red-500 text-xs mt-1 font-manrope-regular">
+                  <p className="text-red-500 text-xs mt-1  ">
                     {errors.name.message}
                   </p>
                 )}
@@ -258,7 +256,7 @@ export default function SignUpForm() {
               <div className="space-y-2">
                 <label
                   htmlFor="email"
-                  className="text-gray-900 dark:text-white font-manrope-medium text-sm block"
+                  className="text-gray-900 dark:text-white   text-sm block"
                 >
                   Email Address
                 </label>
@@ -267,7 +265,7 @@ export default function SignUpForm() {
                     id="email"
                     type="email"
                     placeholder="Enter your email address"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 font-manrope-regular border ${
+                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
                       errors.email
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
@@ -278,7 +276,7 @@ export default function SignUpForm() {
                   <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
                 </div>
                 {errors.email && (
-                  <p className="text-red-500 text-xs mt-1 font-manrope-regular">
+                  <p className="text-red-500 text-xs mt-1  ">
                     {errors.email.message}
                   </p>
                 )}
@@ -288,7 +286,7 @@ export default function SignUpForm() {
               <div className="space-y-2">
                 <label
                   htmlFor="password"
-                  className="text-gray-900 dark:text-white font-manrope-medium text-sm block"
+                  className="text-gray-900 dark:text-white   text-sm block"
                 >
                   Password
                 </label>
@@ -297,7 +295,7 @@ export default function SignUpForm() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a strong password"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 font-manrope-regular border ${
+                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
                       errors.password
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
@@ -336,7 +334,7 @@ export default function SignUpForm() {
                     </div>
                     {passwordStrength.label && (
                       <p
-                        className={`text-xs font-manrope-regular ${
+                        className={`text-xs   ${
                           passwordStrength.strength >= 4
                             ? "text-green-600 dark:text-green-400"
                             : passwordStrength.strength >= 3
@@ -353,7 +351,7 @@ export default function SignUpForm() {
                 )}
 
                 {errors.password && (
-                  <p className="text-red-500 text-xs mt-1 font-manrope-regular">
+                  <p className="text-red-500 text-xs mt-1  ">
                     {errors.password.message}
                   </p>
                 )}
@@ -363,7 +361,7 @@ export default function SignUpForm() {
               <div className="space-y-2">
                 <label
                   htmlFor="confirmPassword"
-                  className="text-gray-900 dark:text-white font-manrope-medium text-sm block"
+                  className="text-gray-900 dark:text-white   text-sm block"
                 >
                   Confirm Password
                 </label>
@@ -372,7 +370,7 @@ export default function SignUpForm() {
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 font-manrope-regular border ${
+                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
                       errors.confirmPassword
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
@@ -394,7 +392,7 @@ export default function SignUpForm() {
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-xs mt-1 font-manrope-regular">
+                  <p className="text-red-500 text-xs mt-1  ">
                     {errors.confirmPassword.message}
                   </p>
                 )}
@@ -416,12 +414,12 @@ export default function SignUpForm() {
                   />
                   <label
                     htmlFor="agreeToTerms"
-                    className="text-gray-600 dark:text-gray-400 text-sm cursor-pointer leading-relaxed font-manrope-regular"
+                    className="text-gray-600 dark:text-gray-400 text-sm cursor-pointer leading-relaxed  "
                   >
                     I agree to the{" "}
                     <Link
                       href="/terms"
-                      className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300 font-manrope-medium"
+                      className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300  "
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -430,7 +428,7 @@ export default function SignUpForm() {
                     and{" "}
                     <Link
                       href="/privacy"
-                      className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300 font-manrope-medium"
+                      className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300  "
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -439,7 +437,7 @@ export default function SignUpForm() {
                   </label>
                 </div>
                 {errors.agreeToTerms && (
-                  <p className="text-red-500 text-xs ml-7 font-manrope-regular">
+                  <p className="text-red-500 text-xs ml-7  ">
                     {errors.agreeToTerms.message}
                   </p>
                 )}
@@ -448,7 +446,7 @@ export default function SignUpForm() {
               {/* Signup Button */}
               <Button
                 onClick={handleSubmit(onSubmit)}
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full h-12 bg-primary/80 hover:bg-primary text-white   rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
                 disabled={isLoading || isSubmitting}
               >
                 {isLoading ? (
@@ -467,7 +465,7 @@ export default function SignUpForm() {
 
             {/* Additional Info */}
             <div className="mt-6 text-center space-y-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-manrope-regular">
+              <p className="text-xs text-gray-500 dark:text-gray-400  ">
                 By creating an account, you&apos;ll receive email notifications
                 about your account activity and our services.
               </p>

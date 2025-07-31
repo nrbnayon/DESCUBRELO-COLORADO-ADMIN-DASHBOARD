@@ -752,7 +752,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       )}
 
       {/* Table */}
-      <div className="border rounded-lg overflow-hidden">
+      <div className="border border-primary/80 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <Table className="w-full">
             <TableHeader
@@ -821,7 +821,9 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                   <TableRow
                     key={item.id}
                     className={cn(
-                      config.striped && index % 2 === 0 && "bg-gray-50/50",
+                      config.striped &&
+                        index % 2 === 0 &&
+                        "bg-gray-50/50 dark:bg-background",
                       config.bordered && "border-b",
                       config.compact && "h-12"
                     )}

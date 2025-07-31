@@ -195,19 +195,17 @@ export default function VerifyOtp() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-primary-dark font-manrope">
+    <div className="min-h-screen flex bg-white dark:bg-primary-dark">
       {/* Left Side - Welcome Message */}
       <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white">
         <div className="max-w-md text-center space-y-6">
-          <h1 className="text-4xl font-manrope-bold leading-tight">
-            Verify Your Email
-          </h1>
-          <p className="text-lg font-manrope-regular opacity-90">
+          <h1 className="text-4xl   leading-tight">Verify Your Email</h1>
+          <p className="text-lg   opacity-90">
             We&lsquo;ve sent a 6-digit verification code to your email address.
             Enter the code below to continue.
           </p>
           <div className="pt-4 space-y-3">
-            <div className="flex items-center justify-center space-x-2 text-sm font-manrope-regular opacity-75">
+            <div className="flex items-center justify-center space-x-2 text-sm   opacity-75">
               <Clock className="h-4 w-4" />
               <span>
                 {timeLeft > 0
@@ -220,7 +218,7 @@ export default function VerifyOtp() {
       </div>
 
       {/* Right Side - OTP Verification Form */}
-      <div className="flex-1 bg-white dark:bg-primary-dark font-manrope flex items-center justify-center p-8">
+      <div className="flex-1 bg-white dark:bg-primary-dark flex items-center justify-center p-8">
         <Card className="w-full p-2 lg:p-10 max-w-2xl rounded-4xl border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-800">
           <CardHeader className="text-center pb-6">
             <div className="flex items-center justify-center mb-4">
@@ -231,12 +229,12 @@ export default function VerifyOtp() {
                 <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
               </Link>
             </div>
-            <h2 className="text-2xl font-manrope-semibold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-2xl   text-gray-900 dark:text-white mb-2">
               Enter Verification Code
             </h2>
-            <p className="text-muted-foreground text-sm font-manrope-regular">
+            <p className="text-muted-foreground text-sm  ">
               We&lsquo;ve sent a 6-digit code to{" "}
-              <span className="font-manrope-medium text-indigo-600 dark:text-indigo-400">
+              <span className="  text-indigo-600 dark:text-indigo-400">
                 {email}
               </span>
             </p>
@@ -246,7 +244,7 @@ export default function VerifyOtp() {
             <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
               {/* OTP Input */}
               <div className="space-y-2">
-                <label className="text-foreground font-manrope-medium text-sm block text-center">
+                <label className="text-foreground   text-sm block text-center">
                   Verification Code
                 </label>
                 <div className="flex justify-center">
@@ -259,33 +257,33 @@ export default function VerifyOtp() {
                     <InputOTPGroup>
                       <InputOTPSlot
                         index={0}
-                        className="w-12 h-12 text-lg font-manrope-medium border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={1}
-                        className="w-12 h-12 text-lg font-manrope-medium border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={2}
-                        className="w-12 h-12 text-lg font-manrope-medium border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={3}
-                        className="w-12 h-12 text-lg font-manrope-medium border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={4}
-                        className="w-12 h-12 text-lg font-manrope-medium border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={5}
-                        className="w-12 h-12 text-lg font-manrope-medium border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
                       />
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
                 {errors.otp && (
-                  <p className="text-error text-xs mt-1 font-manrope-regular text-center">
+                  <p className="text-error text-xs mt-1   text-center">
                     {errors.otp.message}
                   </p>
                 )}
@@ -294,14 +292,14 @@ export default function VerifyOtp() {
               {/* Timer Display */}
               <div className="text-center">
                 {timeLeft > 0 ? (
-                  <p className="text-muted-foreground text-sm font-manrope-regular">
+                  <p className="text-muted-foreground text-sm  ">
                     Code expires in{" "}
-                    <span className="font-manrope-medium text-indigo-600 dark:text-indigo-400">
+                    <span className="  text-indigo-600 dark:text-indigo-400">
                       {formatTime(timeLeft)}
                     </span>
                   </p>
                 ) : (
-                  <p className="text-error text-sm font-manrope-regular">
+                  <p className="text-error text-sm  ">
                     Verification code has expired
                   </p>
                 )}
@@ -310,7 +308,7 @@ export default function VerifyOtp() {
               {/* Verify Button */}
               <Button
                 type="submit"
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-manrope-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white   rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
                 disabled={
                   isLoading ||
                   isSubmitting ||
@@ -330,7 +328,7 @@ export default function VerifyOtp() {
 
               {/* Resend Button */}
               <div className="text-center">
-                <p className="text-muted-foreground text-sm font-manrope-regular mb-2">
+                <p className="text-muted-foreground text-sm   mb-2">
                   Didn&lsquo;t receive the code?
                 </p>
                 <Button
@@ -338,7 +336,7 @@ export default function VerifyOtp() {
                   variant="outline"
                   onClick={handleResendOtp}
                   disabled={timeLeft > 0 || isResending}
-                  className="bg-white/10 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 font-manrope-medium"
+                  className="bg-white/10 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700  "
                 >
                   {isResending ? (
                     <>
@@ -357,11 +355,11 @@ export default function VerifyOtp() {
 
             {/* Additional Info */}
             <div className="mt-6 text-center">
-              <p className="text-xs text-muted-foreground font-manrope-regular">
+              <p className="text-xs text-muted-foreground  ">
                 Having trouble?{" "}
                 <Link
                   href="/support"
-                  className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300 font-manrope-medium"
+                  className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300  "
                 >
                   Contact Support
                 </Link>

@@ -70,8 +70,8 @@ export default function ManagementPosts({
       searchable: true,
       align: "left",
       render: (value, item) => (
-        <div className='flex items-center gap-3'>
-          <div className='w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0'>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
             <Image
               src={
                 typeof item.image === "string" && item.image.trim() !== ""
@@ -79,15 +79,15 @@ export default function ManagementPosts({
                   : "/placeholder.svg?height=48&width=48"
               }
               alt={String(value)}
-              className='w-full h-full object-cover'
+              className="w-full h-full object-cover"
               width={48}
               height={48}
             />
           </div>
-          <div className='min-w-0 flex-1'>
-            <p className='font-medium text-sm truncate'>{String(value)}</p>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-sm truncate">{String(value)}</p>
             {typeof item.subtitle === "string" && item.subtitle && (
-              <p className='text-xs text-gray-500 truncate'>{item.subtitle}</p>
+              <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
             )}
           </div>
         </div>
@@ -176,44 +176,44 @@ export default function ManagementPosts({
       render: (value) => {
         const socialLinks = value as PostDataItem["socialLinks"];
         if (!socialLinks || Object.keys(socialLinks).length === 0) {
-          return <span className='text-gray-400'>No links</span>;
+          return <span className="text-gray-400">No links</span>;
         }
         const linkCount = Object.keys(socialLinks).length;
         return (
-          <div className='flex items-center gap-1'>
-            <div className='flex -space-x-1'>
+          <div className="flex items-center gap-1">
+            <div className="flex -space-x-1">
               {socialLinks.facebook && (
-                <div className='w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs'>
+                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
                   F
                 </div>
               )}
               {socialLinks.linkedin && (
-                <div className='w-6 h-6 bg-blue-700 rounded-full flex items-center justify-center text-white text-xs'>
+                <div className="w-6 h-6 bg-blue-700 rounded-full flex items-center justify-center text-white text-xs">
                   L
                 </div>
               )}
               {socialLinks.twitter && (
-                <div className='w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs'>
+                <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs">
                   X
                 </div>
               )}
               {socialLinks.instagram && (
-                <div className='w-6 h-6 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs'>
+                <div className="w-6 h-6 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs">
                   I
                 </div>
               )}
               {socialLinks.tiktok && (
-                <div className='w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs'>
+                <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs">
                   T
                 </div>
               )}
               {socialLinks.website && (
-                <div className='w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs'>
+                <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs">
                   W
                 </div>
               )}
             </div>
-            <span className='text-xs text-gray-500 ml-1'>{linkCount}</span>
+            <span className="text-xs text-gray-500 ml-1">{linkCount}</span>
           </div>
         );
       },
@@ -337,31 +337,14 @@ export default function ManagementPosts({
   // Actions Configuration
   const postActions: ActionConfig[] = [
     {
-      key: "view",
-      label: "View Details",
-      icon: (
-        <Lordicon
-          src='https://cdn.lordicon.com/knitbwfa.json'
-          trigger='hover'
-          size={16}
-          colors={{
-            primary: "#9ca3af",
-            secondary: "",
-          }}
-          stroke={4}
-        />
-      ),
-      variant: "ghost",
-      onClick: (item) => console.log("View post:", item.title),
-    },
-    {
       key: "edit",
       label: "Edit Post",
       icon: (
         <Lordicon
-          src='https://cdn.lordicon.com/cbtlerlm.json'
-          trigger='hover'
+          src="https://cdn.lordicon.com/cbtlerlm.json"
+          trigger="hover"
           size={16}
+          className="mt-1"
           colors={{
             primary: "#9ca3af",
             secondary: "",
@@ -377,9 +360,10 @@ export default function ManagementPosts({
       label: "Delete Post",
       icon: (
         <Lordicon
-          src='https://cdn.lordicon.com/jmkrnisz.json'
-          trigger='hover'
+          src="https://cdn.lordicon.com/jmkrnisz.json"
+          trigger="hover"
           size={16}
+          className="mt-1"
           colors={{
             primary: "#FF0000",
             secondary: "#FFFFFF",
@@ -811,18 +795,18 @@ export default function ManagementPosts({
   };
 
   return (
-    <div className='w-full mx-auto'>
-      <div className='w-full flex justify-between items-center mb-6'>
-        <h2 className='text-foreground text-xl font-semibold'>{title}</h2>
+    <div className="w-full mx-auto">
+      <div className="w-full flex justify-between items-center mb-6">
+        <h2 className="text-foreground text-xl font-semibold">{title}</h2>
         <Button
-          className='flex items-center gap-2 border-primary/30 rounded-md'
-          size='lg'
+          className="flex items-center gap-2 border-primary/30 rounded-md"
+          size="lg"
           onClick={() => setCreateModalOpen(true)}
         >
-          <span className='mt-1.5'>
+          <span className="mt-1.5">
             <Lordicon
-              src='https://cdn.lordicon.com/ueoydrft.json'
-              trigger='hover'
+              src="https://cdn.lordicon.com/ueoydrft.json"
+              trigger="hover"
               size={20}
               colors={{
                 primary: "",
@@ -844,7 +828,7 @@ export default function ManagementPosts({
         searchFilterConfig={searchFilterConfig}
         onDataChange={handleDataChange}
         loading={isLoading}
-        emptyMessage='No posts found'
+        emptyMessage="No posts found"
         itemsPerPage={itemsPerPage}
       />
 
@@ -853,8 +837,8 @@ export default function ManagementPosts({
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onSave={handleCreatePost}
-        title='Create New Post'
-        description='Create and publish posts with rich content and social media integration'
+        title="Create New Post"
+        description="Create and publish posts with rich content and social media integration"
         fields={createFormFields}
         sections={createModalSections}
         initialData={{
@@ -866,8 +850,8 @@ export default function ManagementPosts({
             .toISOString()
             .split("T")[0],
         }}
-        saveButtonText='Create Post'
-        cancelButtonText='Cancel'
+        saveButtonText="Create Post"
+        cancelButtonText="Cancel"
         maxImageSizeInMB={5}
         maxImageUpload={1}
         acceptedImageFormats={[
@@ -887,15 +871,15 @@ export default function ManagementPosts({
             setEditingPost(null);
           }}
           onSave={handleUpdatePost}
-          title='Edit Post'
-          description='Update post information and settings'
+          title="Edit Post"
+          description="Update post information and settings"
           fields={createFormFields}
           sections={createModalSections}
           initialData={getEditInitialData()}
-          saveButtonText='Update Post'
-          cancelButtonText='Cancel'
+          saveButtonText="Update Post"
+          cancelButtonText="Cancel"
+          maxImageUpload={2}
           maxImageSizeInMB={5}
-          maxImageUpload={1}
           acceptedImageFormats={[
             "image/jpeg",
             "image/jpg",
