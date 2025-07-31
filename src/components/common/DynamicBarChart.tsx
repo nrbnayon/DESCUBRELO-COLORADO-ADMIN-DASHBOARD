@@ -69,7 +69,7 @@ const DynamicBarChart = ({
           </div>
         )}
       </div>
-      <div className="bg-background dark:bg-card  rounded-3xl border border-border dark:border-none">
+      <div className="bg-background dark:bg-card  rounded-3xl border border-primary/30 dark:border-none">
         <div className="flex items-center justify-end mb-5 p-6">
           <div className="flex items-center gap-6">
             {legend &&

@@ -7,7 +7,7 @@ export default function Profile() {
   return (
     <div>
       <DashboardHeader title="Welcome  Nayon" />
-      <div className="p-6 md:px-12 xl:px-16 ">
+      <div className="p-6">
         <ProfilePage />
       </div>
     </div>

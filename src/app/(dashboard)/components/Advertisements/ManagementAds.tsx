@@ -1,6 +1,6 @@
+// src\app\(dashboard)\components\Advertisements\ManagementAds.tsx
 "use client";
-
-import { PostDataItem, postsData } from "@/data/postsData";
+import { adsData, AdsDataItem } from "@/data/adsData";
 import { useState } from "react";
 import type {
   GenericDataItem,
@@ -15,30 +15,34 @@ import { DynamicDataCreateModal } from "@/components/common/DynamicDataCreateMod
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
-// import { DynamicCard } from "@/components/common/DynamicCard";
 
-interface PostManagementProps {
+interface AdsManagementProps {
   itemsPerPage?: number;
   title?: string;
   buttonText?: string;
   pageUrl?: string;
+  showAds?: number;
 }
 
-export default function ManagementPosts({
+export default function ManagementAds({
   itemsPerPage = 12,
-  title = "All Posts",
-}: PostManagementProps) {
-  const [posts, setPosts] = useState(postsData);
+  title = "All Ads",
+  showAds = 4,
+}: AdsManagementProps) {
+  const [ads, setAds] = useState(adsData);
   const [isLoading] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<PostDataItem | null>(null);
+  const [editingAd, setEditingAd] = useState<AdsDataItem | null>(null);
 
-  // Column Configuration for Posts
-  const postColumns: ColumnConfig[] = [
+  // Check if we should show Add Ads button
+  const shouldShowAddButton = ads.length < showAds;
+
+  // Column Configuration for Ads
+  const adsColumns: ColumnConfig[] = [
     {
       key: "title",
-      label: "Post Title",
+      label: "Ad Title",
       sortable: true,
       searchable: true,
       align: "left",
@@ -65,12 +69,6 @@ export default function ManagementPosts({
           </div>
         </div>
       ),
-    },
-    {
-      key: "subtitle",
-      label: "Subtitle",
-      sortable: false,
-      searchable: true,
     },
     {
       key: "description",
@@ -143,46 +141,21 @@ export default function ManagementPosts({
       filterable: true,
     },
     {
-      key: "socialLinks",
-      label: "Social Links",
+      key: "externalLinks",
+      label: "External Link",
       sortable: false,
       render: (value) => {
-        const socialLinks = value as PostDataItem["socialLinks"];
-        if (!socialLinks || Object.keys(socialLinks).length === 0) {
+        const externalLinks = value as AdsDataItem["externalLinks"];
+        if (!externalLinks || Object.keys(externalLinks).length === 0) {
           return <span className="text-gray-400">No links</span>;
         }
-        const linkCount = Object.keys(socialLinks).length;
+        const linkCount = Object.keys(externalLinks).length;
         return (
           <div className="flex items-center gap-1">
             <div className="flex -space-x-1">
-              {socialLinks.facebook && (
+              {externalLinks.url && (
                 <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs">
-                  F
-                </div>
-              )}
-              {socialLinks.linkedin && (
-                <div className="w-6 h-6 bg-blue-700 rounded-full flex items-center justify-center text-white text-xs">
-                  L
-                </div>
-              )}
-              {socialLinks.twitter && (
-                <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs">
-                  X
-                </div>
-              )}
-              {socialLinks.instagram && (
-                <div className="w-6 h-6 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs">
-                  I
-                </div>
-              )}
-              {socialLinks.tiktok && (
-                <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center text-white text-xs">
-                  T
-                </div>
-              )}
-              {socialLinks.website && (
-                <div className="w-6 h-6 bg-gray-600 rounded-full flex items-center justify-center text-white text-xs">
-                  W
+                  🌍
                 </div>
               )}
             </div>
@@ -198,52 +171,33 @@ export default function ManagementPosts({
       sortable: true,
     },
     {
-      key: "author",
-      label: "Author",
-      sortable: true,
-      searchable: true,
-    },
-    {
       key: "views",
       label: "Views",
       type: "number",
       sortable: true,
-    },
-    {
-      key: "priority",
-      label: "Priority",
-      type: "select",
-      sortable: true,
-      filterable: true,
-      options: [
-        { value: "low", label: "Low", color: "#6b7280" },
-        { value: "medium", label: "Medium", color: "#ca8a04" },
-        { value: "high", label: "High", color: "#dc2626" },
-      ],
     },
   ];
 
   // Card Configuration
   const cardConfig: CardConfig = {
     titleKey: "title",
-    subtitleKey: "subtitle",
     imageKey: "image",
     descriptionKey: "description",
     statusKey: "status",
-    badgeKeys: ["targetUsers", "priority"],
+    badgeKeys: ["targetUsers"],
     metaKeys: ["createdAt", "author", "views"],
     showDetailsButton: true,
     primaryAction: {
       key: "edit",
       label: "Edit",
       variant: "outline",
-      onClick: (item) => handleEditPost(item as PostDataItem),
+      onClick: (item) => handleEditAd(item as AdsDataItem),
     },
   };
 
   // Search Filter Configuration
   const searchFilterConfig: SearchFilterConfig = {
-    searchPlaceholder: "Search posts by title, description, category...",
+    searchPlaceholder: "Search ads by title, description, category...",
     searchKeys: [
       "title",
       "subtitle",
@@ -284,34 +238,24 @@ export default function ManagementPosts({
         ],
       },
       {
-        key: "priority",
-        label: "Priority",
-        type: "select",
-        options: [
-          { value: "low", label: "Low" },
-          { value: "medium", label: "Medium" },
-          { value: "high", label: "High" },
-        ],
-      },
-      {
         key: "category",
         label: "Category",
         type: "select",
-        options: Array.from(
-          new Set(postsData.map((post) => post.category))
-        ).map((cat) => ({
-          value: cat,
-          label: cat,
-        })),
+        options: Array.from(new Set(adsData.map((ad) => ad.category))).map(
+          (cat) => ({
+            value: cat,
+            label: cat,
+          })
+        ),
       },
     ],
   };
 
   // Actions Configuration
-  const postActions: ActionConfig[] = [
+  const adActions: ActionConfig[] = [
     {
       key: "edit",
-      label: "Edit Post",
+      label: "Edit Ad",
       icon: (
         <Lordicon
           src="https://cdn.lordicon.com/cbtlerlm.json"
@@ -326,11 +270,11 @@ export default function ManagementPosts({
         />
       ),
       variant: "ghost",
-      onClick: (item) => handleEditPost(item as PostDataItem),
+      onClick: (item) => handleEditAd(item as AdsDataItem),
     },
     {
       key: "delete",
-      label: "Delete Post",
+      label: "Delete Ad",
       icon: (
         <Lordicon
           src="https://cdn.lordicon.com/jmkrnisz.json"
@@ -345,7 +289,7 @@ export default function ManagementPosts({
         />
       ),
       variant: "ghost",
-      onClick: (item) => handleDeletePost(item.id),
+      onClick: (item) => handleDeleteAd(item.id),
     },
   ];
 
@@ -354,10 +298,10 @@ export default function ManagementPosts({
     // Basic Information Section
     {
       key: "title",
-      label: "Post Title",
+      label: "Ad Title",
       type: "text",
       required: true,
-      placeholder: "Enter post title",
+      placeholder: "Enter ad title",
       validation: {
         minLength: 5,
         maxLength: 100,
@@ -366,20 +310,8 @@ export default function ManagementPosts({
       gridCol: "full",
     },
     {
-      key: "subtitle",
-      label: "Subtitle",
-      type: "text",
-      required: false,
-      placeholder: "Enter subtitle (optional)",
-      validation: {
-        maxLength: 150,
-      },
-      section: "basic",
-      gridCol: "full",
-    },
-    {
       key: "image",
-      label: "Post Image",
+      label: "Ad Image",
       type: "image",
       required: true,
       section: "basic",
@@ -391,7 +323,7 @@ export default function ManagementPosts({
       label: "Description",
       type: "textarea",
       required: true,
-      placeholder: "Enter post description with markdown support...",
+      placeholder: "Enter ad description with markdown support...",
       section: "content",
       gridCol: "full",
     },
@@ -414,7 +346,7 @@ export default function ManagementPosts({
       label: "Category",
       type: "select",
       required: true,
-      options: Array.from(new Set(postsData.map((post) => post.category))).map(
+      options: Array.from(new Set(adsData.map((ad) => ad.category))).map(
         (cat) => ({
           value: cat,
           label: cat,
@@ -436,19 +368,6 @@ export default function ManagementPosts({
       label: "End Date",
       type: "date",
       required: true,
-      section: "targeting",
-      gridCol: "half",
-    },
-    {
-      key: "priority",
-      label: "Priority",
-      type: "select",
-      required: true,
-      options: [
-        { value: "low", label: "Low" },
-        { value: "medium", label: "Medium" },
-        { value: "high", label: "High" },
-      ],
       section: "targeting",
       gridCol: "half",
     },
@@ -490,58 +409,13 @@ export default function ManagementPosts({
     },
     // Social Links Section - Fixed with proper field names
     {
-      key: "socialLinks.facebook",
-      label: "Facebook",
+      key: "externalLinks.url",
+      label: "External Link",
       type: "url",
       required: false,
-      placeholder: "https://facebook.com/company",
+      placeholder: "https://website.com/company",
       section: "social",
-      gridCol: "half",
-    },
-    {
-      key: "socialLinks.linkedin",
-      label: "LinkedIn",
-      type: "url",
-      required: false,
-      placeholder: "https://linkedin.com/company",
-      section: "social",
-      gridCol: "half",
-    },
-    {
-      key: "socialLinks.twitter",
-      label: "X (Twitter)",
-      type: "url",
-      required: false,
-      placeholder: "https://twitter.com/company",
-      section: "social",
-      gridCol: "half",
-    },
-    {
-      key: "socialLinks.instagram",
-      label: "Instagram",
-      type: "url",
-      required: false,
-      placeholder: "https://instagram.com/company",
-      section: "social",
-      gridCol: "half",
-    },
-    {
-      key: "socialLinks.tiktok",
-      label: "TikTok",
-      type: "url",
-      required: false,
-      placeholder: "https://tiktok.com/@company",
-      section: "social",
-      gridCol: "half",
-    },
-    {
-      key: "socialLinks.website",
-      label: "Website",
-      type: "url",
-      required: false,
-      placeholder: "https://website.com",
-      section: "social",
-      gridCol: "half",
+      gridCol: "full",
     },
   ];
 
@@ -550,13 +424,13 @@ export default function ManagementPosts({
     {
       key: "basic",
       title: "Basic Information",
-      description: "Enter the basic details for the post",
+      description: "Enter the basic details for the ad",
       icon: "📝",
     },
     {
       key: "content",
       title: "Content & Media",
-      description: "Add description and images for the post",
+      description: "Add description and images for the ad",
       icon: "🎨",
     },
     {
@@ -586,15 +460,15 @@ export default function ManagementPosts({
   // Utility function to process form data and extract social links
   const processFormData = (data: Record<string, unknown>) => {
     const processedData: Record<string, unknown> = {};
-    const socialLinks: Record<string, string> = {};
+    const externalLinks: Record<string, string> = {};
 
     // Process each field
     Object.entries(data).forEach(([key, value]) => {
-      if (key.startsWith("socialLinks.")) {
+      if (key.startsWith("externalLinks.")) {
         // Extract social link field
-        const socialKey = key.replace("socialLinks.", "");
+        const socialKey = key.replace("externalLinks.", "");
         if (typeof value === "string" && value.trim()) {
-          socialLinks[socialKey] = value.trim();
+          externalLinks[socialKey] = value.trim();
         }
       } else {
         // Regular field
@@ -602,9 +476,9 @@ export default function ManagementPosts({
       }
     });
 
-    // Add socialLinks object if there are any social links
-    if (Object.keys(socialLinks).length > 0) {
-      processedData.socialLinks = socialLinks;
+    // Add externalLinks object if there are any social links
+    if (Object.keys(externalLinks).length > 0) {
+      processedData.externalLinks = externalLinks;
     }
 
     return processedData;
@@ -621,11 +495,11 @@ export default function ManagementPosts({
     return [];
   };
 
-  // Handle creating new post
-  const handleCreatePost = (data: Record<string, unknown>) => {
+  // Handle creating new ad
+  const handleCreateAd = (data: Record<string, unknown>) => {
     const processedData = processFormData(data);
 
-    // Handle image - single image only for posts
+    // Handle image - single image only for ads
     const imageValue =
       Array.isArray(processedData.image) && processedData.image.length > 0
         ? processedData.image[0]
@@ -633,8 +507,8 @@ export default function ManagementPosts({
         ? processedData.image
         : "";
 
-    const newPostData = {
-      id: `post${Date.now()}`,
+    const newAdData = {
+      id: `ad${Date.now()}`,
       title: String(processedData.title || ""),
       subtitle: processedData.subtitle
         ? String(processedData.subtitle)
@@ -661,31 +535,28 @@ export default function ManagementPosts({
       tags: processTags(processedData.tags),
       keywords: processTags(processedData.keywords),
       category: String(processedData.category || "General"),
-      socialLinks: processedData.socialLinks as PostDataItem["socialLinks"],
+      externalLinks:
+        processedData.externalLinks as AdsDataItem["externalLinks"],
       createdAt: new Date().toISOString(),
       isActive: String(processedData.status || "draft") === "active",
       author: "Current User",
       views: 0,
-      priority: String(processedData.priority || "medium") as
-        | "low"
-        | "medium"
-        | "high",
     };
 
-    const updatedPosts = [newPostData, ...posts];
-    setPosts(updatedPosts);
-    console.log("New post created:", newPostData);
+    const updatedAds = [newAdData, ...ads];
+    setAds(updatedAds);
+    console.log("New ad created:", newAdData);
   };
 
-  // Handle editing post
-  const handleEditPost = (post: PostDataItem) => {
-    setEditingPost(post);
+  // Handle editing ad
+  const handleEditAd = (ad: AdsDataItem) => {
+    setEditingAd(ad);
     setEditModalOpen(true);
   };
 
-  // Handle updating post
-  const handleUpdatePost = (data: Record<string, unknown>) => {
-    if (!editingPost) return;
+  // Handle updating ad
+  const handleUpdateAd = (data: Record<string, unknown>) => {
+    if (!editingAd) return;
 
     const processedData = processFormData(data);
 
@@ -695,10 +566,10 @@ export default function ManagementPosts({
         ? processedData.image[0]
         : typeof processedData.image === "string"
         ? processedData.image
-        : editingPost.image;
+        : editingAd.image;
 
-    const updatedPostData = {
-      ...editingPost,
+    const updatedAdData = {
+      ...editingAd,
       title: String(processedData.title || ""),
       subtitle: processedData.subtitle
         ? String(processedData.subtitle)
@@ -709,8 +580,8 @@ export default function ManagementPosts({
         | "new"
         | "old"
         | "both",
-      startDate: String(processedData.startDate || editingPost.startDate),
-      endDate: String(processedData.endDate || editingPost.endDate),
+      startDate: String(processedData.startDate || editingAd.startDate),
+      endDate: String(processedData.endDate || editingAd.endDate),
       status: String(processedData.status || "draft") as
         | "active"
         | "inactive"
@@ -720,50 +591,42 @@ export default function ManagementPosts({
       tags: processTags(processedData.tags),
       keywords: processTags(processedData.keywords),
       category: String(processedData.category || "General"),
-      socialLinks: processedData.socialLinks as PostDataItem["socialLinks"],
+      externalLinks:
+        processedData.externalLinks as AdsDataItem["externalLinks"],
       updatedAt: new Date().toISOString(),
       isActive: String(processedData.status || "draft") === "active",
-      priority: String(processedData.priority || "medium") as
-        | "low"
-        | "medium"
-        | "high",
     };
 
-    const updatedPosts = posts.map((post) =>
-      post.id === editingPost.id ? updatedPostData : post
+    const updatedAds = ads.map((ad) =>
+      ad.id === editingAd.id ? updatedAdData : ad
     );
-    setPosts(updatedPosts);
-    setEditingPost(null);
-    console.log("Post updated:", updatedPostData);
+    setAds(updatedAds);
+    setEditingAd(null);
+    console.log("Ad updated:", updatedAdData);
   };
 
-  // Handle deleting post
-  const handleDeletePost = (postId: string) => {
-    const updatedPosts = posts.filter((post) => post.id !== postId);
-    setPosts(updatedPosts);
-    console.log("Post deleted:", postId);
+  // Handle deleting ad
+  const handleDeleteAd = (adId: string) => {
+    const updatedAds = ads.filter((ad) => ad.id !== adId);
+    setAds(updatedAds);
+    console.log("Ad deleted:", adId);
   };
 
   // Handle data change from DynamicCard3D
   const handleDataChange = (newData: GenericDataItem[]) => {
-    setPosts(newData as PostDataItem[]);
+    setAds(newData as AdsDataItem[]);
   };
 
   // Prepare initial data for edit modal
   const getEditInitialData = () => {
-    if (!editingPost) return {};
+    if (!editingAd) return {};
 
-    const socialLinksData = editingPost.socialLinks || {};
+    const externalLinksData = editingAd.externalLinks || {};
     return {
-      ...editingPost,
-      tags: editingPost.tags?.join(", ") || "",
-      keywords: editingPost.keywords?.join(", ") || "",
-      "socialLinks.facebook": socialLinksData.facebook || "",
-      "socialLinks.linkedin": socialLinksData.linkedin || "",
-      "socialLinks.twitter": socialLinksData.twitter || "",
-      "socialLinks.instagram": socialLinksData.instagram || "",
-      "socialLinks.tiktok": socialLinksData.tiktok || "",
-      "socialLinks.website": socialLinksData.website || "",
+      ...editingAd,
+      tags: editingAd.tags?.join(", ") || "",
+      keywords: editingAd.keywords?.join(", ") || "",
+      "externalLinks.url": externalLinksData.url || "",
     };
   };
 
@@ -771,59 +634,60 @@ export default function ManagementPosts({
     <div className="w-full mx-auto">
       <div className="w-full flex justify-between items-center mb-6">
         <h2 className="text-foreground text-xl font-semibold">{title}</h2>
-        <Button
-          className="flex items-center gap-2 border-primary/30 rounded-md"
-          size="lg"
-          onClick={() => setCreateModalOpen(true)}
-        >
-          <span className="mt-1.5">
-            <Lordicon
-              src="https://cdn.lordicon.com/ueoydrft.json"
-              trigger="hover"
-              size={20}
-              colors={{
-                primary: "",
-                secondary: "",
-              }}
-              stroke={1}
-            />
-          </span>
-          <span>Add Post</span>
-        </Button>
+        {shouldShowAddButton && (
+          <Button
+            className="flex items-center gap-2 border-primary/30 rounded-md"
+            size="lg"
+            onClick={() => setCreateModalOpen(true)}
+          >
+            <span className="mt-1.5">
+              <Lordicon
+                src="https://cdn.lordicon.com/ueoydrft.json"
+                trigger="hover"
+                size={20}
+                colors={{
+                  primary: "",
+                  secondary: "",
+                }}
+                stroke={1}
+              />
+            </span>
+            <span>Add Ads</span>
+          </Button>
+        )}
       </div>
 
       {/* Dynamic 3D Card Component */}
       <DynamicCard3D
-        data={posts}
-        columns={postColumns}
+        data={ads}
+        columns={adsColumns}
         cardConfig={cardConfig}
-        actions={postActions}
+        actions={adActions}
         searchFilterConfig={searchFilterConfig}
         onDataChange={handleDataChange}
         loading={isLoading}
-        emptyMessage="No posts found"
+        emptyMessage="No ads found"
         itemsPerPage={itemsPerPage}
       />
 
-      {/* Create Post Modal */}
+      {/* Create Ad Modal */}
       <DynamicDataCreateModal
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        onSave={handleCreatePost}
-        title="Create New Post"
-        description="Create and publish posts with rich content and social media integration"
+        onSave={handleCreateAd}
+        title="Create New Ad"
+        description="Create and publish ads with rich content and social media integration"
         fields={createFormFields}
         sections={createModalSections}
         initialData={{
           status: "active",
           targetUsers: "both",
-          priority: "medium",
           startDate: new Date().toISOString().split("T")[0],
           endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
             .toISOString()
             .split("T")[0],
         }}
-        saveButtonText="Create Post"
+        saveButtonText="Create Ad"
         cancelButtonText="Cancel"
         maxImageSizeInMB={5}
         maxImageUpload={1}
@@ -835,23 +699,23 @@ export default function ManagementPosts({
         ]}
       />
 
-      {/* Edit Post Modal */}
-      {editingPost && (
+      {/* Edit Ad Modal */}
+      {editingAd && (
         <DynamicDataCreateModal
           isOpen={editModalOpen}
           onClose={() => {
             setEditModalOpen(false);
-            setEditingPost(null);
+            setEditingAd(null);
           }}
-          onSave={handleUpdatePost}
-          title="Edit Post"
-          description="Update post information and settings"
+          onSave={handleUpdateAd}
+          title="Edit Ad"
+          description="Update ad information and settings"
           fields={createFormFields}
           sections={createModalSections}
           initialData={getEditInitialData()}
-          saveButtonText="Update Post"
+          saveButtonText="Update Ad"
           cancelButtonText="Cancel"
-          maxImageUpload={2}
+          maxImageUpload={1}
           maxImageSizeInMB={5}
           acceptedImageFormats={[
             "image/jpeg",

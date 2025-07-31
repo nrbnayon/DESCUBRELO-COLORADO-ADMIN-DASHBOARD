@@ -276,7 +276,7 @@ export function DynamicCard3D({
                   translateZ="60"
                   className="text-lg font-bold text-gray-900 dark:text-white line-clamp-2 group-hover/card:text-primary transition-colors"
                 >
-                  {truncateText(String(title), 25)}
+                  {truncateText(String(title), 30)}
                 </CardItem>
                 {typeof subtitle === "string" && subtitle && (
                   <CardItem
@@ -284,7 +284,7 @@ export function DynamicCard3D({
                     as="p"
                     className="text-gray-600 text-sm mt-1 dark:text-gray-300 line-clamp-1"
                   >
-                    {truncateText(String(subtitle), 25)}
+                    {truncateText(String(subtitle), 30)}
                   </CardItem>
                 )}
               </div>

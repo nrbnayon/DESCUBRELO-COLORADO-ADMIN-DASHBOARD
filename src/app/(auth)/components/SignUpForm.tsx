@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { User, Mail, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Validation schema
 const signupSchema = z
@@ -177,6 +177,10 @@ export default function SignUpForm() {
       {/* Left Side - Welcome Message */}
       <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white">
         <div className="max-w-md text-center space-y-6">
+          <div className="w-full flex justify-center items-center">
+            {" "}
+            <Image src="/logo.png" alt="logo" width={200} height={200} />
+          </div>
           <h1 className="text-4xl   leading-tight">Join Us Today!</h1>
           <p className="text-lg   opacity-90">
             Create your account and get started with our amazing platform
@@ -185,7 +189,7 @@ export default function SignUpForm() {
             <Button
               variant="outline"
               onClick={handleDemoSignup}
-              className="bg-white/10 border-white/20 text-white hover:bg-white/20 w-full   backdrop-blur-sm"
+              className="bg-white/10 border-white/20 text-white hover:text-white hover:bg-white/20 w-full   backdrop-blur-sm"
             >
               Fill Demo Information
             </Button>
@@ -235,7 +239,7 @@ export default function SignUpForm() {
                     id="name"
                     type="text"
                     placeholder="Enter your full name"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
+                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
                       errors.name
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
@@ -265,7 +269,7 @@ export default function SignUpForm() {
                     id="email"
                     type="email"
                     placeholder="Enter your email address"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
+                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
                       errors.email
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
@@ -295,7 +299,7 @@ export default function SignUpForm() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Create a strong password"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
+                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
                       errors.password
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
@@ -370,7 +374,7 @@ export default function SignUpForm() {
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm your password"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
+                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
                       errors.confirmPassword
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
@@ -446,7 +450,7 @@ export default function SignUpForm() {
               {/* Signup Button */}
               <Button
                 onClick={handleSubmit(onSubmit)}
-                className="w-full h-12 bg-primary/80 hover:bg-primary text-white   rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full h-12 bg-primary/80 hover:bg-primary text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
                 disabled={isLoading || isSubmitting}
               >
                 {isLoading ? (

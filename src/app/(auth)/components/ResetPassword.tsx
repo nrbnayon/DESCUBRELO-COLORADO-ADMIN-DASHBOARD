@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Validation schema
 const resetPasswordSchema = z
@@ -156,6 +157,10 @@ export default function ResetPassword() {
       {/* Left Side - Welcome Message */}
       <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white">
         <div className="max-w-md text-center space-y-6">
+          <div className="w-full flex justify-center items-center">
+            {" "}
+            <Image src="/logo.png" alt="logo" width={200} height={200} />
+          </div>
           <h1 className="text-4xl   leading-tight">Create New Password</h1>
           <p className="text-lg   opacity-90">
             Your new password must be different from your previous password and
@@ -198,14 +203,14 @@ export default function ResetPassword() {
                   Email Address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground h-4 w-4" />
                   <Input
                     {...register("email")}
                     type="email"
                     value={email}
                     readOnly
                     disabled
-                    className="pl-10 h-12 bg-gray-50 dark:bg-gray-700 border-border text-muted-foreground cursor-not-allowed  "
+                    className="pl-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 border-primary/30 text-black cursor-not-allowed  "
                     placeholder="Email address"
                   />
                 </div>
@@ -221,7 +226,7 @@ export default function ResetPassword() {
                   <Input
                     {...register("newPassword")}
                     type={showNewPassword ? "text" : "password"}
-                    className="pl-10 pr-10 h-12 border-border bg-input text-foreground   focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="pl-10 pr-10 h-12 rounded-md border-primary/30 focus-visible:border-primary bg-input text-foreground focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="Enter your new password"
                     disabled={isLoading}
                   />
@@ -255,7 +260,7 @@ export default function ResetPassword() {
                   <Input
                     {...register("confirmPassword")}
                     type={showConfirmPassword ? "text" : "password"}
-                    className="pl-10 pr-10 h-12 border-border bg-input text-foreground   focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="pl-10 pr-10 h-12 rounded-md border-primary/30 focus-visible:border-primary bg-input text-foreground focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="Confirm your new password"
                     disabled={isLoading}
                   />
@@ -321,7 +326,7 @@ export default function ResetPassword() {
               {/* Reset Password Button */}
               <Button
                 type="submit"
-                className="w-full h-12 bg-primary/80 hover:bg-primary text-white   rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full h-12 bg-primary/80 hover:bg-primary text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
                 disabled={isLoading || isSubmitting}
               >
                 {isLoading ? (

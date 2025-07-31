@@ -15,6 +15,7 @@ import {
 import { Loader2, ArrowLeft, Clock, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Validation schema
 const otpSchema = z.object({
@@ -199,6 +200,10 @@ export default function VerifyOtp() {
       {/* Left Side - Welcome Message */}
       <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white">
         <div className="max-w-md text-center space-y-6">
+          <div className="w-full flex justify-center items-center">
+            {" "}
+            <Image src="/logo.png" alt="logo" width={200} height={200} />
+          </div>
           <h1 className="text-4xl   leading-tight">Verify Your Email</h1>
           <p className="text-lg   opacity-90">
             We&lsquo;ve sent a 6-digit verification code to your email address.
@@ -257,27 +262,27 @@ export default function VerifyOtp() {
                     <InputOTPGroup>
                       <InputOTPSlot
                         index={0}
-                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-primary/30 bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={1}
-                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-primary/30 bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={2}
-                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-primary/30 bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={3}
-                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-primary/30 bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={4}
-                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-primary/30 bg-input text-foreground"
                       />
                       <InputOTPSlot
                         index={5}
-                        className="w-12 h-12 text-lg   border-border bg-input text-foreground"
+                        className="w-12 h-12 text-lg   border-primary/30 bg-input text-foreground"
                       />
                     </InputOTPGroup>
                   </InputOTP>
@@ -308,7 +313,7 @@ export default function VerifyOtp() {
               {/* Verify Button */}
               <Button
                 type="submit"
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white   rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
+                className="w-full h-12 bg-primary/80 hover:bg-primary text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
                 disabled={
                   isLoading ||
                   isSubmitting ||

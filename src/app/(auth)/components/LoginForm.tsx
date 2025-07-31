@@ -159,7 +159,7 @@ export default function LoginForm() {
               <div className="space-y-2">
                 <label
                   htmlFor="username"
-                  className="text-foreground text-sm block"
+                  className="text-foreground text-base font-semibold block"
                 >
                   Username
                 </label>
@@ -168,7 +168,7 @@ export default function LoginForm() {
                     id="username"
                     type="text"
                     placeholder="Enter your username"
-                    className={`pl-4 pr-10 h-12 border-border bg-input text-foreground placeholder:text-muted-foreground ${
+                    className={`pl-4 pr-10 h-12 border-primary/30 bg-input focus-visible:border-primary rounded-md text-foreground placeholder:text-muted-foreground ${
                       errors.username
                         ? "border-error focus:border-error"
                         : "input-focus"
@@ -189,7 +189,7 @@ export default function LoginForm() {
               <div className="space-y-2">
                 <label
                   htmlFor="password"
-                  className="text-foreground text-sm block"
+                  className="text-foreground text-base font-semibold block"
                 >
                   Password
                 </label>
@@ -198,7 +198,7 @@ export default function LoginForm() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
-                    className={`pl-4 pr-10 h-12 border-border bg-input text-foreground placeholder:text-muted-foreground ${
+                    className={`pl-4 pr-10 h-12 border-primary/30 bg-input text-foreground focus-visible:border-primary placeholder:text-muted-foreground rounded-md ${
                       errors.password
                         ? "border-error focus:border-error"
                         : "input-focus"
@@ -231,7 +231,7 @@ export default function LoginForm() {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="rememberMe"
-                    className="border-border"
+                    className="border-primary/30"
                     checked={rememberMe}
                     onCheckedChange={(checked) =>
                       setValue("rememberMe", !!checked)
@@ -240,14 +240,14 @@ export default function LoginForm() {
                   />
                   <label
                     htmlFor="rememberMe"
-                    className="text-muted-foreground text-sm cursor-pointer "
+                    className="text-muted-foreground text-sm cursor-pointer mt-0.5"
                   >
                     Remember me
                   </label>
                 </div>
                 <Link
                   href="/forgot-password"
-                  className="text-muted-foreground text-sm hover:text-primary hover:underline transition-colors "
+                  className="text-foreground font-semibold text-sm hover:text-primary hover:underline transition-colors "
                 >
                   Forgot Password?
                 </Link>

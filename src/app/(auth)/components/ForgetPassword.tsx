@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Mail, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 // Validation schema
 const forgetPasswordSchema = z.object({
@@ -81,6 +82,10 @@ export default function ForgetPassword() {
       {/* Left Side - Welcome Message */}
       <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white">
         <div className="max-w-md text-center space-y-6">
+          <div className="w-full flex justify-center items-center">
+            {" "}
+            <Image src="/logo.png" alt="logo" width={200} height={200} />
+          </div>
           <h1 className="text-4xl   leading-tight">Forgot Password?</h1>
           <p className="text-lg   opacity-90">
             Don&lsquo;t worry! Enter your email address and we&lsquo;ll send you
@@ -136,7 +141,7 @@ export default function ForgetPassword() {
                     id="email"
                     type="email"
                     placeholder="Enter your email address"
-                    className={`pl-4 pr-10 h-12 border-border bg-input text-foreground placeholder:text-muted-foreground   ${
+                    className={`pl-4 pr-10 h-12 rounded-md focus-visible:border-primary border-primary/30 bg-input text-foreground placeholder:text-muted-foreground   ${
                       errors.email
                         ? "border-error focus:border-error"
                         : "input-focus"
