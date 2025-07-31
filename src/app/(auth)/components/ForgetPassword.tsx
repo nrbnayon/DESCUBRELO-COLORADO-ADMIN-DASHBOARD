@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { toast } from "sonner";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -12,18 +12,9 @@ import { Mail, Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { emailValidationSchema } from "@/lib/formDataValidation";
 
-// Validation schema
-const forgetPasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address")
-    .max(100, "Email must be less than 100 characters"),
-});
-
-type ForgetPasswordFormData = z.infer<typeof forgetPasswordSchema>;
-
+type ForgetPasswordFormData = z.infer<typeof emailValidationSchema>;
 export default function ForgetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -33,7 +24,7 @@ export default function ForgetPassword() {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ForgetPasswordFormData>({
-    resolver: zodResolver(forgetPasswordSchema),
+    resolver: zodResolver(emailValidationSchema),
     defaultValues: {
       email: "",
     },

@@ -7,8 +7,8 @@ import { toast } from "sonner";
 import { Shield, Save, Eye, EyeOff, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { passwordSchema } from "@/lib/validation";
-type PasswordFormData = z.infer<typeof passwordSchema>;
+import { passwordValidationSchema } from "@/lib/formDataValidation";
+type PasswordFormData = z.infer<typeof passwordValidationSchema>;
 export default function ChangePassword() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -21,7 +21,7 @@ export default function ChangePassword() {
     formState: { errors, isSubmitting },
     watch,
   } = useForm<PasswordFormData>({
-    resolver: zodResolver(passwordSchema),
+    resolver: zodResolver(passwordValidationSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",

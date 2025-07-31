@@ -19,28 +19,9 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { resetPasswordValidationSchema } from "@/lib/formDataValidation";
 
-// Validation schema
-const resetPasswordSchema = z
-  .object({
-    email: z.string().email("Invalid email address"),
-    newPassword: z
-      .string()
-      .min(1, "New password is required")
-      .min(8, "Password must be at least 8 characters")
-      .max(100, "Password must be less than 100 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      ),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
-type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormData = z.infer<typeof resetPasswordValidationSchema>;
 
 export default function ResetPassword() {
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -56,7 +37,7 @@ export default function ResetPassword() {
     setValue,
     watch,
   } = useForm<ResetPasswordFormData>({
-    resolver: zodResolver(resetPasswordSchema),
+    resolver: zodResolver(resetPasswordValidationSchema),
     defaultValues: {
       email: "",
       newPassword: "",

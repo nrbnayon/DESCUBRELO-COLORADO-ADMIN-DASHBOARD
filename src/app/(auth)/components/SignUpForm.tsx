@@ -12,47 +12,9 @@ import { User, Mail, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { signupValidationSchema } from "@/lib/formDataValidation";
 
-// Validation schema
-const signupSchema = z
-  .object({
-    name: z
-      .string()
-      .min(1, "Full name is required")
-      .min(2, "Name must be at least 2 characters")
-      .max(50, "Name must be less than 50 characters")
-      .regex(
-        /^[a-zA-Z\s'-]+$/,
-        "Name can only contain letters, spaces, hyphens, and apostrophes"
-      ),
-    email: z
-      .string()
-      .min(1, "Email is required")
-      .email("Please enter a valid email address")
-      .max(100, "Email must be less than 100 characters"),
-    password: z
-      .string()
-      .min(1, "Password is required")
-      .min(8, "Password must be at least 8 characters")
-      .max(100, "Password must be less than 100 characters")
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
-      ),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-    agreeToTerms: z
-      .boolean()
-      .refine(
-        (val) => val === true,
-        "You must agree to the Terms and Conditions to continue"
-      ),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
-
-type SignupFormData = z.infer<typeof signupSchema>;
+type SignupFormData = z.infer<typeof signupValidationSchema>;
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -67,9 +29,9 @@ export default function SignUpForm() {
     watch,
     setValue,
   } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
+    resolver: zodResolver(signupValidationSchema),
     defaultValues: {
-      name: "",
+      full_name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -81,13 +43,44 @@ export default function SignUpForm() {
   const password = watch("password");
 
   interface SignupFormResponse {
-    name: string;
+    full_name: string;
     email: string;
     password: string;
     agreeToTerms: boolean;
     timestamp: string;
     userAgent: string;
   }
+
+  // Prevent spaces in email and password fields
+  const handleEmailKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === " ") {
+      e.preventDefault();
+      toast.error("Spaces are not allowed in email addresses");
+    }
+  };
+
+  const handleEmailPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pastedText = e.clipboardData.getData("text");
+    if (pastedText.includes(" ")) {
+      e.preventDefault();
+      toast.error("Spaces are not allowed in email addresses");
+    }
+  };
+
+  const handlePasswordKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === " ") {
+      e.preventDefault();
+      toast.error("Spaces are not allowed in passwords");
+    }
+  };
+
+  const handlePasswordPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pastedText = e.clipboardData.getData("text");
+    if (pastedText.includes(" ")) {
+      e.preventDefault();
+      toast.error("Spaces are not allowed in passwords");
+    }
+  };
 
   const onSubmit = async (data: SignupFormData): Promise<void> => {
     setIsLoading(true);
@@ -98,7 +91,7 @@ export default function SignUpForm() {
 
       // Log the form data to console
       console.log("Signup Form Data:", {
-        name: data.name,
+        full_name: data.full_name,
         email: data.email,
         password: data.password,
         agreeToTerms: data.agreeToTerms,
@@ -108,7 +101,7 @@ export default function SignUpForm() {
 
       // Simulate successful signup
       toast.success("Account created successfully!", {
-        description: `Welcome ${data.name}! Please check your email to verify your account.`,
+        description: `Welcome ${data.full_name}! Please check your email to verify your account.`,
         duration: 3000,
       });
 
@@ -128,7 +121,7 @@ export default function SignUpForm() {
   };
 
   const handleDemoSignup = () => {
-    setValue("name", "John Doe");
+    setValue("full_name", "John Doe");
     setValue("email", "john.doe@example.com");
     setValue("password", "Demo123456");
     setValue("confirmPassword", "Demo123456");
@@ -173,31 +166,30 @@ export default function SignUpForm() {
   const passwordStrength = getPasswordStrength(password);
 
   return (
-    <div className="min-h-screen flex bg-white dark:bg-primary-dark">
+    <div className='min-h-screen flex bg-white dark:bg-primary-dark'>
       {/* Left Side - Welcome Message */}
-      <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white">
-        <div className="max-w-md text-center space-y-6">
-          <div className="w-full flex justify-center items-center">
-            {" "}
-            <Image src="/logo.png" alt="logo" width={200} height={200} />
+      <div className='flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white'>
+        <div className='max-w-md text-center space-y-6'>
+          <div className='w-full flex justify-center items-center'>
+            <Image src='/logo.png' alt='logo' width={200} height={200} />
           </div>
-          <h1 className="text-4xl   leading-tight">Join Us Today!</h1>
-          <p className="text-lg   opacity-90">
+          <h1 className='text-4xl leading-tight'>Join Us Today!</h1>
+          <p className='text-lg opacity-90'>
             Create your account and get started with our amazing platform
           </p>
-          <div className="pt-4 space-y-3">
+          <div className='pt-4 space-y-3'>
             <Button
-              variant="outline"
+              variant='outline'
               onClick={handleDemoSignup}
-              className="bg-white/10 border-white/20 text-white hover:text-white hover:bg-white/20 w-full   backdrop-blur-sm"
+              className='bg-white/10 border-white/20 text-white hover:text-white hover:bg-white/20 w-full backdrop-blur-sm'
             >
               Fill Demo Information
             </Button>
-            <p className="text-sm   opacity-75">
+            <p className='text-sm opacity-75'>
               Already have an account?{" "}
               <Link
-                href="/login"
-                className="text-white underline   hover:opacity-80"
+                href='/login'
+                className='text-white underline hover:opacity-80'
               >
                 Sign In
               </Link>
@@ -207,17 +199,17 @@ export default function SignUpForm() {
       </div>
 
       {/* Right Side - Signup Form */}
-      <div className="flex-1 bg-white dark:bg-primary-dark flex items-center justify-center p-8">
-        <Card className="w-full p-2 lg:p-10 max-w-2xl rounded-4xl border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-800">
-          <CardHeader className="text-center pb-6">
-            <h2 className="text-2xl   text-gray-900 dark:text-white mb-2">
+      <div className='flex-1 bg-white dark:bg-primary-dark flex items-center justify-center p-8'>
+        <Card className='w-full p-2 lg:p-10 max-w-2xl rounded-4xl border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-800'>
+          <CardHeader className='text-center pb-6'>
+            <h2 className='text-2xl text-gray-900 dark:text-white mb-2'>
               Create Your Account
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-sm  ">
+            <p className='text-gray-600 dark:text-gray-400 text-sm'>
               Already have an account?{" "}
               <Link
-                href="/login"
-                className="text-indigo-600 dark:text-indigo-400 underline   hover:text-indigo-500 dark:hover:text-indigo-300"
+                href='/login'
+                className='text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300'
               >
                 Sign In
               </Link>
@@ -225,106 +217,109 @@ export default function SignUpForm() {
           </CardHeader>
 
           <CardContent>
-            <div className="space-y-6">
+            <div className='space-y-6'>
               {/* Full Name Field */}
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <label
-                  htmlFor="name"
-                  className="text-gray-900 dark:text-white   text-sm block"
+                  htmlFor='full_name'
+                  className='text-gray-900 dark:text-white text-sm block'
                 >
                   Full Name
                 </label>
-                <div className="relative">
+                <div className='relative'>
                   <Input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
-                      errors.name
+                    id='full_name'
+                    type='text'
+                    placeholder='Enter your full name'
+                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border ${
+                      errors.full_name
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
                     } focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20`}
-                    {...register("name")}
+                    {...register("full_name")}
                     disabled={isLoading}
                   />
-                  <User className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <User className='absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500' />
                 </div>
-                {errors.name && (
-                  <p className="text-red-500 text-xs mt-1  ">
-                    {errors.name.message}
+                {errors.full_name && (
+                  <p className='text-red-500 text-xs mt-1'>
+                    {errors.full_name.message}
                   </p>
                 )}
               </div>
 
-              {/* Email Field */}
-              <div className="space-y-2">
+              {/* Email Field - Option 1: Prevent spaces with warnings */}
+              <div className='space-y-2'>
                 <label
-                  htmlFor="email"
-                  className="text-gray-900 dark:text-white   text-sm block"
+                  htmlFor='email'
+                  className='text-gray-900 dark:text-white text-sm block'
                 >
                   Email Address
                 </label>
-                <div className="relative">
+                <div className='relative'>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email address"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
+                    id='email'
+                    type='email'
+                    placeholder='Enter your email address'
+                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border ${
                       errors.email
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
                     } focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20`}
                     {...register("email")}
+                    onKeyPress={handleEmailKeyPress}
+                    onPaste={handleEmailPaste}
                     disabled={isLoading}
                   />
-                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                  <Mail className='absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500' />
                 </div>
                 {errors.email && (
-                  <p className="text-red-500 text-xs mt-1  ">
+                  <p className='text-red-500 text-xs mt-1'>
                     {errors.email.message}
                   </p>
                 )}
               </div>
-
-              {/* Password Field */}
-              <div className="space-y-2">
+              {/* Password Field - */}
+              <div className='space-y-2'>
                 <label
-                  htmlFor="password"
-                  className="text-gray-900 dark:text-white   text-sm block"
+                  htmlFor='password'
+                  className='text-gray-900 dark:text-white text-sm block'
                 >
                   Password
                 </label>
-                <div className="relative">
+                <div className='relative'>
                   <Input
-                    id="password"
+                    id='password'
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
+                    placeholder='Create a strong password'
+                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border ${
                       errors.password
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
                     } focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20`}
                     {...register("password")}
+                    onKeyPress={handlePasswordKeyPress}
+                    onPaste={handlePasswordPaste}
                     disabled={isLoading}
                   />
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors'
                     disabled={isLoading}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff className='h-5 w-5' />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye className='h-5 w-5' />
                     )}
                   </button>
                 </div>
 
                 {/* Password Strength Indicator */}
                 {password && (
-                  <div className="space-y-1">
-                    <div className="flex space-x-1">
+                  <div className='space-y-1'>
+                    <div className='flex space-x-1'>
                       {[1, 2, 3, 4, 5].map((level) => (
                         <div
                           key={level}
@@ -338,7 +333,7 @@ export default function SignUpForm() {
                     </div>
                     {passwordStrength.label && (
                       <p
-                        className={`text-xs   ${
+                        className={`text-xs ${
                           passwordStrength.strength >= 4
                             ? "text-green-600 dark:text-green-400"
                             : passwordStrength.strength >= 3
@@ -355,58 +350,60 @@ export default function SignUpForm() {
                 )}
 
                 {errors.password && (
-                  <p className="text-red-500 text-xs mt-1  ">
+                  <p className='text-red-500 text-xs mt-1'>
                     {errors.password.message}
                   </p>
                 )}
               </div>
 
               {/* Confirm Password Field */}
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <label
-                  htmlFor="confirmPassword"
-                  className="text-gray-900 dark:text-white   text-sm block"
+                  htmlFor='confirmPassword'
+                  className='text-gray-900 dark:text-white text-sm block'
                 >
                   Confirm Password
                 </label>
-                <div className="relative">
+                <div className='relative'>
                   <Input
-                    id="confirmPassword"
+                    id='confirmPassword'
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400   border ${
+                    placeholder='Confirm your password'
+                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border ${
                       errors.confirmPassword
                         ? "border-red-500 focus:border-red-500"
                         : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
                     } focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20`}
                     {...register("confirmPassword")}
+                    onKeyPress={handlePasswordKeyPress}
+                    onPaste={handlePasswordPaste}
                     disabled={isLoading}
                   />
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors'
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5" />
+                      <EyeOff className='h-5 w-5' />
                     ) : (
-                      <Eye className="h-5 w-5" />
+                      <Eye className='h-5 w-5' />
                     )}
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-xs mt-1  ">
+                  <p className='text-red-500 text-xs mt-1'>
                     {errors.confirmPassword.message}
                   </p>
                 )}
               </div>
 
               {/* Terms and Conditions */}
-              <div className="space-y-3">
-                <div className="flex items-start space-x-3">
+              <div className='space-y-3'>
+                <div className='flex items-start space-x-3'>
                   <Checkbox
-                    id="agreeToTerms"
+                    id='agreeToTerms'
                     className={`border-gray-300 dark:border-gray-600 mt-0.5 ${
                       errors.agreeToTerms ? "border-red-500" : ""
                     }`}
@@ -417,31 +414,31 @@ export default function SignUpForm() {
                     disabled={isLoading}
                   />
                   <label
-                    htmlFor="agreeToTerms"
-                    className="text-gray-600 dark:text-gray-400 text-sm cursor-pointer leading-relaxed  "
+                    htmlFor='agreeToTerms'
+                    className='text-gray-600 dark:text-gray-400 text-sm cursor-pointer leading-relaxed'
                   >
                     I agree to the{" "}
                     <Link
-                      href="/terms"
-                      className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300  "
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href='/terms'
+                      className='text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300'
+                      target='_blank'
+                      rel='noopener noreferrer'
                     >
                       Terms and Conditions
                     </Link>{" "}
                     and{" "}
                     <Link
-                      href="/privacy"
-                      className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300  "
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href='/privacy'
+                      className='text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300'
+                      target='_blank'
+                      rel='noopener noreferrer'
                     >
                       Privacy Policy
                     </Link>
                   </label>
                 </div>
                 {errors.agreeToTerms && (
-                  <p className="text-red-500 text-xs ml-7  ">
+                  <p className='text-red-500 text-xs ml-7'>
                     {errors.agreeToTerms.message}
                   </p>
                 )}
@@ -450,17 +447,17 @@ export default function SignUpForm() {
               {/* Signup Button */}
               <Button
                 onClick={handleSubmit(onSubmit)}
-                className="w-full h-12 bg-primary/80 hover:bg-primary text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20"
+                className='w-full h-12 bg-primary/80 hover:bg-primary text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20'
                 disabled={isLoading || isSubmitting}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                     Creating Account...
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="mr-2 h-4 w-4" />
+                    <CheckCircle className='mr-2 h-4 w-4' />
                     Create Account
                   </>
                 )}
@@ -468,8 +465,8 @@ export default function SignUpForm() {
             </div>
 
             {/* Additional Info */}
-            <div className="mt-6 text-center space-y-2">
-              <p className="text-xs text-gray-500 dark:text-gray-400  ">
+            <div className='mt-6 text-center space-y-2'>
+              <p className='text-xs text-gray-500 dark:text-gray-400'>
                 By creating an account, you&apos;ll receive email notifications
                 about your account activity and our services.
               </p>
