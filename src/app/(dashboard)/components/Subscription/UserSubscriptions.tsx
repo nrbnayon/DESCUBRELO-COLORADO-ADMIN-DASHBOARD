@@ -27,7 +27,9 @@ export default function UserSubscriptions({
   buttonText = "Show all",
   pageUrl = "/users-subscription",
 }: UserManagementProps) {
-  const [users, setUsers] = useState(usersData);
+  const [users, setUsers] = useState<GenericDataItem[]>(
+    usersData as GenericDataItem[]
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   // Column Configuration for User Table
@@ -391,7 +393,7 @@ export default function UserSubscriptions({
     setIsLoading(true);
     // Simulate API call
     setTimeout(() => {
-      setUsers([...usersData]);
+      setUsers([...usersData] as GenericDataItem[]);
       setIsLoading(false);
       console.log("Users data refreshed");
     }, 1000);

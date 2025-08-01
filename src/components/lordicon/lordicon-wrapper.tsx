@@ -1,7 +1,13 @@
 // src/components/lordicon/lordicon-wrapper.tsx
 "use client";
 
-import { useEffect, useRef, forwardRef, useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  forwardRef,
+  useState,
+  useCallback,
+} from "react";
 import { useTheme } from "next-themes";
 
 interface LordiconProps {
@@ -82,7 +88,7 @@ const Lordicon = forwardRef<HTMLElement, LordiconProps>(
     };
 
     // Get current colors based on state
-    const getCurrentColors = () => {
+    const getCurrentColors = useCallback(() => {
       const isDark = theme === "dark";
 
       if (isActive) {
@@ -102,7 +108,15 @@ const Lordicon = forwardRef<HTMLElement, LordiconProps>(
       // Default state colors
       if (isDark && darkColors) return darkColors;
       return colors || { primary: "#6b7280", secondary: "#9ca3af" }; // gray colors for inactive
-    };
+    }, [
+      theme,
+      isActive,
+      isHovered,
+      darkColors,
+      colors,
+      darkHoverColors,
+      hoverColors,
+    ]);
 
     const formattedColors = formatColors(getCurrentColors());
 
@@ -125,7 +139,7 @@ const Lordicon = forwardRef<HTMLElement, LordiconProps>(
           iconRef.current.setAttribute("colors", newColors);
         }
       }
-    }, [isHovered, isActive, theme]);
+    }, [getCurrentColors]);
 
     const iconStyle = {
       width: `${size}px`,
@@ -137,20 +151,20 @@ const Lordicon = forwardRef<HTMLElement, LordiconProps>(
       <div
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className='inline-block'
+        className="inline-block"
       >
-        <lord-icon
-          ref={iconRef}
-          src={src}
-          trigger={trigger}
-          colors={formattedColors}
-          stroke={stroke}
-          style={iconStyle}
-          delay={delay}
-          className={className}
-          state={state}
-          {...props}
-        />
+        {React.createElement("lord-icon", {
+          ref: iconRef,
+          src,
+          trigger,
+          colors: formattedColors,
+          stroke,
+          style: iconStyle,
+          delay,
+          className,
+          state,
+          ...props,
+        })}
       </div>
     );
   }
