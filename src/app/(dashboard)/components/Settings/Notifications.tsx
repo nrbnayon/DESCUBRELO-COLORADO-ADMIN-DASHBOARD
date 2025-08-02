@@ -550,7 +550,7 @@ export default function Notifications() {
       />
 
       {/* Notifications List */}
-      <div className="space-y-2 max-h-[600px] overflow-y-auto scrollbar-custom">
+      <div className="space-y-2 max-h-[650px] overflow-y-auto scrollbar-custom">
         {currentNotifications.length === 0 ? (
           <div className="text-center py-12">
             <Bell className="w-12 h-12 text-foreground mx-auto mb-4" />
