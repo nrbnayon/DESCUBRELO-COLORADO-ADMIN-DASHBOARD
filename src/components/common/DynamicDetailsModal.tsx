@@ -59,8 +59,10 @@ export function DynamicDetailsModal({
       case "date":
         return (
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span>{new Date(String(value)).toLocaleDateString()}</span>
+            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm sm:text-base break-words">
+              {new Date(String(value)).toLocaleDateString()}
+            </span>
           </div>
         );
 
@@ -70,10 +72,10 @@ export function DynamicDetailsModal({
             href={String(value)}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-primary hover:underline"
+            className="inline-flex items-start gap-1 text-primary hover:underline break-all text-sm sm:text-base"
           >
-            {String(value)}
-            <ExternalLink className="h-3 w-3" />
+            <span className="break-all">{String(value)}</span>
+            <ExternalLink className="h-3 w-3 flex-shrink-0 mt-0.5" />
           </a>
         );
 
@@ -86,6 +88,7 @@ export function DynamicDetailsModal({
             return (
               <Badge
                 variant="secondary"
+                className="text-xs sm:text-sm max-w-full"
                 style={
                   option.color
                     ? {
@@ -95,25 +98,34 @@ export function DynamicDetailsModal({
                     : undefined
                 }
               >
-                {option.icon && <span className="mr-1">{option.icon}</span>}
-                {option.label}
+                {option.icon && (
+                  <span className="mr-1 flex-shrink-0">{option.icon}</span>
+                )}
+                <span className="truncate">{option.label}</span>
               </Badge>
             );
           }
         }
-        return <Badge variant="outline">{String(value)}</Badge>;
+        return (
+          <Badge
+            variant="outline"
+            className="text-xs sm:text-sm max-w-full truncate"
+          >
+            {String(value)}
+          </Badge>
+        );
 
       case "image":
         if (typeof value === "string" && value.trim()) {
           return (
-            <div className="space-y-2">
-              <div className="relative w-full max-w-md mx-auto">
+            <div className="space-y-2 w-full">
+              <div className="relative w-full max-w-full mx-auto">
                 <Image
                   src={value}
                   alt="Detail image"
                   width={400}
                   height={300}
-                  className="rounded-lg border object-cover w-full"
+                  className="rounded-lg border object-cover w-full h-auto max-h-[300px] sm:max-h-[400px]"
                   unoptimized={
                     value.startsWith("data:") || value.startsWith("blob:")
                   }
@@ -123,10 +135,10 @@ export function DynamicDetailsModal({
           );
         } else if (Array.isArray(value) && value.length > 0) {
           return (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="space-y-3 w-full">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                 {value.map((img, index) => (
-                  <div key={index} className="relative aspect-square">
+                  <div key={index} className="relative aspect-square w-full">
                     <Image
                       src={String(img)}
                       alt={`Image ${index + 1}`}
@@ -141,19 +153,21 @@ export function DynamicDetailsModal({
                   </div>
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground text-center">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">
                 {value.length} image{value.length > 1 ? "s" : ""}
               </p>
             </div>
           );
         }
-        return <span className="text-muted-foreground italic">No image</span>;
+        return (
+          <span className="text-muted-foreground italic text-sm">No image</span>
+        );
 
       case "textarea":
         return (
-          <div className="prose prose-sm max-w-none">
+          <div className="prose prose-sm max-w-none w-full">
             <div
-              className="whitespace-pre-wrap text-sm leading-relaxed"
+              className="whitespace-pre-wrap text-sm leading-relaxed break-words overflow-hidden"
               dangerouslySetInnerHTML={{
                 __html: String(value).replace(/\n/g, "<br>"),
               }}
@@ -165,14 +179,20 @@ export function DynamicDetailsModal({
         // Handle arrays (like tags, keywords)
         if (Array.isArray(value)) {
           if (value.length === 0) {
-            return <span className="text-muted-foreground italic">None</span>;
+            return (
+              <span className="text-muted-foreground italic text-sm">None</span>
+            );
           }
           return (
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 w-full">
               {value.map((item, index) => (
-                <Badge key={index} variant="outline" className="text-xs">
-                  <Tag className="h-3 w-3 mr-1" />
-                  {String(item)}
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="text-xs max-w-full"
+                >
+                  <Tag className="h-3 w-3 mr-1 flex-shrink-0" />
+                  <span className="truncate">{String(item)}</span>
                 </Badge>
               ))}
             </div>
@@ -186,33 +206,37 @@ export function DynamicDetailsModal({
 
           if (entries.length === 0) {
             return (
-              <span className="text-muted-foreground italic">
+              <span className="text-muted-foreground italic text-sm">
                 None provided
               </span>
             );
           }
 
           return (
-            <div className="space-y-2">
+            <div className="space-y-2 w-full">
               {entries.map(([key, val]) => (
                 <div
                   key={key}
-                  className="flex items-center justify-between p-2 rounded-md bg-muted/50"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-md bg-muted/50 gap-2 w-full overflow-hidden"
                 >
-                  <span className="font-medium capitalize text-sm">{key}:</span>
-                  {typeof val === "string" && val.startsWith("http") ? (
-                    <a
-                      href={val}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline text-sm flex items-center gap-1"
-                    >
-                      {val}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  ) : (
-                    <span className="text-sm">{String(val)}</span>
-                  )}
+                  <span className="font-medium capitalize text-sm flex-shrink-0">
+                    {key}:
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    {typeof val === "string" && val.startsWith("http") ? (
+                      <a
+                        href={val}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline text-sm flex items-start gap-1 break-all"
+                      >
+                        <span className="break-all">{val}</span>
+                        <ExternalLink className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                      </a>
+                    ) : (
+                      <span className="text-sm break-words">{String(val)}</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -222,7 +246,10 @@ export function DynamicDetailsModal({
         // Handle boolean values
         if (typeof value === "boolean") {
           return (
-            <Badge variant={value ? "default" : "secondary"}>
+            <Badge
+              variant={value ? "default" : "secondary"}
+              className="text-xs sm:text-sm"
+            >
               {value ? "Yes" : "No"}
             </Badge>
           );
@@ -230,11 +257,19 @@ export function DynamicDetailsModal({
 
         // Handle numbers
         if (typeof value === "number") {
-          return <span className="font-mono">{value.toLocaleString()}</span>;
+          return (
+            <span className="font-mono text-sm sm:text-base break-all">
+              {value.toLocaleString()}
+            </span>
+          );
         }
 
         // Default string handling
-        return <span>{String(value)}</span>;
+        return (
+          <span className="text-sm sm:text-base break-words">
+            {String(value)}
+          </span>
+        );
     }
   };
 
@@ -269,17 +304,17 @@ export function DynamicDetailsModal({
     if (fields.length === 0) return null;
 
     return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-foreground">
+      <div className="space-y-3 sm:space-y-4 w-full">
+        <h3 className="text-base sm:text-lg font-semibold text-foreground px-1">
           {sectionTitle}
         </h3>
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4 w-full">
           {fields.map((column) => (
-            <div key={column.key} className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">
+            <div key={column.key} className="space-y-2 w-full overflow-hidden">
+              <Label className="text-xs sm:text-sm font-medium text-muted-foreground px-1">
                 {column.label}
               </Label>
-              <div className="min-h-6">
+              <div className="min-h-6 w-full overflow-hidden px-1">
                 {formatValue(item[column.key], column)}
               </div>
             </div>
@@ -298,68 +333,92 @@ export function DynamicDetailsModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         className={cn(
-          "mx-4 min-w-full md:min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom",
+          // Mobile-first responsive classes
+          "w-[100vw] h-[95vh] sm:w-[95vw] sm:h-auto",
+          "sm:max-w-3xl sm:max-h-[90vh]",
+          "p-0 sm:p-6 sm:rounded-lg",
+          "overflow-auto flex flex-col",
           className
         )}
       >
-        <DialogHeader className="space-y-3">
-          <DialogTitle className="text-2xl">
+        {/* Header - Fixed on mobile, scrollable on desktop */}
+        <DialogHeader className="flex-shrink-0 p-4 sm:p-0 space-y-2 sm:space-y-3 border-b sm:border-none bg-background">
+          <DialogTitle className="text-lg sm:text-2xl leading-tight break-words pr-8 sm:pr-0">
             {title ||
               formatValue(item[columns[0]?.key], columns[0]) ||
               "Details"}
           </DialogTitle>
           {(typeof item.subtitle === "string" ||
             typeof item.subtitle === "number") && (
-            <DialogDescription className="text-base">
+            <DialogDescription className="text-sm sm:text-base break-words">
               {item.subtitle}
             </DialogDescription>
           )}
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Basic Information */}
-          {renderFieldSection("Basic Information", basicFields)}
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-4 sm:space-y-6 p-4 sm:p-0 sm:py-4 w-full">
+            {/* Basic Information */}
+            <div className="w-full">
+              {renderFieldSection("Basic Information", basicFields)}
+            </div>
 
-          {basicFields.length > 0 &&
-            (mediaFields.length > 0 ||
-              otherFields.length > 0 ||
-              metaFields.length > 0) && <Separator />}
+            {basicFields.length > 0 &&
+              (mediaFields.length > 0 ||
+                otherFields.length > 0 ||
+                metaFields.length > 0) && (
+                <Separator className="my-4 sm:my-6" />
+              )}
 
-          {/* Media */}
-          {renderFieldSection("Media", mediaFields)}
+            {/* Media */}
+            <div className="w-full">
+              {renderFieldSection("Media", mediaFields)}
+            </div>
 
-          {mediaFields.length > 0 &&
-            (otherFields.length > 0 || metaFields.length > 0) && <Separator />}
+            {mediaFields.length > 0 &&
+              (otherFields.length > 0 || metaFields.length > 0) && (
+                <Separator className="my-4 sm:my-6" />
+              )}
 
-          {/* Other Fields */}
-          {renderFieldSection("Additional Information", otherFields)}
+            {/* Other Fields */}
+            <div className="w-full">
+              {renderFieldSection("Additional Information", otherFields)}
+            </div>
 
-          {otherFields.length > 0 && metaFields.length > 0 && <Separator />}
+            {otherFields.length > 0 && metaFields.length > 0 && (
+              <Separator className="my-4 sm:my-6" />
+            )}
 
-          {/* Meta Information */}
-          {renderFieldSection("Meta Information", metaFields)}
+            {/* Meta Information */}
+            <div className="w-full">
+              {renderFieldSection("Meta Information", metaFields)}
+            </div>
+          </div>
         </div>
 
-        {/* Actions */}
+        {/* Actions - Fixed at bottom on mobile */}
         {actions.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-4 border-t justify-end">
-            {actions
-              .filter((action) => !action.condition || action.condition(item))
-              .map((action) => (
-                <Button
-                  key={action.key}
-                  variant={action.variant || "outline"}
-                  size="sm"
-                  className="flex items-center gap-2 border border-primary/50 rounded-md"
-                  onClick={() => {
-                    action.onClick(item);
-                    onClose();
-                  }}
-                >
-                  {action.icon}
-                  {action.label}
-                </Button>
-              ))}
+          <div className="flex-shrink-0 p-4 sm:p-0 sm:pt-4 border-t bg-background">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:justify-end w-full">
+              {actions
+                .filter((action) => !action.condition || action.condition(item))
+                .map((action) => (
+                  <Button
+                    key={action.key}
+                    variant={action.variant || "outline"}
+                    size="sm"
+                    className="flex items-center justify-center gap-2 border border-primary/50 rounded-md w-full sm:w-auto min-h-[44px] sm:min-h-[36px] text-sm"
+                    onClick={() => {
+                      action.onClick(item);
+                      onClose();
+                    }}
+                  >
+                    {action.icon}
+                    {action.label}
+                  </Button>
+                ))}
+            </div>
           </div>
         )}
       </DialogContent>
