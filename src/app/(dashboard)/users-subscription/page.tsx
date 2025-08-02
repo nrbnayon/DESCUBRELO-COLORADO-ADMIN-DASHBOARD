@@ -7,7 +7,7 @@ export default function ManageUserPage() {
   return (
     <div>
       <DashboardHeader title="Welcome  Nayon" />
-      <div className="p-6">
+      <div className="p-2 md:p-6">
         <h1 className="text-2xl font-bold mb-4">Manage</h1>
         <UserSubscriptions
           itemsPerPage={15}

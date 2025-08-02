@@ -4,9 +4,9 @@ import UserManagement from "../components/Overview/UserManagement";
 
 export default function ManageUserPage() {
   return (
-    <div >
+    <div>
       <DashboardHeader title="Welcome  Nayon" />
-      <div className="p-6">
+      <div className="p-2 md:p-6">
         <h1 className="text-2xl font-bold mb-4">Manage</h1>
         <UserManagement
           itemsPerPage={20}

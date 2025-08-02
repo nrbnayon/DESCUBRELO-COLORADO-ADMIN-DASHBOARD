@@ -441,7 +441,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                     }))
                   }
                 >
-                  <SelectTrigger className="w-48 border-primary/30 rounded-md">
+                  <SelectTrigger className="w-fit md:w-48 border-primary/30 rounded-md">
                     <SelectValue placeholder={filter.label} />
                   </SelectTrigger>
                   <SelectContent>
@@ -637,7 +637,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   return (
     <div
       className={cn(
-        "space-y-5 border border-primary/30 p-4 mt-4 rounded-2xl",
+        "space-y-5 border border-primary/30 p-2 md:p-4 mt-4 rounded-2xl",
         config.className
       )}
     >
@@ -664,9 +664,9 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
+      <div className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center">
         {config.enableSearch && (
-          <div className="relative flex-1 max-w-sm border-primary/30 rounded-md">
+          <div className="relative w-full lg:flex-1 lg:max-w-sm border-primary/30 rounded-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder={config.searchPlaceholder}
@@ -676,14 +676,16 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
             />
           </div>
         )}
-        {renderFilters()}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col xs:flex-row gap-2 lg:gap-3 w-full lg:w-auto">
+          {renderFilters()}
+        </div>
+        <div className="flex flex-row gap-2 w-full lg:w-auto justify-center lg:justify-end">
           {onRefresh && (
             <Button
               variant="outline"
               size="lg"
               onClick={onRefresh}
-              className="border-primary/30 rounded-md"
+              className="border-primary/30 rounded-md flex-1 lg:flex-none"
             >
               <RefreshCw className="w-4 h-4" />
             </Button>
@@ -693,7 +695,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
               variant="outline"
               size="lg"
               onClick={() => onExport(filteredData)}
-              className="border-primary/30 rounded-md"
+              className="border-primary/30 rounded-md flex-1 lg:flex-none"
             >
               <Download className="w-4 h-4" />
               Export
@@ -702,13 +704,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
         </div>
       </div>
 
-      {/* Selection Info with Bulk Actions */}
+      {/* Selection Info with Bulk Actions - Fully Responsive */}
       {config.enableSelection && selectedItems.length > 0 && (
-        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg text-black">
-          <span className="text-sm text-blue-700">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 bg-blue-50 rounded-lg text-black">
+          <span className="text-sm text-blue-700 text-center sm:text-left">
             {selectedItems.length} item(s) selected
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col xs:flex-row items-center gap-2">
             {onExport && (
               <Button
                 variant="outline"
@@ -719,6 +721,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                   );
                   onExport(selectedData);
                 }}
+                className="w-full xs:w-auto"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Export Selected
@@ -735,6 +738,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                     itemName: `${selectedItems.length} selected items`,
                   });
                 }}
+                className="w-full xs:w-auto"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete Selected
@@ -744,6 +748,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
               variant="outline"
               size="sm"
               onClick={() => setSelectedItems([])}
+              className="w-full xs:w-auto"
             >
               Clear Selection
             </Button>

@@ -6,7 +6,7 @@ export default function ManagePostsPage() {
   return (
     <div>
       <DashboardHeader title="Welcome Nayon" />
-      <div className="p-6">
+      <div className="p-2 md:p-6">
         <ManagementPosts itemsPerPage={8} title="All Posts" />
       </div>
     </div>

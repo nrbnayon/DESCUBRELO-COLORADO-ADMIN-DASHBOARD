@@ -6,7 +6,7 @@ export default function SettingsPage() {
   return (
     <div>
       <DashboardHeader title="Settings" />
-      <div className="px-6 py-2">
+      <div className="p-2 md:px-6 py-2">
         <SettingsLayout />
       </div>
     </div>

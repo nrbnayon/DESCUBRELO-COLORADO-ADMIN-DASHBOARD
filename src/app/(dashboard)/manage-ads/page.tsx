@@ -6,7 +6,7 @@ export default function ManageAdsPage() {
   return (
     <div>
       <DashboardHeader title="Welcome Nayon" />
-      <div className="p-6">
+      <div className="p-2 md:p-6">
         <ManagementAds itemsPerPage={4} showAds={1} title="Advertisements" />
       </div>
     </div>

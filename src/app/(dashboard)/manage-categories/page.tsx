@@ -6,7 +6,7 @@ export default function ManageCategoriesPage() {
   return (
     <div>
       <DashboardHeader title="Welcome Nayon" />
-      <div className="p-6">
+      <div className="p-2 md:p-6">
         <ManagementCategories
           itemsPerPage={20}
           title="All Categories"

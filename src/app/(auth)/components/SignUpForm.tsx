@@ -8,7 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { User, Mail, Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
+import {
+  User,
+  Mail,
+  Eye,
+  EyeOff,
+  Loader2,
+  CheckCircle,
+  ArrowLeft,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -166,31 +174,38 @@ export default function SignUpForm() {
   const passwordStrength = getPasswordStrength(password);
 
   return (
-    <div className='min-h-screen flex bg-white dark:bg-primary-dark'>
+    <div className="min-h-screen flex flex-col-reverse lg:flex-row bg-white dark:bg-primary-dark">
       {/* Left Side - Welcome Message */}
-      <div className='flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-8 text-white'>
-        <div className='max-w-md text-center space-y-6'>
-          <div className='w-full flex justify-center items-center'>
-            <Image src='/logo.png' alt='logo' width={200} height={200} />
+      <div className="flex-1 bg-sidebar-gradient dark:bg-primary-dark flex items-center justify-center p-4 sm:p-6 lg:p-8 text-white order-2 lg:order-1">
+        <div className="max-w-sm sm:max-w-md text-center space-y-4 sm:space-y-6 w-full">
+          <div className="w-full flex justify-center items-center">
+            <Image
+              src="/logo1.png"
+              alt="logo"
+              width={80}
+              height={80}
+              className="w-[80px] h-[80px] sm:w-[120px] sm:h-[120px] md:w-[150px] md:h-[150px] lg:w-[200px] lg:h-[200px]"
+            />
           </div>
-          <h1 className='text-4xl leading-tight'>Join Us Today!</h1>
-          <p className='text-lg opacity-90'>
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-tight">
+            Join Us Today!
+          </h1>
+          <p className="text-xs sm:text-sm md:text-base lg:text-lg opacity-90 px-2 sm:px-0">
             Create your account and get started with our amazing platform
           </p>
-          <div className='pt-4 space-y-3'>
+          <div className="pt-2 sm:pt-4 space-y-3">
             <Button
-              variant='outline'
+              variant="outline"
               onClick={handleDemoSignup}
-              className='bg-white/10 border-white/20 text-white hover:text-white hover:bg-white/20 w-full backdrop-blur-sm'
+              className="bg-white/10 border-white/20 text-white hover:text-white hover:bg-white/20 w-full backdrop-blur-sm text-xs sm:text-sm"
+              disabled={isLoading}
             >
-              Fill Demo Information
+              <span className="hidden sm:inline">Fill Demo Information</span>
+              <span className="sm:hidden">Demo Info</span>
             </Button>
-            <p className='text-sm opacity-75'>
+            <p className="text-xs sm:text-sm opacity-75">
               Already have an account?{" "}
-              <Link
-                href='/login'
-                className='text-white underline hover:opacity-80'
-              >
+              <Link href="/login" className="text-success underline font-bold">
                 Sign In
               </Link>
             </p>
@@ -199,127 +214,139 @@ export default function SignUpForm() {
       </div>
 
       {/* Right Side - Signup Form */}
-      <div className='flex-1 bg-white dark:bg-primary-dark flex items-center justify-center p-8'>
-        <Card className='w-full p-2 lg:p-10 max-w-2xl rounded-4xl border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-800'>
-          <CardHeader className='text-center pb-6'>
-            <h2 className='text-2xl text-gray-900 dark:text-white mb-2'>
+      <div className="flex-1 bg-white dark:bg-primary-dark flex items-center justify-center p-4 sm:p-6 lg:p-8 order-1 lg:order-2 relative">
+        <Card className="w-full max-w-sm sm:max-w-md lg:max-w-2xl p-4 sm:p-6 lg:p-10 rounded-2xl sm:rounded-3xl lg:rounded-4xl border border-gray-200 dark:border-gray-700 shadow-lg bg-white dark:bg-gray-800">
+          <CardHeader className="text-center pb-4 sm:pb-6 relative">
+            <div className="flex items-center justify-center mb-2 sm:mb-4">
+              <Link
+                href="/login"
+                className="absolute left-0 top-0 sm:left-2 sm:top-2 lg:left-4 lg:top-4 p-1 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600 dark:text-gray-400" />
+              </Link>
+            </div>
+            <h2 className="text-lg sm:text-xl lg:text-2xl text-gray-900 dark:text-white mb-2">
               Create Your Account
             </h2>
-            <p className='text-gray-600 dark:text-gray-400 text-sm'>
+            <p className="text-muted-foreground text-xs sm:text-sm px-2 sm:px-0">
               Already have an account?{" "}
               <Link
-                href='/login'
-                className='text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300'
+                href="/login"
+                className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300"
               >
                 Sign In
               </Link>
             </p>
           </CardHeader>
 
-          <CardContent>
-            <div className='space-y-6'>
+          <CardContent className="px-2 sm:px-4 lg:px-6">
+            <form
+              className="space-y-4 sm:space-y-6"
+              onSubmit={handleSubmit(onSubmit)}
+            >
               {/* Full Name Field */}
-              <div className='space-y-2'>
+              <div className="space-y-2">
                 <label
-                  htmlFor='full_name'
-                  className='text-gray-900 dark:text-white text-sm block'
+                  htmlFor="full_name"
+                  className="text-foreground text-sm sm:text-base font-medium block"
                 >
                   Full Name
                 </label>
-                <div className='relative'>
+                <div className="relative">
                   <Input
-                    id='full_name'
-                    type='text'
-                    placeholder='Enter your full name'
-                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border ${
+                    id="full_name"
+                    type="text"
+                    placeholder="Enter your full name"
+                    className={`pl-4 pr-10 h-10 sm:h-12 rounded-md focus-visible:border-primary border-primary/30 bg-input text-foreground placeholder:text-muted-foreground text-sm sm:text-base ${
                       errors.full_name
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                    } focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20`}
+                        ? "border-error focus:border-error"
+                        : "input-focus"
+                    }`}
                     {...register("full_name")}
                     disabled={isLoading}
                   />
-                  <User className='absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500' />
+                  <User className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </div>
                 {errors.full_name && (
-                  <p className='text-red-500 text-xs mt-1'>
+                  <p className="text-error text-xs mt-1">
                     {errors.full_name.message}
                   </p>
                 )}
               </div>
 
-              {/* Email Field - Option 1: Prevent spaces with warnings */}
-              <div className='space-y-2'>
+              {/* Email Field */}
+              <div className="space-y-2">
                 <label
-                  htmlFor='email'
-                  className='text-gray-900 dark:text-white text-sm block'
+                  htmlFor="email"
+                  className="text-foreground text-sm sm:text-base font-medium block"
                 >
                   Email Address
                 </label>
-                <div className='relative'>
+                <div className="relative">
                   <Input
-                    id='email'
-                    type='email'
-                    placeholder='Enter your email address'
-                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border ${
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    className={`pl-4 pr-10 h-10 sm:h-12 rounded-md focus-visible:border-primary border-primary/30 bg-input text-foreground placeholder:text-muted-foreground text-sm sm:text-base ${
                       errors.email
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                    } focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20`}
+                        ? "border-error focus:border-error"
+                        : "input-focus"
+                    }`}
                     {...register("email")}
                     onKeyPress={handleEmailKeyPress}
                     onPaste={handleEmailPaste}
                     disabled={isLoading}
                   />
-                  <Mail className='absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500' />
+                  <Mail className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                 </div>
                 {errors.email && (
-                  <p className='text-red-500 text-xs mt-1'>
+                  <p className="text-error text-xs mt-1">
                     {errors.email.message}
                   </p>
                 )}
               </div>
-              {/* Password Field - */}
-              <div className='space-y-2'>
+
+              {/* Password Field */}
+              <div className="space-y-2">
                 <label
-                  htmlFor='password'
-                  className='text-gray-900 dark:text-white text-sm block'
+                  htmlFor="password"
+                  className="text-foreground text-sm sm:text-base font-medium block"
                 >
                   Password
                 </label>
-                <div className='relative'>
+                <div className="relative">
                   <Input
-                    id='password'
+                    id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder='Create a strong password'
-                    className={`pl-4 pr-10 h-12 bg-gray-50 dark:bg-gray-700 rounded-md text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border ${
+                    placeholder="Create a strong password"
+                    className={`pl-4 pr-10 h-10 sm:h-12 rounded-md focus-visible:border-primary border-primary/30 bg-input text-foreground placeholder:text-muted-foreground text-sm sm:text-base ${
                       errors.password
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                    } focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20`}
+                        ? "border-error focus:border-error"
+                        : "input-focus"
+                    }`}
                     {...register("password")}
                     onKeyPress={handlePasswordKeyPress}
                     onPaste={handlePasswordPaste}
                     disabled={isLoading}
                   />
                   <button
-                    type='button'
+                    type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors'
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                     disabled={isLoading}
                   >
                     {showPassword ? (
-                      <EyeOff className='h-5 w-5' />
+                      <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
                     ) : (
-                      <Eye className='h-5 w-5' />
+                      <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                     )}
                   </button>
                 </div>
 
                 {/* Password Strength Indicator */}
                 {password && (
-                  <div className='space-y-1'>
-                    <div className='flex space-x-1'>
+                  <div className="space-y-1">
+                    <div className="flex space-x-1">
                       {[1, 2, 3, 4, 5].map((level) => (
                         <div
                           key={level}
@@ -350,62 +377,62 @@ export default function SignUpForm() {
                 )}
 
                 {errors.password && (
-                  <p className='text-red-500 text-xs mt-1'>
+                  <p className="text-error text-xs mt-1">
                     {errors.password.message}
                   </p>
                 )}
               </div>
 
               {/* Confirm Password Field */}
-              <div className='space-y-2'>
+              <div className="space-y-2">
                 <label
-                  htmlFor='confirmPassword'
-                  className='text-gray-900 dark:text-white text-sm block'
+                  htmlFor="confirmPassword"
+                  className="text-foreground text-sm sm:text-base font-medium block"
                 >
                   Confirm Password
                 </label>
-                <div className='relative'>
+                <div className="relative">
                   <Input
-                    id='confirmPassword'
+                    id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder='Confirm your password'
-                    className={`pl-4 pr-10 h-12 bg-gray-50 rounded-md dark:bg-gray-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 border ${
+                    placeholder="Confirm your password"
+                    className={`pl-4 pr-10 h-10 sm:h-12 rounded-md focus-visible:border-primary border-primary/30 bg-input text-foreground placeholder:text-muted-foreground text-sm sm:text-base ${
                       errors.confirmPassword
-                        ? "border-red-500 focus:border-red-500"
-                        : "border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400"
-                    } focus:ring-2 focus:ring-indigo-500/20 dark:focus:ring-indigo-400/20`}
+                        ? "border-error focus:border-error"
+                        : "input-focus"
+                    }`}
                     {...register("confirmPassword")}
                     onKeyPress={handlePasswordKeyPress}
                     onPaste={handlePasswordPaste}
                     disabled={isLoading}
                   />
                   <button
-                    type='button'
+                    type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors'
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className='h-5 w-5' />
+                      <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
                     ) : (
-                      <Eye className='h-5 w-5' />
+                      <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                     )}
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className='text-red-500 text-xs mt-1'>
+                  <p className="text-error text-xs mt-1">
                     {errors.confirmPassword.message}
                   </p>
                 )}
               </div>
 
               {/* Terms and Conditions */}
-              <div className='space-y-3'>
-                <div className='flex items-start space-x-3'>
+              <div className="space-y-3">
+                <div className="flex items-start space-x-2 sm:space-x-3">
                   <Checkbox
-                    id='agreeToTerms'
-                    className={`border-gray-300 dark:border-gray-600 mt-0.5 ${
-                      errors.agreeToTerms ? "border-red-500" : ""
+                    id="agreeToTerms"
+                    className={`border-primary/30 mt-0.5 ${
+                      errors.agreeToTerms ? "border-error" : ""
                     }`}
                     checked={agreeToTerms}
                     onCheckedChange={(checked) =>
@@ -414,31 +441,31 @@ export default function SignUpForm() {
                     disabled={isLoading}
                   />
                   <label
-                    htmlFor='agreeToTerms'
-                    className='text-gray-600 dark:text-gray-400 text-sm cursor-pointer leading-relaxed'
+                    htmlFor="agreeToTerms"
+                    className="text-muted-foreground text-xs sm:text-sm cursor-pointer leading-relaxed"
                   >
                     I agree to the{" "}
                     <Link
-                      href='/terms'
-                      className='text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300'
-                      target='_blank'
-                      rel='noopener noreferrer'
+                      href="/terms"
+                      className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       Terms and Conditions
                     </Link>{" "}
                     and{" "}
                     <Link
-                      href='/privacy'
-                      className='text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300'
-                      target='_blank'
-                      rel='noopener noreferrer'
+                      href="/privacy"
+                      className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       Privacy Policy
                     </Link>
                   </label>
                 </div>
                 {errors.agreeToTerms && (
-                  <p className='text-red-500 text-xs ml-7'>
+                  <p className="text-error text-xs ml-6 sm:ml-7">
                     {errors.agreeToTerms.message}
                   </p>
                 )}
@@ -446,27 +473,31 @@ export default function SignUpForm() {
 
               {/* Signup Button */}
               <Button
-                onClick={handleSubmit(onSubmit)}
-                className='w-full h-12 bg-primary/80 hover:bg-primary text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20'
+                type="submit"
+                className="w-full h-10 sm:h-12 bg-primary/80 hover:bg-primary text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-indigo-500/20 text-sm sm:text-base"
                 disabled={isLoading || isSubmitting}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                    Creating Account...
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span className="hidden sm:inline">
+                      Creating Account...
+                    </span>
+                    <span className="sm:hidden">Creating...</span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle className='mr-2 h-4 w-4' />
-                    Create Account
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Create Account</span>
+                    <span className="sm:hidden">Create</span>
                   </>
                 )}
               </Button>
-            </div>
+            </form>
 
             {/* Additional Info */}
-            <div className='mt-6 text-center space-y-2'>
-              <p className='text-xs text-gray-500 dark:text-gray-400'>
+            <div className="mt-4 sm:mt-6 text-center">
+              <p className="text-xs text-muted-foreground px-2 sm:px-0">
                 By creating an account, you&apos;ll receive email notifications
                 about your account activity and our services.
               </p>
