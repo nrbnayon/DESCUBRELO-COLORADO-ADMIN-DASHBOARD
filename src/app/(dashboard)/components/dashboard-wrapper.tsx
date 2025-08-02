@@ -34,13 +34,13 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
   const getIconColors = (isActive: boolean, isDark: boolean) => {
     if (isActive) {
       return {
-        primary: isDark ? "#FFFF00" : "#4dba28",
-        secondary: isDark ? "#FFFF00" : "#4dba28",
+        primary: isDark ? "#FFFF00" : "#4693D9",
+        secondary: isDark ? "#FFFF00" : "#4693D9",
       };
     }
     return {
-      primary: isDark ? "#FFFF00" : "#4dba28",
-      secondary: isDark ? "#FFFF00" : "#4dba28",
+      primary: isDark ? "#FFFF00" : "#4693D9",
+      secondary: isDark ? "#FFFF00" : "#4693D9",
     };
   };
 
@@ -296,8 +296,8 @@ const Logo = ({ open }: { open: boolean }) => {
       >
         <Image
           className="w-full h-full object-contain"
-          alt="PrimeFlow Logo"
-          src="/logo.png"
+          alt="MilkMix"
+          src="/logo1.png"
           width={open ? 128 : 100}
           height={80}
         />

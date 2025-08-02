@@ -181,9 +181,16 @@ export const SidebarLink = ({
   link: Links;
   className?: string;
 }) => {
-  const { open, animate } = useSidebar();
+  const { open, animate, setOpen } = useSidebar();
   const pathname = usePathname();
   const isActive = pathname === link.href;
+
+  const handleClick = () => {
+    // Close sidebar on mobile when a link is clicked
+    if (window.innerWidth < 768) {
+      setOpen(false);
+    }
+  };
 
   return (
     <Link
@@ -195,6 +202,7 @@ export const SidebarLink = ({
           : "hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200",
         className
       )}
+      onClick={handleClick}
       {...props}
     >
       <span className="mt-1.5"> {link.icon}</span>
