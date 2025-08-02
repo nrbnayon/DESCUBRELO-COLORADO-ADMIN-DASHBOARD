@@ -233,7 +233,7 @@ export const ViewModal: React.FC<ViewModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom">
+      <DialogContent className="w-full md:min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             {item.avatar && (

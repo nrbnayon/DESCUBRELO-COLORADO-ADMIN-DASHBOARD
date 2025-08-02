@@ -446,25 +446,27 @@ export default function TermsAdminPage() {
   };
 
   return (
-    <div className='p-6 space-y-6'>
+    <div className="p-3 md:p-6 space-y-3 md:space-y-6">
       {/* Header */}
-      <div className='flex items-center justify-between'>
-        <div className='flex items-center space-x-3'>
-          <div className='p-2 bg-blue-50 rounded-lg'>
-            <FileText className='w-6 h-6 text-blue-600' />
+      <div className="flex flex-col md:flex-row items-center gap-3 justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="p-2 bg-blue-50 rounded-lg">
+            <FileText className="w-6 h-6 text-blue-600" />
           </div>
           <div>
-            <h1 className='text-2xl font-semibold text-gray-900'>
+            <h1 className="text-base md:text-2xl font-semibold text-gray-900">
               Terms & Conditions
             </h1>
-            <p className='text-gray-600'>Manage legal documents and policies</p>
+            <p className="text-sm md:text-lg text-gray-600">
+              Manage legal documents and policies
+            </p>
           </div>
         </div>
         <Button
           onClick={() => setIsCreateModalOpen(true)}
-          className='flex items-center space-x-2'
+          className="flex items-center space-x-2"
         >
-          <Plus className='w-4 h-4' />
+          <Plus className="w-4 h-4" />
           <span>Add New Terms</span>
         </Button>
       </div>
@@ -474,69 +476,69 @@ export default function TermsAdminPage() {
         state={searchFilterState}
         config={searchFilterConfig}
         onStateChange={setSearchFilterState}
-        className='bg-white rounded-lg border border-gray-200 p-4'
+        className="bg-white rounded-lg border border-gray-200 p-4"
       />
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-        <div className='bg-white p-4 rounded-lg border border-gray-200'>
-          <div className='flex items-center justify-between'>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className='text-sm text-gray-600'>Total Terms</p>
-              <p className='text-2xl font-semibold text-gray-900'>
+              <p className="text-sm text-gray-600">Total Terms</p>
+              <p className="text-2xl font-semibold text-gray-900">
                 {termsData.length}
               </p>
             </div>
-            <FileText className='w-8 h-8 text-gray-400' />
+            <FileText className="w-8 h-8 text-gray-400" />
           </div>
         </div>
 
-        <div className='bg-white p-4 rounded-lg border border-gray-200'>
-          <div className='flex items-center justify-between'>
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className='text-sm text-gray-600'>Active</p>
-              <p className='text-2xl font-semibold text-green-600'>
+              <p className="text-sm text-gray-600">Active</p>
+              <p className="text-2xl font-semibold text-green-600">
                 {termsData.filter((t) => t.status === "active").length}
               </p>
             </div>
-            <CheckCircle className='w-8 h-8 text-green-400' />
+            <CheckCircle className="w-8 h-8 text-green-400" />
           </div>
         </div>
 
-        <div className='bg-white p-4 rounded-lg border border-gray-200'>
-          <div className='flex items-center justify-between'>
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className='text-sm text-gray-600'>Deactive</p>
-              <p className='text-2xl font-semibold text-red-600'>
+              <p className="text-sm text-gray-600">Deactive</p>
+              <p className="text-2xl font-semibold text-red-600">
                 {termsData.filter((t) => t.status === "deactive").length}
               </p>
             </div>
-            <Edit className='w-8 h-8 text-red-400' />
+            <Edit className="w-8 h-8 text-red-400" />
           </div>
         </div>
 
-        <div className='bg-white p-4 rounded-lg border border-gray-200'>
-          <div className='flex items-center justify-between'>
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between">
             <div>
-              <p className='text-sm text-gray-600'>Categories</p>
-              <p className='text-2xl font-semibold text-blue-600'>
+              <p className="text-sm text-gray-600">Categories</p>
+              <p className="text-2xl font-semibold text-blue-600">
                 {new Set(termsData.map((t) => t.category)).size}
               </p>
             </div>
-            <FileText className='w-8 h-8 text-blue-400' />
+            <FileText className="w-8 h-8 text-blue-400" />
           </div>
         </div>
       </div>
 
       {/* Terms List */}
-      <div className='space-y-4'>
+      <div className="space-y-4">
         {filteredTerms.length === 0 ? (
-          <div className='text-center py-12 bg-white rounded-lg border border-gray-200'>
-            <FileText className='w-12 h-12 text-gray-400 mx-auto mb-4' />
-            <h3 className='text-lg font-medium text-gray-900 mb-2'>
+          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+            <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
               No terms found
             </h3>
-            <p className='text-gray-600 mb-4'>
+            <p className="text-gray-600 mb-4">
               {searchFilterState.search ||
               Object.keys(searchFilterState.filters).length > 0
                 ? "No terms match your current filters."
@@ -545,7 +547,7 @@ export default function TermsAdminPage() {
             {!searchFilterState.search &&
               Object.keys(searchFilterState.filters).length === 0 && (
                 <Button onClick={() => setIsCreateModalOpen(true)}>
-                  <Plus className='w-4 h-4 mr-2' />
+                  <Plus className="w-4 h-4 mr-2" />
                   Add New Terms
                 </Button>
               )}
@@ -554,16 +556,16 @@ export default function TermsAdminPage() {
           filteredTerms.map((item, index) => (
             <div
               key={item.id}
-              className='bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-all duration-200'
+              className="bg-white rounded-lg border border-gray-200 p-3 md:p-6 hover:shadow-md transition-all duration-200"
             >
-              <div className='flex items-start justify-between'>
+              <div className="flex items-start justify-between">
                 {/* Content */}
-                <div className='flex-1 space-y-3'>
+                <div className="flex-1 space-y-3">
                   {/* Header */}
-                  <div className='flex items-start justify-between'>
-                    <div className='flex-1'>
-                      <div className='flex items-center space-x-3 mb-2'>
-                        <h3 className='text-lg font-semibold text-gray-900'>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h3 className="text-md md:text-lg font-semibold text-gray-900">
                           {item.title}
                         </h3>
                         <Badge
@@ -583,65 +585,65 @@ export default function TermsAdminPage() {
                             item.category.slice(1)}
                         </Badge>
                       </div>
-                      <p className='text-gray-600 text-sm leading-relaxed'>
+                      <p className="text-gray-600 text-xs md:text-sm leading-relaxed">
                         {item.description}
                       </p>
                     </div>
                   </div>
 
                   {/* Meta Info */}
-                  <div className='flex items-center space-x-4 text-xs text-gray-500'>
+                  <div className="flex items-center space-x-4 text-xs text-gray-500">
                     <span>Order: #{item.order}</span>
                     <span>Content: {item.content.length} characters</span>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className='flex items-center space-x-2 ml-4'>
+                <div className="flex items-center space-x-2 ml-4">
                   {/* Order Controls */}
-                  <div className='flex flex-col space-y-1'>
+                  <div className="flex flex-col space-y-1">
                     <Button
-                      variant='ghost'
-                      size='sm'
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleOrderChange(item, "up")}
                       disabled={index === 0}
-                      className='h-6 w-6 p-0'
+                      className="h-6 w-6 p-0"
                     >
-                      <ArrowUp className='w-3 h-3' />
+                      <ArrowUp className="w-3 h-3" />
                     </Button>
                     <Button
-                      variant='ghost'
-                      size='sm'
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleOrderChange(item, "down")}
                       disabled={index === filteredTerms.length - 1}
-                      className='h-6 w-6 p-0'
+                      className="h-6 w-6 p-0"
                     >
-                      <ArrowDown className='w-3 h-3' />
+                      <ArrowDown className="w-3 h-3" />
                     </Button>
                   </div>
 
                   {/* More Actions */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant='ghost' size='sm' className='h-8 w-8 p-0'>
-                        <MoreVertical className='w-4 h-4' />
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end'>
+                    <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => openViewModal(item)}>
-                        <Eye className='w-4 h-4 mr-2' />
+                        <Eye className="w-4 h-4 mr-2" />
                         View
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => openEditModal(item)}>
-                        <Edit className='w-4 h-4 mr-2' />
+                        <Edit className="w-4 h-4 mr-2" />
                         Edit
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => setDeleteDialog({ isOpen: true, item })}
-                        className='text-red-600'
+                        className="text-red-600"
                       >
-                        <Trash2 className='w-4 h-4 mr-2' />
+                        <Trash2 className="w-4 h-4 mr-2" />
                         Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -658,11 +660,11 @@ export default function TermsAdminPage() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSave={handleCreate}
-        title='Create New Terms & Conditions'
-        description='Add a new legal document or policy to your platform'
+        title="Create New Terms & Conditions"
+        description="Add a new legal document or policy to your platform"
         fields={formFields}
-        saveButtonText='Create Terms'
-        cancelButtonText='Cancel'
+        saveButtonText="Create Terms"
+        cancelButtonText="Cancel"
       />
 
       {/* Edit Modal */}
@@ -673,12 +675,12 @@ export default function TermsAdminPage() {
           setEditingItem(null);
         }}
         onSave={handleEdit}
-        title='Edit Terms & Conditions'
-        description='Update the selected legal document or policy'
+        title="Edit Terms & Conditions"
+        description="Update the selected legal document or policy"
         fields={formFields}
         initialData={getEditInitialData()}
-        saveButtonText='Update Terms'
-        cancelButtonText='Cancel'
+        saveButtonText="Update Terms"
+        cancelButtonText="Cancel"
       />
 
       {/* View Modal */}
@@ -690,8 +692,8 @@ export default function TermsAdminPage() {
         }}
         item={viewingItem}
         columns={columnConfig}
-        title='Terms & Conditions Details'
-        description='Detailed view of the selected terms and conditions'
+        title="Terms & Conditions Details"
+        description="Detailed view of the selected terms and conditions"
       />
 
       {/* Delete Dialog */}
@@ -713,7 +715,7 @@ export default function TermsAdminPage() {
               onClick={() =>
                 deleteDialog.item && handleDelete(deleteDialog.item)
               }
-              className='bg-red-600 hover:bg-red-700'
+              className="bg-red-600 hover:bg-red-700"
             >
               Delete
             </AlertDialogAction>

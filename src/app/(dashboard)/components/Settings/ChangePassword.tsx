@@ -68,24 +68,29 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <Shield className="w-6 h-6 text-gray-700" />
+    <div className="p-4 sm:p-6">
+      <div className="flex items-center space-x-3 mb-4 sm:mb-6">
+        <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" />
         <div>
-          <h3 className="text-xl font-semibold text-gray-900">
+          <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
             Security Settings
           </h3>
-          <p className="text-gray-600">Manage your account security</p>
+          <p className="text-sm sm:text-base text-gray-600">
+            Manage your account security
+          </p>
         </div>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         {/* Change Password */}
-        <div className="border border-primary/30 rounded-lg p-6">
-          <h4 className="text-lg font-medium text-gray-900 mb-4">
+        <div className="border border-primary/30 rounded-lg p-4 sm:p-6">
+          <h4 className="text-base sm:text-lg font-medium text-gray-900 mb-4">
             Change Password
           </h4>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4 sm:space-y-6"
+          >
             {/* Current Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -96,7 +101,7 @@ export default function ChangePassword() {
                 <Input
                   {...register("currentPassword")}
                   type={showCurrentPassword ? "text" : "password"}
-                  className="w-full pl-10 pr-10 h-12 rounded-md border-primary/30 focus-visible:border-primary bg-input text-foreground focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                  className="w-full pl-10 pr-10 h-10 sm:h-12 rounded-md border-primary/30 focus-visible:border-primary bg-input text-foreground focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                   placeholder="Enter your current password"
                   disabled={isLoading}
                   onKeyDown={(e) => {
@@ -112,9 +117,9 @@ export default function ChangePassword() {
                   disabled={isLoading}
                 >
                   {showCurrentPassword ? (
-                    <EyeOff className="w-5 h-5" />
+                    <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                   ) : (
-                    <Eye className="w-5 h-5" />
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                 </button>
               </div>
@@ -125,7 +130,7 @@ export default function ChangePassword() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* New Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -136,7 +141,7 @@ export default function ChangePassword() {
                   <Input
                     {...register("newPassword")}
                     type={showNewPassword ? "text" : "password"}
-                    className="w-full pl-10 pr-10 h-12 rounded-md border-primary/30 focus-visible:border-primary bg-input text-foreground focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full pl-10 pr-10 h-10 sm:h-12 rounded-md border-primary/30 focus-visible:border-primary bg-input text-foreground focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="Enter your new password"
                     disabled={isLoading}
                     onKeyDown={(e) => {
@@ -152,9 +157,9 @@ export default function ChangePassword() {
                     disabled={isLoading}
                   >
                     {showNewPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </button>
                 </div>
@@ -175,7 +180,7 @@ export default function ChangePassword() {
                   <Input
                     {...register("confirmPassword")}
                     type={showConfirmPassword ? "text" : "password"}
-                    className="w-full pl-10 pr-10 h-12 rounded-md border-primary/30 focus-visible:border-primary bg-input text-foreground focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    className="w-full pl-10 pr-10 h-10 sm:h-12 rounded-md border-primary/30 focus-visible:border-primary bg-input text-foreground focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                     placeholder="Confirm your new password"
                     disabled={isLoading}
                     onKeyDown={(e) => {
@@ -191,9 +196,9 @@ export default function ChangePassword() {
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
                     )}
                   </button>
                 </div>
@@ -239,7 +244,7 @@ export default function ChangePassword() {
                       }`}
                     />
                     <span>At least one number</span>
-                  </div> 
+                  </div>
                 </div>
               </div>
             </div>
@@ -248,7 +253,7 @@ export default function ChangePassword() {
             <div className="w-full flex justify-end items-end">
               <Button
                 type="submit"
-                className="flex items-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center space-x-2 px-4 py-2 sm:py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                 disabled={isLoading || isSubmitting}
               >
                 <Save className="w-4 h-4" />
@@ -259,13 +264,13 @@ export default function ChangePassword() {
         </div>
 
         {/* Two-Factor Authentication */}
-        <div className="border border-primary/30 rounded-lg p-6">
+        <div className="border border-primary/30 rounded-lg p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h4 className="text-lg font-medium text-gray-900">
+              <h4 className="text-base sm:text-lg font-medium text-gray-900">
                 Two-Factor Authentication
               </h4>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Add an extra layer of security to your account
               </p>
             </div>
