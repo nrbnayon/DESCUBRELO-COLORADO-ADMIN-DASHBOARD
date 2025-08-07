@@ -20,7 +20,7 @@ export const defaultMetrics: MetricData[] = [
     sparklinePoints: [35, 32, 34, 30, 28, 25, 23, 20, 18, 22, 19, 16],
   },
   {
-    title: "Active now",
+    title: "Subscribed User",
     value: "316",
     trend: "up",
     trendValue: "20",

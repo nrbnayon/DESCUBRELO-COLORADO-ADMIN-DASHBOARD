@@ -1,9 +1,56 @@
 // src/types/dynamicCardTypes.ts
+
+interface Coordinates {
+  latitude: number;
+  longitude: number;
+}
+
+interface OfflineTileBounds {
+  southwest: Coordinates;
+  northeast: Coordinates;
+}
+
+interface OfflineZoomRange {
+  minZoom: number;
+  maxZoom: number;
+}
+
+interface OfflineData {
+  mapTiles?: boolean; // Are map tiles downloaded?
+  detailsAvailable?: boolean; // Are detailed data available offline?
+  navigationSupported?: boolean; // Is navigation supported offline?
+  downloadedAt?: string; // ISO date string when downloaded
+  tileRegionName?: string; // Unique Mapbox offline region name/id
+  tileBounds?: OfflineTileBounds; // Bounds of the downloaded tile region
+  zoomRange?: OfflineZoomRange; // Min and max zoom for offline tiles
+  downloadProgress?: number; // Download progress (0 to 100)
+  [key: string]: any; // Extra offline-related fields
+}
+
 export interface GenericDataItem {
   id: string;
-  subtitle?: string;
-  [key: string]: string | unknown;
+  title?: string;
+  description?: string;
+  address?: string;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  totalEvent?: number;
+  type?: string;
+  rating?: number; // read-only, not editable
+  dateRange?: string;
+  images?: string[];
+  isFeatured?: boolean;
+  phone?: string;
+  socialLinks?: Record<string, string>; // e.g. { facebook: string, instagram: string }
+  openingHours?: string;
+  price?: number;
+  categories?: string[];
+  offlineSupported?: boolean; // Indicates if this item supports offline use
+  offlineData?: OfflineData; // Offline map & data info
+  [key: string]: any;
 }
+
 
 export type FieldType =
   | "text"
@@ -160,7 +207,7 @@ export interface CardConfig {
   customFields?: {
     key: string;
     label: string;
-    render: (value: unknown, item: GenericDataItem) => React.ReactNode;
+    render: (value: unknown, item: GenericDataItem) => React.ReactNode | string;
   }[];
 }
 

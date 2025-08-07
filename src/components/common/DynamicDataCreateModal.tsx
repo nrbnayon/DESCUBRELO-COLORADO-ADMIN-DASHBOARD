@@ -3,7 +3,7 @@ import React from "react";
 import type { ReactElement } from "react";
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -242,6 +244,60 @@ export function DynamicDataCreateModal({
     fileInputRefs.current[fieldKey]?.click();
   }, []);
 
+  // Handle multiselect toggle
+  const handleMultiselectToggle = useCallback(
+    (fieldKey: string, optionValue: string) => {
+      setFormData((prev) => {
+        const currentValues = Array.isArray(prev[fieldKey])
+          ? (prev[fieldKey] as string[])
+          : [];
+
+        const isSelected = currentValues.includes(optionValue);
+
+        const newValues = isSelected
+          ? currentValues.filter((value) => value !== optionValue)
+          : [...currentValues, optionValue];
+
+        return { ...prev, [fieldKey]: newValues };
+      });
+
+      // Clear error when user makes selection
+      if (errors[fieldKey]) {
+        setErrors((prev) => ({ ...prev, [fieldKey]: "" }));
+      }
+    },
+    [errors]
+  );
+
+  // Remove category/tag
+  const handleRemoveMultiselectItem = useCallback(
+    (fieldKey: string, itemValue: string) => {
+      setFormData((prev) => {
+        const currentValues = Array.isArray(prev[fieldKey])
+          ? (prev[fieldKey] as string[])
+          : [];
+
+        return {
+          ...prev,
+          [fieldKey]: currentValues.filter((value) => value !== itemValue),
+        };
+      });
+    },
+    []
+  );
+
+  // Validate latitude/longitude
+  const validateLatLng = (value: string, type: "lat" | "lng"): boolean => {
+    const num = parseFloat(value);
+    if (isNaN(num)) return false;
+
+    if (type === "lat") {
+      return num >= -90 && num <= 90;
+    } else {
+      return num >= -180 && num <= 180;
+    }
+  };
+
   // Validate form
   const validateForm = useCallback(() => {
     const newErrors: Record<string, string> = {};
@@ -254,6 +310,12 @@ export function DynamicDataCreateModal({
         if (field.type === "image") {
           const images = Array.isArray(value) ? value : value ? [value] : [];
           if (images.length === 0) {
+            newErrors[field.key] = `${field.label} is required`;
+            return;
+          }
+        } else if (field.type === "multiselect") {
+          const selectedItems = Array.isArray(value) ? value : [];
+          if (selectedItems.length === 0) {
             newErrors[field.key] = `${field.label} is required`;
             return;
           }
@@ -293,6 +355,26 @@ export function DynamicDataCreateModal({
           if (max !== undefined && value > max) {
             newErrors[field.key] = `${field.label} must be no more than ${max}`;
           }
+        }
+      }
+
+      // Special validation for latitude/longitude
+      if (
+        field.key === "latitude" &&
+        typeof value === "string" &&
+        value.trim()
+      ) {
+        if (!validateLatLng(value, "lat")) {
+          newErrors[field.key] = "Latitude must be between -90 and 90";
+        }
+      }
+      if (
+        field.key === "longitude" &&
+        typeof value === "string" &&
+        value.trim()
+      ) {
+        if (!validateLatLng(value, "lng")) {
+          newErrors[field.key] = "Longitude must be between -180 and 180";
         }
       }
     });
@@ -337,6 +419,13 @@ export function DynamicDataCreateModal({
     return isNaN(parsed) ? 0 : parsed;
   };
 
+  // Helper function to get boolean value
+  const getBooleanValue = (value: unknown): boolean => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") return value.toLowerCase() === "true";
+    return Boolean(value);
+  };
+
   // Render field based on type
   const renderField = useCallback(
     (field: FormField) => {
@@ -354,7 +443,7 @@ export function DynamicDataCreateModal({
         case "url":
           return (
             <Input
-              type={field.type === "url" ? "text" : field.type} // Map 'url' to 'text' input
+              type={field.type === "url" ? "text" : field.type}
               value={getStringValue(value)}
               onChange={(e) => handleInputChange(field.key, e.target.value)}
               placeholder={field.placeholder}
@@ -370,10 +459,18 @@ export function DynamicDataCreateModal({
           return (
             <Input
               type='number'
-              value={getNumberValue(value)}
-              onChange={(e) =>
-                handleInputChange(field.key, Number(e.target.value))
-              }
+              value={getStringValue(value)}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+                if (inputValue === "" || inputValue === "-") {
+                  handleInputChange(field.key, inputValue);
+                } else {
+                  const numValue = parseFloat(inputValue);
+                  if (!isNaN(numValue)) {
+                    handleInputChange(field.key, numValue);
+                  }
+                }
+              }}
               placeholder={field.placeholder}
               className={
                 error
@@ -382,6 +479,11 @@ export function DynamicDataCreateModal({
               }
               min={field.validation?.min}
               max={field.validation?.max}
+              step={
+                field.key === "latitude" || field.key === "longitude"
+                  ? "0.000001"
+                  : "0.1"
+              }
             />
           );
 
@@ -439,8 +541,115 @@ export function DynamicDataCreateModal({
             </Select>
           );
 
+        case "multiselect":
+          const selectedValues = Array.isArray(value)
+            ? (value as string[])
+            : [];
+          const availableOptions = field.options || [];
+
+          return (
+            <div className='space-y-3'>
+              {/* Selected items display */}
+              {selectedValues.length > 0 && (
+                <div className='flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border text-black'>
+                  {selectedValues.map((selectedValue) => {
+                    const option = availableOptions.find(
+                      (opt) => opt.value === selectedValue
+                    );
+                    return (
+                      <div
+                        key={selectedValue}
+                        className='flex items-center gap-1 px-2 py-1 text-foreground   bg-primary/30 text-sm rounded-md border'
+                      >
+                        <span>{option?.label || selectedValue}</span>
+                        <button
+                          type='button'
+                          onClick={() =>
+                            handleRemoveMultiselectItem(
+                              field.key,
+                              selectedValue
+                            )
+                          }
+                          className='ml-1 hover:text-red-500 transition-colors'
+                        >
+                          <X className='w-3 h-3' />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Options selection */}
+              <div
+                className={cn(
+                  "border rounded-lg p-3 max-h-48 overflow-y-auto",
+                  error ? "border-red-500" : "border-primary/30"
+                )}
+              >
+                <div className='space-y-2'>
+                  {availableOptions.map((option) => {
+                    const isSelected = selectedValues.includes(option.value);
+                    return (
+                      <label
+                        key={option.value}
+                        className='flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded'
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() =>
+                            handleMultiselectToggle(field.key, option.value)
+                          }
+                        />
+                        <span className='text-sm'>{option.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {selectedValues.length === 0 && (
+                <p className='text-sm text-gray-500'>
+                  {field.placeholder || `Select ${field.label.toLowerCase()}`}
+                </p>
+              )}
+            </div>
+          );
+
+        case "checkbox":
+          return (
+            <div className='flex items-center space-x-2'>
+              <Checkbox
+                checked={getBooleanValue(value)}
+                onCheckedChange={(checked) =>
+                  handleInputChange(field.key, checked)
+                }
+              />
+              <span className='text-sm'>
+                {field.placeholder || field.label}
+              </span>
+            </div>
+          );
+
+        case "switch":
+          return (
+            <div className='flex items-center justify-between'>
+              <div className='space-y-1'>
+                <span className='text-sm font-medium'>{field.label}</span>
+                {field.helpText && (
+                  <p className='text-xs text-gray-500'>{field.helpText}</p>
+                )}
+              </div>
+              <Switch
+                checked={getBooleanValue(value)}
+                onCheckedChange={(checked) =>
+                  handleInputChange(field.key, checked)
+                }
+              />
+            </div>
+          );
+
         case "image":
-          // FIXED: Properly handle existing images and new uploads
           const existingImages = Array.isArray(value)
             ? (value as string[])
             : value && typeof value === "string" && value.trim() !== ""
@@ -451,7 +660,7 @@ export function DynamicDataCreateModal({
 
           return (
             <div className='space-y-4'>
-              {/* Image Previews - FIXED: Better handling of existing images */}
+              {/* Image Previews */}
               {existingImages.length > 0 && (
                 <div className='space-y-3'>
                   <div className='flex items-center justify-between'>
@@ -491,7 +700,6 @@ export function DynamicDataCreateModal({
                               imageUrl?.startsWith("blob:")
                             }
                             onError={(e) => {
-                              // Fallback to placeholder if image fails to load
                               const target = e.target as HTMLImageElement;
                               target.src =
                                 "/placeholder.svg?height=120&width=120";
@@ -516,7 +724,7 @@ export function DynamicDataCreateModal({
                 </div>
               )}
 
-              {/* Upload Area - FIXED: Better conditional rendering */}
+              {/* Upload Area */}
               {canUploadMore && (
                 <div
                   className={cn(
@@ -546,7 +754,6 @@ export function DynamicDataCreateModal({
                   />
                   <div className='p-8 text-center'>
                     <div className='space-y-3'>
-                      {/* Icon */}
                       <div className='mx-auto w-12 h-12 text-gray-400'>
                         {isUploading ? (
                           <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary'></div>
@@ -554,7 +761,6 @@ export function DynamicDataCreateModal({
                           <Upload className='w-12 h-12' />
                         )}
                       </div>
-                      {/* Text */}
                       <div className='space-y-1'>
                         <p className='text-base font-medium text-gray-900'>
                           {isUploading
@@ -599,7 +805,7 @@ export function DynamicDataCreateModal({
           );
 
         default:
-          return null; // Ignore unsupported field types
+          return null;
       }
     },
     [
@@ -615,11 +821,13 @@ export function DynamicDataCreateModal({
       handleDrop,
       handleFileChange,
       handleRemoveImage,
+      handleMultiselectToggle,
+      handleRemoveMultiselectItem,
       openFileDialog,
     ]
   );
 
-  // Group fields by section - FIXED: Proper section filtering
+  // Group fields by section
   const fieldsBySection = useMemo(() => {
     if (sections.length > 0) {
       return sections.map((section) => ({
@@ -630,29 +838,25 @@ export function DynamicDataCreateModal({
     return [{ key: "default", title: "", description: "", fields }];
   }, [sections, fields]);
 
-  // FIXED: Initialize form data properly to prevent infinite re-renders
+  // Initialize form data properly to prevent infinite re-renders
   useEffect(() => {
     if (isOpen) {
-      // Only set form data if initialData has actual values
       const hasInitialData = initialData && Object.keys(initialData).length > 0;
       setFormData(hasInitialData ? { ...initialData } : {});
-
-      // Reset other states when modal opens
       setErrors({});
       setDragActive({});
       setUploading({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]); 
+  }, [isOpen]);
 
-  // FIXED: Reset formData when modal closes completely
+  // Reset formData when modal closes completely
   useEffect(() => {
     if (!isOpen) {
       setFormData({});
       setErrors({});
       setDragActive({});
       setUploading({});
-      // Clear file inputs
       Object.values(fileInputRefs.current).forEach((input) => {
         if (input) input.value = "";
       });
@@ -680,25 +884,25 @@ export function DynamicDataCreateModal({
                   )}
                 </div>
               )}
-              {/* FIXED: Improved grid layout matching DynamicEditModal */}
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 {section.fields.map((field) => (
                   <div
                     key={field.key}
                     className={cn(
-                      // Full width fields span both columns, half width fields use single column
                       field.gridCol === "full"
                         ? "md:col-span-2"
                         : "md:col-span-1"
                     )}
                   >
                     <div className='space-y-2'>
-                      <Label htmlFor={field.key}>
-                        {field.label}
-                        {field.required && (
-                          <span className='text-red-500 ml-1'>*</span>
-                        )}
-                      </Label>
+                      {field.type !== "switch" && (
+                        <Label htmlFor={field.key}>
+                          {field.label}
+                          {field.required && (
+                            <span className='text-red-500 ml-1'>*</span>
+                          )}
+                        </Label>
+                      )}
                       {renderField(field)}
                       {errors[field.key] && (
                         <p className='text-sm text-red-600'>
