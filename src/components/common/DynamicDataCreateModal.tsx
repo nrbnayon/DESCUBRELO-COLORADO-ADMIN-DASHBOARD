@@ -3,7 +3,7 @@ import React from "react";
 import type { ReactElement } from "react";
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { Upload, X, Check } from "lucide-react";
+import { Upload, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -409,14 +409,6 @@ export function DynamicDataCreateModal({
   const getStringValue = (value: unknown): string => {
     if (value === null || value === undefined) return "";
     return String(value);
-  };
-
-  // Helper function to safely convert value to number
-  const getNumberValue = (value: unknown): number => {
-    if (value === null || value === undefined) return 0;
-    if (typeof value === "number") return value;
-    const parsed = Number(value);
-    return isNaN(parsed) ? 0 : parsed;
   };
 
   // Helper function to get boolean value
