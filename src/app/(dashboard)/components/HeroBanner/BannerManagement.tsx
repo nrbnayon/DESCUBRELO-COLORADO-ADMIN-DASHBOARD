@@ -1,6 +1,4 @@
-// src\app\(dashboard)\components\Advertisements\ManagementAds.tsx
 "use client";
-import { adsData, AdsDataItem } from "@/data/adsData";
 import { useState } from "react";
 import type {
   GenericDataItem,
@@ -17,90 +15,148 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
 
-interface AdsManagementProps {
+// Banner Data Interface
+interface BannerDataItem extends GenericDataItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  image?: string;
+  targetSection: "banner"; // Always banner for this component
+  startDate: string;
+  endDate: string;
+  status: "active" | "inactive" | "draft" | "scheduled" | "expired";
+  category: string[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// Sample banner data
+const initialBannerData: BannerDataItem[] = [
+  {
+    id: "banner001",
+    title: "Premium Tech Solutions for Your Business",
+    subtitle: "Transform your business operations with cutting-edge technology",
+    image:
+      "https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&h=600&fit=crop&crop=entropy&auto=format&q=80",
+    targetSection: "banner",
+    startDate: "2025-01-01T00:00:00.000Z",
+    endDate: "2025-03-31T23:59:59.000Z",
+    status: "active",
+    category: ["Technology", "Business"],
+    createdAt: "2025-01-15T08:30:00.000Z",
+    updatedAt: "2025-01-20T10:15:00.000Z",
+  },
+  {
+    id: "banner002",
+    title: "Digital Marketing Revolution",
+    subtitle: "Boost your online presence with innovative marketing strategies",
+    image:
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&crop=entropy&auto=format&q=80",
+    targetSection: "banner",
+    startDate: "2025-02-01T00:00:00.000Z",
+    endDate: "2025-04-30T23:59:59.000Z",
+    status: "active",
+    category: ["Marketing", "Business"],
+    createdAt: "2025-01-16T09:45:00.000Z",
+    updatedAt: "2025-01-21T14:20:00.000Z",
+  },
+  {
+    id: "banner003",
+    title: "Health & Wellness Journey",
+    subtitle: "Start your wellness transformation today with expert guidance",
+    image:
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop&crop=entropy&auto=format&q=80",
+    targetSection: "banner",
+    startDate: "2025-01-15T00:00:00.000Z",
+    endDate: "2025-05-15T23:59:59.000Z",
+    status: "active",
+    category: ["Health", "Wellness"],
+    createdAt: "2025-01-17T11:30:00.000Z",
+    updatedAt: "2025-01-22T16:45:00.000Z",
+  },
+  {
+    id: "banner004",
+    title: "Educational Excellence Program",
+    subtitle: "Unlock your potential with our comprehensive learning platform",
+    image:
+      "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&h=600&fit=crop&crop=entropy&auto=format&q=80",
+    targetSection: "banner",
+    startDate: "2025-03-01T00:00:00.000Z",
+    endDate: "2025-06-30T23:59:59.000Z",
+    status: "scheduled",
+    category: ["Education", "Online Learning"],
+    createdAt: "2025-01-18T13:15:00.000Z",
+    updatedAt: "2025-01-23T09:30:00.000Z",
+  },
+];
+
+interface BannerManagementProps {
   itemsPerPage?: number;
   title?: string;
   buttonText?: string;
   pageUrl?: string;
-  showAds?: number;
+  showBanners?: number;
 }
 
-export default function ManagementAds({
+export default function BannerManagement({
   itemsPerPage = 12,
-  title = "All Ads",
-  showAds = 4,
-}: AdsManagementProps) {
-  const [ads, setAds] = useState(adsData);
+  title = "All Banners",
+  showBanners = 4,
+}: BannerManagementProps) {
+  const [banners, setBanners] = useState(initialBannerData);
   const [isLoading] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingAd, setEditingAd] = useState<AdsDataItem | null>(null);
+  const [editingBanner, setEditingBanner] = useState<BannerDataItem | null>(
+    null
+  );
 
-  // Check if we should show Add Ads button
-  const shouldShowAddButton = ads.length < showAds;
+  // Check if we should show Add Banner button
+  const shouldShowAddButton = banners.length < showBanners;
 
-  // Helper function to get image ratio info
-  const getImageRatioInfo = (targetSection?: string) => {
-    switch (targetSection) {
-      case "welcome":
-        return { ratio: "9:16", color: "#3b82f6", label: "Welcome (9:16)" };
-      case "hero":
-        return { ratio: "16:9", color: "#10b981", label: "Hero (16:9)" };
-      case "banner":
-        return { ratio: "16:9", color: "#f59e0b", label: "Banner (16:9)" };
-      default:
-        return { ratio: "1:1", color: "#6b7280", label: "Default (1:1)" };
-    }
-  };
-
-  // Column Configuration for Ads
-  const adsColumns: ColumnConfig[] = [
+  // Column Configuration for Banners
+  const bannerColumns: ColumnConfig[] = [
     {
       key: "title",
-      label: "Ad Title",
+      label: "Banner Title",
       sortable: true,
       searchable: true,
       align: "left",
-      render: (value, item) => {
-        const ratioInfo = getImageRatioInfo(item.targetSections);
-        return (
-          <div className='flex items-center gap-3'>
-            <div className='relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0'>
-              <Image
-                src={
-                  typeof item.image === "string" && item.image.trim() !== ""
-                    ? item.image
-                    : "/placeholder.svg?height=48&width=48"
-                }
-                alt={String(value)}
-                className='w-full h-full object-cover'
-                width={48}
-                height={48}
-              />
-              <div className='absolute -top-1 -right-1'>
-                <Badge
-                  variant='secondary'
-                  className='text-xs px-1 py-0 h-4'
-                  style={{
-                    backgroundColor: ratioInfo.color + "20",
-                    color: ratioInfo.color,
-                  }}
-                >
-                  {ratioInfo.ratio}
-                </Badge>
-              </div>
-            </div>
-            <div className='min-w-0 flex-1'>
-              <p className='font-medium text-sm truncate'>{String(value)}</p>
-              {typeof item.subtitle === "string" && item.subtitle && (
-                <p className='text-xs text-gray-500 truncate'>
-                  {item.subtitle}
-                </p>
-              )}
+      render: (value, item) => (
+        <div className='flex items-center gap-3'>
+          <div className='relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0'>
+            <Image
+              src={
+                typeof item.image === "string" && item.image.trim() !== ""
+                  ? item.image
+                  : "/placeholder.svg?height=48&width=48"
+              }
+              alt={String(value)}
+              className='w-full h-full object-cover'
+              width={48}
+              height={48}
+            />
+            <div className='absolute -top-1 -right-1'>
+              <Badge
+                variant='secondary'
+                className='text-xs px-1 py-0 h-4'
+                style={{
+                  backgroundColor: "#f59e0b20",
+                  color: "#f59e0b",
+                }}
+              >
+                16:9
+              </Badge>
             </div>
           </div>
-        );
-      },
+          <div className='min-w-0 flex-1'>
+            <p className='font-medium text-sm truncate'>{String(value)}</p>
+            {typeof item.subtitle === "string" && item.subtitle && (
+              <p className='text-xs text-gray-500 truncate'>{item.subtitle}</p>
+            )}
+          </div>
+        </div>
+      ),
     },
     {
       key: "subtitle",
@@ -114,28 +170,6 @@ export default function ManagementAds({
       label: "Image",
       type: "image",
       sortable: false,
-    },
-    {
-      key: "targetSections",
-      label: "Target Section",
-      type: "select",
-      sortable: true,
-      filterable: true,
-      options: [
-        {
-          value: "welcome",
-          label: "Welcome (9:16)",
-          color: "#3b82f6",
-          icon: "📱",
-        },
-        // { value: "banner", label: "Hero (16:9)", color: "#10b981", icon: "🏆" },
-        {
-          value: "banner",
-          label: "Banner (16:9)",
-          color: "#f59e0b",
-          icon: "🏷️",
-        },
-      ],
     },
     {
       key: "startDate",
@@ -210,20 +244,20 @@ export default function ManagementAds({
     imageKey: "image",
     descriptionKey: "subtitle",
     statusKey: "status",
-    badgeKeys: ["targetSections"],
+    badgeKeys: ["targetSection"],
     metaKeys: ["createdAt", "category"],
     showDetailsButton: true,
     primaryAction: {
       key: "edit",
       label: "Edit",
       variant: "outline",
-      onClick: (item) => handleEditAd(item as AdsDataItem),
+      onClick: (item) => handleEditBanner(item as BannerDataItem),
     },
   };
 
   // Search Filter Configuration
   const searchFilterConfig: SearchFilterConfig = {
-    searchPlaceholder: "Search ads by title, subtitle, category...",
+    searchPlaceholder: "Search banners by title, subtitle, category...",
     searchKeys: ["title", "subtitle", "category"],
     enableSort: true,
     sortOptions: [
@@ -245,24 +279,14 @@ export default function ManagementAds({
           { value: "expired", label: "Expired" },
         ],
       },
-      {
-        key: "targetSections",
-        label: "Target Section",
-        type: "select",
-        options: [
-          { value: "welcome", label: "Welcome (9:16)" },
-          // { value: "hero", label: "Hero (16:9)" },
-          { value: "banner", label: "Banner (16:9)" },
-        ],
-      },
     ],
   };
 
   // Actions Configuration
-  const adActions: ActionConfig[] = [
+  const bannerActions: ActionConfig[] = [
     {
       key: "edit",
-      label: "Edit Ad",
+      label: "Edit Banner",
       icon: (
         <Lordicon
           src='https://cdn.lordicon.com/cbtlerlm.json'
@@ -277,11 +301,11 @@ export default function ManagementAds({
         />
       ),
       variant: "ghost",
-      onClick: (item) => handleEditAd(item as AdsDataItem),
+      onClick: (item) => handleEditBanner(item as BannerDataItem),
     },
     {
       key: "delete",
-      label: "Delete Ad",
+      label: "Delete Banner",
       icon: (
         <Lordicon
           src='https://cdn.lordicon.com/jmkrnisz.json'
@@ -296,7 +320,7 @@ export default function ManagementAds({
         />
       ),
       variant: "ghost",
-      onClick: (item) => handleDeleteAd(item.id),
+      onClick: (item) => handleDeleteBanner(item.id),
     },
   ];
 
@@ -305,10 +329,10 @@ export default function ManagementAds({
     // Basic Information Section
     {
       key: "title",
-      label: "Ad Title",
+      label: "Banner Title",
       type: "text",
       required: true,
-      placeholder: "Enter ad title",
+      placeholder: "Enter banner title",
       validation: {
         minLength: 5,
         maxLength: 100,
@@ -321,7 +345,7 @@ export default function ManagementAds({
       label: "Subtitle",
       type: "text",
       required: false,
-      placeholder: "Enter ad subtitle (optional)",
+      placeholder: "Enter banner subtitle (optional)",
       validation: {
         maxLength: 150,
       },
@@ -329,39 +353,14 @@ export default function ManagementAds({
       gridCol: "full",
     },
     {
-      key: "targetSections",
-      label: "Target Section & Image Ratio",
-      type: "select",
-      required: false,
-      options: [
-        {
-          value: "welcome",
-          label: "Welcome Screen (9:16 Portrait)",
-          description: "Vertical format for welcome/splash screens",
-        },
-        // {
-        //   value: "hero",
-        //   label: "Hero Section (16:9 Landscape)",
-        //   description: "Wide format for main hero banners",
-        // },
-        {
-          value: "banner",
-          label: "Banner Section (16:9 Landscape)",
-          description: "Wide format for promotional banners",
-        },
-      ],
-      section: "basic",
-      gridCol: "half",
-      helpText: "Select target section to determine optimal image ratio",
-    },
-    {
       key: "image",
-      label: "Ad Image",
+      label: "Banner (16:9 Landscape) Image",
       type: "image",
       required: true,
       section: "basic",
-      gridCol: "half",
-      helpText: "Upload image matching the selected section's ratio",
+      gridCol: "full",
+      helpText:
+        "Upload banner image in 16:9 landscape ratio for optimal display",
     },
     // Targeting Section
     {
@@ -375,6 +374,7 @@ export default function ManagementAds({
         { value: "Marketing", label: "Marketing" },
         { value: "Fashion", label: "Fashion" },
         { value: "Health", label: "Health & Wellness" },
+        { value: "Wellness", label: "Wellness" },
         { value: "Education", label: "Education" },
         { value: "Travel", label: "Travel & Tourism" },
         { value: "Food", label: "Food & Beverage" },
@@ -389,7 +389,7 @@ export default function ManagementAds({
       ],
       section: "targeting",
       gridCol: "full",
-      helpText: "Select one or more categories for the ad",
+      helpText: "Select one or more categories for the banner",
     },
     {
       key: "startDate",
@@ -428,8 +428,8 @@ export default function ManagementAds({
     {
       key: "basic",
       title: "Basic Information",
-      description: "Enter the basic details and image for the ad",
-      icon: "📝",
+      description: "Enter the basic details and image for the banner",
+      icon: "🏷️",
     },
     {
       key: "targeting",
@@ -453,9 +453,9 @@ export default function ManagementAds({
     return [];
   };
 
-  // Handle creating new ad
-  const handleCreateAd = (data: Record<string, unknown>) => {
-    // Handle image - single image only for ads
+  // Handle creating new banner
+  const handleCreateBanner = (data: Record<string, unknown>) => {
+    // Handle image - single image only for banners
     const imageValue =
       Array.isArray(data.image) && data.image.length > 0
         ? data.image[0]
@@ -463,24 +463,20 @@ export default function ManagementAds({
         ? data.image
         : "";
 
-    const newAdData: AdsDataItem = {
-      id: `ad${Date.now()}`,
+    const newBannerData: BannerDataItem = {
+      id: `banner${Date.now()}`,
       title: String(data.title || ""),
       subtitle: data.subtitle ? String(data.subtitle) : undefined,
       image:
         imageValue ||
-        `https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop`,
-      targetSections: String(data.targetSections || "") as
-        | "welcome"
-        | "hero"
-        | "banner"
-        | undefined,
+        `https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=600&fit=crop`,
+      targetSection: "banner", // Always banner
       startDate: String(data.startDate || new Date().toISOString()),
       endDate: String(
         data.endDate ||
           new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       ),
-      status: String(data.status || "draft") as
+      status: String(data.status || "active") as  // Default to active
         | "active"
         | "inactive"
         | "draft"
@@ -491,20 +487,20 @@ export default function ManagementAds({
       updatedAt: new Date().toISOString(),
     };
 
-    const updatedAds = [newAdData, ...ads];
-    setAds(updatedAds);
-    console.log("New ad created:", newAdData);
+    const updatedBanners = [newBannerData, ...banners];
+    setBanners(updatedBanners);
+    console.log("New banner created:", newBannerData);
   };
 
-  // Handle editing ad
-  const handleEditAd = (ad: AdsDataItem) => {
-    setEditingAd(ad);
+  // Handle editing banner
+  const handleEditBanner = (banner: BannerDataItem) => {
+    setEditingBanner(banner);
     setEditModalOpen(true);
   };
 
-  // Handle updating ad
-  const handleUpdateAd = (data: Record<string, unknown>) => {
-    if (!editingAd) return;
+  // Handle updating banner
+  const handleUpdateBanner = (data: Record<string, unknown>) => {
+    if (!editingBanner) return;
 
     // Handle image
     const imageValue =
@@ -512,21 +508,17 @@ export default function ManagementAds({
         ? data.image[0]
         : typeof data.image === "string"
         ? data.image
-        : editingAd.image;
+        : editingBanner.image;
 
-    const updatedAdData: AdsDataItem = {
-      ...editingAd,
+    const updatedBannerData: BannerDataItem = {
+      ...editingBanner,
       title: String(data.title || ""),
       subtitle: data.subtitle ? String(data.subtitle) : undefined,
       image: imageValue,
-      targetSections: String(data.targetSections || "") as
-        | "welcome"
-        | "hero"
-        | "banner"
-        | undefined,
-      startDate: String(data.startDate || editingAd.startDate),
-      endDate: String(data.endDate || editingAd.endDate),
-      status: String(data.status || "draft") as
+      targetSection: "banner", // Always banner
+      startDate: String(data.startDate || editingBanner.startDate),
+      endDate: String(data.endDate || editingBanner.endDate),
+      status: String(data.status || "active") as  // Keep current or default to active
         | "active"
         | "inactive"
         | "draft"
@@ -536,33 +528,33 @@ export default function ManagementAds({
       updatedAt: new Date().toISOString(),
     };
 
-    const updatedAds = ads.map((ad) =>
-      ad.id === editingAd.id ? updatedAdData : ad
+    const updatedBanners = banners.map((banner) =>
+      banner.id === editingBanner.id ? updatedBannerData : banner
     );
-    setAds(updatedAds);
-    setEditingAd(null);
-    console.log("Ad updated:", updatedAdData);
+    setBanners(updatedBanners);
+    setEditingBanner(null);
+    console.log("Banner updated:", updatedBannerData);
   };
 
-  // Handle deleting ad
-  const handleDeleteAd = (adId: string) => {
-    const updatedAds = ads.filter((ad) => ad.id !== adId);
-    setAds(updatedAds);
-    console.log("Ad deleted:", adId);
+  // Handle deleting banner
+  const handleDeleteBanner = (bannerId: string) => {
+    const updatedBanners = banners.filter((banner) => banner.id !== bannerId);
+    setBanners(updatedBanners);
+    console.log("Banner deleted:", bannerId);
   };
 
   // Handle data change from DynamicCard3D
   const handleDataChange = (newData: GenericDataItem[]) => {
-    setAds(newData as AdsDataItem[]);
+    setBanners(newData as BannerDataItem[]);
   };
 
   // Prepare initial data for edit modal
   const getEditInitialData = () => {
-    if (!editingAd) return {};
+    if (!editingBanner) return {};
 
     return {
-      ...editingAd,
-      category: editingAd.category || [],
+      ...editingBanner,
+      category: editingBanner.category || [],
     };
   };
 
@@ -573,16 +565,8 @@ export default function ManagementAds({
           <h2 className='text-foreground text-xl font-semibold'>{title}</h2>
           <div className='flex items-center gap-4 mt-2 text-sm text-muted-foreground'>
             <div className='flex items-center gap-2'>
-              <div className='w-3 h-3 bg-blue-500/20 border border-blue-500 rounded'></div>
-              <span>Welcome (9:16)</span>
-            </div>
-            {/* <div className='flex items-center gap-2'>
-              <div className='w-3 h-3 bg-green-500/20 border border-green-500 rounded'></div>
-              <span>Hero (16:9)</span>
-            </div> */}
-            <div className='flex items-center gap-2'>
               <div className='w-3 h-3 bg-amber-500/20 border border-amber-500 rounded'></div>
-              <span>Banner (16:9)</span>
+              <span>Banner (16:9 Landscape)</span>
             </div>
           </div>
         </div>
@@ -604,41 +588,41 @@ export default function ManagementAds({
                 stroke={1}
               />
             </span>
-            <span>Add Ads</span>
+            <span>Add Banner</span>
           </Button>
         )}
       </div>
 
       {/* Dynamic 3D Card Component */}
       <DynamicCard3D
-        data={ads}
-        columns={adsColumns}
+        data={banners}
+        columns={bannerColumns}
         cardConfig={cardConfig}
-        actions={adActions}
+        actions={bannerActions}
         searchFilterConfig={searchFilterConfig}
         onDataChange={handleDataChange}
         loading={isLoading}
-        emptyMessage='No ads found'
+        emptyMessage='No banners found'
         itemsPerPage={itemsPerPage}
       />
 
-      {/* Create Ad Modal */}
+      {/* Create Banner Modal */}
       <DynamicDataCreateModal
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        onSave={handleCreateAd}
-        title='Create New Ad'
-        description='Create ads with appropriate image ratios for different sections'
+        onSave={handleCreateBanner}
+        title='Create New Banner'
+        description='Create banners with 16:9 landscape ratio for optimal display'
         fields={createFormFields}
         sections={createModalSections}
         initialData={{
-          status: "draft",
+          status: "active", 
           startDate: new Date().toISOString().split("T")[0],
           endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
             .toISOString()
             .split("T")[0],
         }}
-        saveButtonText='Create Ad'
+        saveButtonText='Create Banner'
         cancelButtonText='Cancel'
         maxImageSizeInMB={5}
         maxImageUpload={1}
@@ -650,21 +634,21 @@ export default function ManagementAds({
         ]}
       />
 
-      {/* Edit Ad Modal */}
-      {editingAd && (
+      {/* Edit Banner Modal */}
+      {editingBanner && (
         <DynamicDataCreateModal
           isOpen={editModalOpen}
           onClose={() => {
             setEditModalOpen(false);
-            setEditingAd(null);
+            setEditingBanner(null);
           }}
-          onSave={handleUpdateAd}
-          title='Edit Ad'
-          description='Update ad information and settings'
+          onSave={handleUpdateBanner}
+          title='Edit Banner'
+          description='Update banner information and settings'
           fields={createFormFields}
           sections={createModalSections}
           initialData={getEditInitialData()}
-          saveButtonText='Update Ad'
+          saveButtonText='Update Banner'
           cancelButtonText='Cancel'
           maxImageUpload={1}
           maxImageSizeInMB={5}

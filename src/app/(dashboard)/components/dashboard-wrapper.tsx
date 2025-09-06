@@ -57,6 +57,11 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
       iconSrc: "https://cdn.lordicon.com/fqbvgezn.json",
     },
     {
+      label: "Subscribe Users",
+      href: "/users-subscription",
+      iconSrc: "https://cdn.lordicon.com/bktacmnd.json",
+    },
+    {
       label: "Manage Post",
       href: "/manage-post",
       iconSrc: "https://cdn.lordicon.com/ldyubhgs.json",
@@ -66,15 +71,21 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
       href: "/manage-categories",
       iconSrc: "https://cdn.lordicon.com/dutqakce.json",
     },
+
     {
-      label: "Subscribe Users",
-      href: "/users-subscription",
-      iconSrc: "https://cdn.lordicon.com/bktacmnd.json",
+      label: "Banner",
+      href: "/banner",
+      iconSrc: "https://cdn.lordicon.com/lyjuidpq.json",
     },
     {
-      label: "Manage Ads",
-      href: "/manage-ads",
-      iconSrc: "https://cdn.lordicon.com/xovdoewm.json",
+      label: "Welcome",
+      href: "/welcome",
+      iconSrc: "https://cdn.lordicon.com/ijsqrapz.json",
+    },
+    {
+      label: "Add Sound",
+      href: "/add-sound",
+      iconSrc: "https://cdn.lordicon.com/zxaptliv.json",
     },
     {
       label: "Settings",
