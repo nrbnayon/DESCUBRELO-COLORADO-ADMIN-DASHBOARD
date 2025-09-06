@@ -80,7 +80,7 @@ export default function ForgetPassword() {
               alt="logo"
               width={80}
               height={80}
-              className="w-[80px] h-[80px] sm:w-[120px] sm:h-[120px] md:w-[150px] md:h-[150px] lg:w-[200px] lg:h-[200px]"
+              className="w-[100px] h-[100px] md:w-[200px] md:h-[120px]"
             />
           </div>
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl leading-tight">
@@ -93,7 +93,7 @@ export default function ForgetPassword() {
           <div className="pt-2 sm:pt-4 space-y-3">
             <p className="text-xs sm:text-sm opacity-75">
               Remember your password?{" "}
-              <Link href="/login" className="text-success underline font-bold">
+              <Link href="/login" className="text-secondary underline font-bold">
                 Sign In
               </Link>
             </p>

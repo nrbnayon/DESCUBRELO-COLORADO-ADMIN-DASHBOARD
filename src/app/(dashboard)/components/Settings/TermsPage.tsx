@@ -44,9 +44,8 @@ interface TermsItem extends GenericDataItem {
   id: string;
   title: string;
   description: string;
-  content: string;
   category: string;
-  status: "active" | "deactive";
+  status: "active" | "inactive";
   order: number;
 }
 
@@ -56,7 +55,6 @@ const mockTermsData: TermsItem[] = [
     id: "1",
     title: "Terms of Service",
     description: "General terms and conditions for using our platform",
-    content: "# Terms of Service\n\nBy accessing and using this service...",
     category: "legal",
     status: "active",
     order: 1,
@@ -65,8 +63,6 @@ const mockTermsData: TermsItem[] = [
     id: "2",
     title: "Privacy Policy",
     description: "How we collect, use, and protect your personal information",
-    content:
-      "# Privacy Policy\n\nWe are committed to protecting your privacy...",
     category: "privacy",
     status: "active",
     order: 2,
@@ -76,7 +72,6 @@ const mockTermsData: TermsItem[] = [
     title: "Cookie Policy",
     description:
       "Information about our use of cookies and tracking technologies",
-    content: "# Cookie Policy\n\nThis policy explains how we use cookies...",
     category: "privacy",
     status: "active",
     order: 3,
@@ -85,7 +80,6 @@ const mockTermsData: TermsItem[] = [
     id: "4",
     title: "Data Processing Agreement",
     description: "Terms for data processing and GDPR compliance",
-    content: "# Data Processing Agreement\n\nThis agreement outlines...",
     category: "compliance",
     status: "active",
     order: 4,
@@ -94,9 +88,8 @@ const mockTermsData: TermsItem[] = [
     id: "5",
     title: "Refund Policy",
     description: "Terms and conditions for refunds and cancellations",
-    content: "# Refund Policy\n\nOur refund policy is designed to be fair...",
     category: "commercial",
-    status: "deactive",
+    status: "inactive",
     order: 5,
   },
 ];
@@ -118,13 +111,12 @@ const formFields: FormField[] = [
   {
     key: "description",
     label: "Description",
-    type: "text",
+    type: "textarea",
     required: true,
-    placeholder: "Brief description of the terms",
+    placeholder: "Enter the full terms content with markdown support...",
     gridCol: "full",
     validation: {
-      minLength: 10,
-      maxLength: 200,
+      minLength: 50,
     },
   },
   {
@@ -135,10 +127,8 @@ const formFields: FormField[] = [
     gridCol: "half",
     options: [
       { label: "Legal", value: "legal" },
-      { label: "Privacy", value: "privacy" },
-      { label: "Compliance", value: "compliance" },
-      { label: "Commercial", value: "commercial" },
-      { label: "Technical", value: "technical" },
+      { label: "Privacy & Ploicy", value: "privacy&policy" },
+      { label: "Terms & Condition", value: "terms&condition" },
     ],
   },
   {
@@ -149,7 +139,7 @@ const formFields: FormField[] = [
     gridCol: "half",
     options: [
       { label: "Active", value: "active" },
-      { label: "Deactive", value: "deactive" },
+      { label: "Inactive", value: "inactive" },
     ],
   },
   {
@@ -162,17 +152,6 @@ const formFields: FormField[] = [
     validation: {
       min: 1,
       max: 999,
-    },
-  },
-  {
-    key: "content",
-    label: "Content",
-    type: "textarea",
-    required: true,
-    placeholder: "Enter the full terms content with markdown support...",
-    gridCol: "full",
-    validation: {
-      minLength: 50,
     },
   },
 ];
@@ -189,7 +168,7 @@ const searchFilterConfig: SearchFilterConfig = {
       placeholder: "All",
       options: [
         { value: "active", label: "Active" },
-        { value: "deactive", label: "Deactive" },
+        { value: "inactive", label: "Inactive" },
       ],
     },
     {
@@ -217,7 +196,7 @@ const searchFilterConfig: SearchFilterConfig = {
 // Column configuration for ViewModal
 const columnConfig: ColumnConfig[] = [
   { key: "title", label: "Title", type: "text" },
-  { key: "description", label: "Description", type: "text" },
+  { key: "description", label: "Description", type: "textarea" },
   {
     key: "category",
     label: "Category",
@@ -236,11 +215,10 @@ const columnConfig: ColumnConfig[] = [
     type: "select",
     options: [
       { label: "Active", value: "active" },
-      { label: "Deactive", value: "deactive" },
+      { label: "Inactive", value: "inactive" },
     ],
   },
   { key: "order", label: "Display Order", type: "number" },
-  { key: "content", label: "Content", type: "textarea" },
 ];
 
 export default function TermsAdminPage() {
@@ -330,9 +308,8 @@ export default function TermsAdminPage() {
       id: Date.now().toString(),
       title: data.title as string,
       description: data.description as string,
-      content: data.content as string,
       category: data.category as string,
-      status: data.status as "active" | "deactive",
+      status: data.status as "active" | "inactive",
       order: data.order as number,
     };
 
@@ -351,9 +328,8 @@ export default function TermsAdminPage() {
                 ...item,
                 title: data.title as string,
                 description: data.description as string,
-                content: data.content as string,
                 category: data.category as string,
-                status: data.status as "active" | "deactive",
+                status: data.status as "active" | "inactive",
                 order: data.order as number,
               }
             : item
@@ -405,7 +381,7 @@ export default function TermsAdminPage() {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800 border-green-200";
-      case "deactive":
+      case "inactive":
         return "bg-red-100 text-red-800 border-red-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -508,9 +484,9 @@ export default function TermsAdminPage() {
         <div className="bg-white p-4 rounded-lg border border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Deactive</p>
+              <p className="text-sm text-gray-600">Inactive</p>
               <p className="text-2xl font-semibold text-red-600">
-                {termsData.filter((t) => t.status === "deactive").length}
+                {termsData.filter((t) => t.status === "inactive").length}
               </p>
             </div>
             <Edit className="w-8 h-8 text-red-400" />
@@ -594,7 +570,6 @@ export default function TermsAdminPage() {
                   {/* Meta Info */}
                   <div className="flex items-center space-x-4 text-xs text-gray-500">
                     <span>Order: #{item.order}</span>
-                    <span>Content: {item.content.length} characters</span>
                   </div>
                 </div>
 

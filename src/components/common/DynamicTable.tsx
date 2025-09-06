@@ -1,6 +1,6 @@
 // src\components\common\DynamicTable.tsx
 "use client";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import {
   Search,
   Calendar,
@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Download,
   RefreshCw,
-  Trash2,
   ArrowRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -62,8 +61,21 @@ import type {
 import { ViewModal } from "./ViewModal";
 import Lordicon from "../lordicon/lordicon-wrapper";
 import { useRouter } from "next/navigation";
+import { PermissionModal } from "./PermissionModal";
+import Image from "next/image";
+
+interface OptionType {
+  value: string;
+  label: string;
+  color?: string;
+  textColor?: string;
+  icon?: string;
+  iconType?: "emoji" | "image" | "component";
+  iconUrl?: string;
+}
 
 interface DynamicTableProps {
+  title?: string;
   data: GenericDataItem[];
   columns: ColumnConfig[];
   formFields?: FormFieldConfig[];
@@ -80,9 +92,22 @@ interface DynamicTableProps {
   buttonText?: string;
   pageUrl?: string;
   isLoading?: boolean;
+
+  onItemApprove?: (item: GenericDataItem, reason?: string) => void;
+  onItemDecline?: (item: GenericDataItem, reason: string) => void;
+  permissionModalConfig?: {
+    title?: string;
+    description?: string;
+    approveText?: string;
+    declineText?: string;
+    requireReason?: boolean;
+    requireReasonForApprove?: boolean;
+  };
+  isDeletable?: boolean;
 }
 
 export const DynamicTable: React.FC<DynamicTableProps> = ({
+  title,
   data = [],
   columns,
   formFields = [],
@@ -95,10 +120,12 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   onItemDelete,
   onItemsSelect,
   onExport,
-  onRefresh,
   buttonText,
   pageUrl,
   isLoading = false,
+  onItemApprove,
+  onItemDecline,
+  permissionModalConfig = {},
 }) => {
   const router = useRouter();
 
@@ -118,6 +145,11 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   const [selectedItem, setSelectedItem] = useState<GenericDataItem | null>(
     null
   );
+  const [permissionModalOpen, setPermissionModalOpen] = useState(false);
+  const [permissionItem, setPermissionItem] = useState<GenericDataItem | null>(
+    null
+  );
+
   const [deleteConfirm, setDeleteConfirm] = useState<{
     open: boolean;
     itemId: string;
@@ -152,9 +184,38 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   };
 
   // Update local data when props change
-  React.useEffect(() => {
+  useEffect(() => {
     setLocalData(data);
   }, [data]);
+
+  // Enhanced renderIcon function to handle different icon types
+  const renderIcon = useCallback((option: OptionType | undefined) => {
+    if (!option || !option.icon) return null;
+
+    switch (option.iconType) {
+      case "image":
+        return (
+          <Image
+            src={option.iconUrl || option.icon}
+            alt={option.label}
+            width={20}
+            height={20}
+            className="w-4 h-4 object-contain"
+            onError={(e) => {
+              // Fallback to emoji or text if image fails
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        );
+      case "component":
+        // If you have a component library, you can render it here
+        // For now, we'll treat it as emoji
+        return <span className="text-sm">{option.icon}</span>;
+      case "emoji":
+      default:
+        return <span className="text-sm">{option.icon}</span>;
+    }
+  }, []);
 
   // Format value based on column type
   const formatValue = useCallback(
@@ -350,6 +411,23 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
     }
   };
 
+  const handlePermissionAction = (item: GenericDataItem) => {
+    setPermissionItem(item);
+    setPermissionModalOpen(true);
+  };
+
+  const handleApprove = (item: GenericDataItem, reason?: string) => {
+    onItemApprove?.(item, reason);
+    setPermissionModalOpen(false);
+    setPermissionItem(null);
+  };
+
+  const handleDecline = (item: GenericDataItem, reason: string) => {
+    onItemDecline?.(item, reason);
+    setPermissionModalOpen(false);
+    setPermissionItem(null);
+  };
+
   // Handle edit
   const handleEdit = (item: GenericDataItem) => {
     setSelectedItem(item);
@@ -370,7 +448,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   // Handle view
   const handleView = (item: GenericDataItem) => {
     setViewItem(item);
+    console.log("Get items details:: ", item);
     setViewModalOpen(true);
+  };
+
+  const handleDetails = (item: GenericDataItem, route?: string) => {
+    console.log("router::", route);
+    router.push(`${route}/${item.id}`);
   };
 
   // Handle delete
@@ -421,7 +505,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
     }
   };
 
-  // Render filter controls
+  // Enhanced render filters with custom icons and colors
   const renderFilters = () => {
     if (!config.enableFilters || filters.length === 0) return null;
 
@@ -448,7 +532,18 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                     <SelectItem value="all">All {filter.label}</SelectItem>
                     {filter.options?.map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        {option.label}
+                        <div className="flex items-center gap-2">
+                          {renderIcon(option)}
+                          <span
+                            style={
+                              {
+                                color: option.textColor || "inherit",
+                              } as React.CSSProperties
+                            }
+                          >
+                            {option.label}
+                          </span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -493,7 +588,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
     );
   };
 
-  // Render cell content with avatar support
+  // Enhanced render cell content with avatar support and custom styling
   const renderCellContent = (item: GenericDataItem, column: ColumnConfig) => {
     const value = item[column.key];
 
@@ -507,7 +602,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
         <div className="flex items-center gap-2">
           <Avatar className="w-8 h-8 flex-shrink-0">
             <AvatarImage
-              src={item.avatar || "/placeholder.svg"}
+              src={(item.avatar as string) || "/placeholder.svg"}
               alt={value?.toString() || "User"}
             />
             <AvatarFallback>
@@ -537,6 +632,76 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       );
     }
 
+    // Handle book column with avatar
+    if (column.key === "bookName" && column.showAvatar) {
+      const avatarSrc = column.avatarKey
+        ? (item[column.avatarKey] as string)
+        : "";
+      return (
+        <div className="flex items-center gap-3">
+          <Avatar className="w-10 h-10 flex-shrink-0 rounded-md">
+            <AvatarImage
+              src={avatarSrc || "/placeholder.svg"}
+              alt={value?.toString() || "Book"}
+              className="object-cover"
+            />
+            <AvatarFallback className="rounded-md">
+              <span className="text-xs">📚</span>
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-sm truncate">
+              {formatValue(value, column)}
+            </p>
+            {typeof item.author === "string" && (
+              <p className="font-normal text-xs text-gray-500 truncate">
+                by {String(item.author)}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Handle customer column with avatar
+    if (column.key === "customer" && column.showAvatar) {
+      const avatarSrc = column.avatarKey
+        ? (item[column.avatarKey] as string)
+        : "";
+      return (
+        <div className="flex items-center gap-2">
+          <Avatar className="w-8 h-8 flex-shrink-0">
+            <AvatarImage
+              src={avatarSrc || "/placeholder.svg"}
+              alt={value?.toString() || "Customer"}
+            />
+            <AvatarFallback>
+              <Lordicon
+                src="https://cdn.lordicon.com/hhljfoaj.json"
+                trigger="hover"
+                size={24}
+                colors={{
+                  primary: "",
+                  secondary: "",
+                }}
+                stroke={1}
+              />
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-sm truncate">
+              {formatValue(value, column)}
+            </p>
+            {typeof item.customerEmail === "string" && (
+              <p className="font-normal text-xs text-gray-500 truncate">
+                {String(item.customerEmail)}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     // Handle special column types
     if (column.type === "checkbox") {
       return <Checkbox checked={Boolean(value)} disabled className="mx-auto" />;
@@ -557,14 +722,20 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
               <Badge
                 key={index}
                 variant="secondary"
-                className="text-xs"
-                style={
-                  option?.color
-                    ? { backgroundColor: option.color, color: "white" }
-                    : undefined
-                }
+                className={cn(
+                  "text-xs flex items-center gap-1 px-2 py-1",
+                  "border-0 font-medium",
+                  !option?.color && "bg-transparent"
+                )}
+                style={{
+                  backgroundColor: option?.color || "transparent",
+                  color:
+                    (option?.textColor as React.CSSProperties["color"]) ||
+                    "#374151",
+                }}
               >
-                {option?.label || val}
+                {renderIcon(option)}
+                {option?.label && <span>{option.label}</span>}
               </Badge>
             );
           })}
@@ -619,7 +790,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
   };
 
   // Update selected items callback
-  React.useEffect(() => {
+  useEffect(() => {
     onItemsSelect?.(selectedItems);
   }, [selectedItems, onItemsSelect]);
 
@@ -645,7 +816,7 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl text-foreground font-semibold">
-            {config.title}
+            {config.title || title}
           </h2>
           {config.description && (
             <p className="text-gray-700 mt-1">{config.description}</p>
@@ -680,16 +851,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
           {renderFilters()}
         </div>
         <div className="flex flex-row gap-2 w-full lg:w-auto justify-center lg:justify-end">
-          {onRefresh && (
-            <Button
-              variant="outline"
-              size="lg"
-              onClick={onRefresh}
-              className="border-primary/30 rounded-md flex-1 lg:flex-none"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </Button>
-          )}
           {onExport && (
             <Button
               variant="outline"
@@ -727,23 +888,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                 Export Selected
               </Button>
             )}
-            {onItemDelete && (
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => {
-                  setDeleteConfirm({
-                    open: true,
-                    itemId: "bulk",
-                    itemName: `${selectedItems.length} selected items`,
-                  });
-                }}
-                className="w-full md:w-auto"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Selected
-              </Button>
-            )}
             <Button
               variant="outline"
               size="sm"
@@ -757,13 +901,13 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
       )}
 
       {/* Table */}
-      <div className="border border-primary/80 rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <Table className="w-full">
             <TableHeader
               className={cn(
                 config.stickyHeader && "sticky top-0 z-10",
-                "text-black bg-yellow-50"
+                "text-black bg-gray-100"
               )}
             >
               <TableRow className={cn(config.bordered && "border-b")}>
@@ -864,20 +1008,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                     {(actions.length > 0 || formFields.length > 0) && (
                       <TableCell className="w-[150px] px-3">
                         <div className="flex items-center justify-center gap-1">
-                          {/* Only show Edit button if formFields exist and no custom edit action */}
-                          {formFields.length > 0 &&
-                            !actions.some(
-                              (action) => action.key === "edit"
-                            ) && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEdit(item)}
-                              >
-                                Edit
-                              </Button>
-                            )}
-                          {/* Render custom actions */}
                           {actions.map((action) => {
                             if (action.show && !action.show(item)) return null;
                             return (
@@ -890,6 +1020,15 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                                     handleView(item);
                                   } else if (action.key === "edit") {
                                     handleEdit(item);
+                                  } else if (action.key === "delete") {
+                                    handleDelete(item);
+                                  } else if (action.key === "details") {
+                                    handleDetails(item, action.route);
+                                  } else if (
+                                    action.key === "permission" ||
+                                    action.key === "approve-decline"
+                                  ) {
+                                    handlePermissionAction(item);
                                   } else {
                                     action.onClick(item);
                                   }
@@ -901,29 +1040,6 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
                               </Button>
                             );
                           })}
-                          {/* Only show Delete button if no custom delete action and onItemDelete exists */}
-                          {onItemDelete &&
-                            !actions.some(
-                              (action) => action.key === "delete"
-                            ) && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDelete(item)}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Lordicon
-                                  src="https://cdn.lordicon.com/jmkrnisz.json"
-                                  trigger="hover"
-                                  size={20}
-                                  colors={{
-                                    primary: "#FF0000",
-                                    secondary: "#ffffff",
-                                  }}
-                                  stroke={1}
-                                />
-                              </Button>
-                            )}
                         </div>
                       </TableCell>
                     )}
@@ -1061,6 +1177,24 @@ export const DynamicTable: React.FC<DynamicTableProps> = ({
         columns={columns}
         title="Data Details"
         description="Complete information about the selected data"
+      />
+
+      <PermissionModal
+        isOpen={permissionModalOpen}
+        onClose={() => {
+          setPermissionModalOpen(false);
+          setPermissionItem(null);
+        }}
+        item={permissionItem}
+        onApprove={handleApprove}
+        onDecline={handleDecline}
+        title={permissionModalConfig.title}
+        description={permissionModalConfig.description}
+        approveText={permissionModalConfig.approveText}
+        declineText={permissionModalConfig.declineText}
+        requireReason={permissionModalConfig.requireReason}
+        requireReasonForApprove={permissionModalConfig.requireReasonForApprove}
+        isLoading={isLoading}
       />
     </div>
   );

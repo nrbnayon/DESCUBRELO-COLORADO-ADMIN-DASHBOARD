@@ -5,9 +5,9 @@ import ManagementAds from "../components/Advertisements/ManagementAds";
 export default function ManageAdsPage() {
   return (
     <div>
-      <DashboardHeader title="Welcome Nayon" />
-      <div className="p-2 md:p-6">
-        <ManagementAds itemsPerPage={4} showAds={1} title="Advertisements" />
+      <DashboardHeader title='Welcome Nayon' />
+      <div className='p-2 md:p-6'>
+        <ManagementAds itemsPerPage={12} showAds={100} title='Advertisements' />
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+// src\components\common\DynamicDataCreateModal.tsx
 "use client";
 import React from "react";
 import type { ReactElement } from "react";
@@ -244,6 +245,84 @@ export function DynamicDataCreateModal({
     fileInputRefs.current[fieldKey]?.click();
   }, []);
 
+  // pdf upload handler
+
+  const handlePdfFile = useCallback(
+    (file: File, fieldKey: string) => {
+      // Validate file type for PDF
+      if (file.type !== "application/pdf") {
+        setErrors((prev) => ({
+          ...prev,
+          [fieldKey]: "Please upload a valid PDF file",
+        }));
+        return;
+      }
+
+      // Validate file size (using same size limit as images)
+      if (file.size > maxImageSizeInMB * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          [fieldKey]: `PDF file size must be less than ${maxImageSizeInMB}MB`,
+        }));
+        return;
+      }
+
+      setUploading((prev) => ({ ...prev, [fieldKey]: true }));
+
+      // Create data URL for PDF
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setFormData((prev) => ({ ...prev, [fieldKey]: result }));
+        setUploading((prev) => ({ ...prev, [fieldKey]: false }));
+      };
+      reader.onerror = () => {
+        setErrors((prev) => ({
+          ...prev,
+          [fieldKey]: "Error reading PDF file",
+        }));
+        setUploading((prev) => ({ ...prev, [fieldKey]: false }));
+      };
+      reader.readAsDataURL(file);
+    },
+    [maxImageSizeInMB]
+  );
+
+  // Handle PDF file input change
+  const handlePdfFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>, fieldKey: string) => {
+      e.preventDefault();
+      if (e.target.files && e.target.files.length > 0) {
+        const file = e.target.files[0];
+        handlePdfFile(file, fieldKey);
+      }
+    },
+    [handlePdfFile]
+  );
+
+  // Handle PDF drag and drop
+  const handlePdfDrop = useCallback(
+    (e: React.DragEvent, fieldKey: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive((prev) => ({ ...prev, [fieldKey]: false }));
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        handlePdfFile(file, fieldKey);
+      }
+    },
+    [handlePdfFile]
+  );
+
+  // Remove PDF file
+  const handleRemovePdf = useCallback((fieldKey: string) => {
+    setFormData((prev) => ({ ...prev, [fieldKey]: "" }));
+    setErrors((prev) => ({ ...prev, [fieldKey]: "" }));
+    if (fileInputRefs.current[fieldKey]) {
+      fileInputRefs.current[fieldKey]!.value = "";
+    }
+  }, []);
+
   // Handle multiselect toggle
   const handleMultiselectToggle = useCallback(
     (fieldKey: string, optionValue: string) => {
@@ -450,7 +529,7 @@ export function DynamicDataCreateModal({
         case "number":
           return (
             <Input
-              type='number'
+              type="number"
               value={getStringValue(value)}
               onChange={(e) => {
                 const inputValue = e.target.value;
@@ -484,10 +563,10 @@ export function DynamicDataCreateModal({
             <MDEditor
               value={getStringValue(value)}
               onChange={(val) => handleInputChange(field.key, val || "")}
-              preview='edit'
+              preview="edit"
               hideToolbar={false}
               visibleDragbar={false}
-              data-color-mode='light'
+              data-color-mode="light"
               textareaProps={{
                 placeholder:
                   field.placeholder ||
@@ -540,10 +619,10 @@ export function DynamicDataCreateModal({
           const availableOptions = field.options || [];
 
           return (
-            <div className='space-y-3'>
+            <div className="space-y-3">
               {/* Selected items display */}
               {selectedValues.length > 0 && (
-                <div className='flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border text-black'>
+                <div className="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border text-black">
                   {selectedValues.map((selectedValue) => {
                     const option = availableOptions.find(
                       (opt) => opt.value === selectedValue
@@ -551,20 +630,20 @@ export function DynamicDataCreateModal({
                     return (
                       <div
                         key={selectedValue}
-                        className='flex items-center gap-1 px-2 py-1 text-foreground   bg-primary/30 text-sm rounded-md border'
+                        className="flex items-center gap-1 px-2 py-1 text-foreground   bg-primary/30 text-sm rounded-md border"
                       >
                         <span>{option?.label || selectedValue}</span>
                         <button
-                          type='button'
+                          type="button"
                           onClick={() =>
                             handleRemoveMultiselectItem(
                               field.key,
                               selectedValue
                             )
                           }
-                          className='ml-1 hover:text-red-500 transition-colors'
+                          className="ml-1 hover:text-red-500 transition-colors"
                         >
-                          <X className='w-3 h-3' />
+                          <X className="w-3 h-3" />
                         </button>
                       </div>
                     );
@@ -579,13 +658,13 @@ export function DynamicDataCreateModal({
                   error ? "border-red-500" : "border-primary/30"
                 )}
               >
-                <div className='space-y-2'>
+                <div className="space-y-2">
                   {availableOptions.map((option) => {
                     const isSelected = selectedValues.includes(option.value);
                     return (
                       <label
                         key={option.value}
-                        className='flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded'
+                        className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
                       >
                         <Checkbox
                           checked={isSelected}
@@ -593,7 +672,7 @@ export function DynamicDataCreateModal({
                             handleMultiselectToggle(field.key, option.value)
                           }
                         />
-                        <span className='text-sm'>{option.label}</span>
+                        <span className="text-sm">{option.label}</span>
                       </label>
                     );
                   })}
@@ -601,7 +680,7 @@ export function DynamicDataCreateModal({
               </div>
 
               {selectedValues.length === 0 && (
-                <p className='text-sm text-gray-500'>
+                <p className="text-sm text-gray-500">
                   {field.placeholder || `Select ${field.label.toLowerCase()}`}
                 </p>
               )}
@@ -610,14 +689,14 @@ export function DynamicDataCreateModal({
 
         case "checkbox":
           return (
-            <div className='flex items-center space-x-2'>
+            <div className="flex items-center space-x-2">
               <Checkbox
                 checked={getBooleanValue(value)}
                 onCheckedChange={(checked) =>
                   handleInputChange(field.key, checked)
                 }
               />
-              <span className='text-sm'>
+              <span className="text-sm">
                 {field.placeholder || field.label}
               </span>
             </div>
@@ -625,11 +704,11 @@ export function DynamicDataCreateModal({
 
         case "switch":
           return (
-            <div className='flex items-center justify-between'>
-              <div className='space-y-1'>
-                <span className='text-sm font-medium'>{field.label}</span>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <span className="text-sm font-medium">{field.label}</span>
                 {field.helpText && (
-                  <p className='text-xs text-gray-500'>{field.helpText}</p>
+                  <p className="text-xs text-gray-500">{field.helpText}</p>
                 )}
               </div>
               <Switch
@@ -651,32 +730,32 @@ export function DynamicDataCreateModal({
           const canUploadMore = existingImages.length < maxImageUpload;
 
           return (
-            <div className='space-y-4'>
+            <div className="space-y-4">
               {/* Image Previews */}
               {existingImages.length > 0 && (
-                <div className='space-y-3'>
-                  <div className='flex items-center justify-between'>
-                    <p className='text-sm font-medium text-gray-700'>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-gray-700">
                       {existingImages.length === 1
                         ? "Current Image"
                         : `Images (${existingImages.length}/${maxImageUpload})`}
                     </p>
                     {existingImages.length > 1 && (
                       <Button
-                        type='button'
-                        variant='outline'
-                        size='sm'
+                        type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleRemoveImage(field.key)}
-                        className='text-xs h-7'
+                        className="text-xs h-7"
                       >
                         Clear All
                       </Button>
                     )}
                   </div>
-                  <div className='grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-4 bg-gray-50/50 rounded-lg border'>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-4 bg-gray-50/50 rounded-lg border">
                     {existingImages.map((imageUrl, index) => (
-                      <div key={index} className='relative group'>
-                        <div className='aspect-square rounded-lg overflow-hidden border-2 border-white shadow-sm bg-white hover:shadow-md transition-shadow'>
+                      <div key={index} className="relative group">
+                        <div className="aspect-square rounded-lg overflow-hidden border-2 border-white shadow-sm bg-white hover:shadow-md transition-shadow">
                           <Image
                             src={
                               imageUrl ||
@@ -686,7 +765,7 @@ export function DynamicDataCreateModal({
                             alt={`Preview ${index + 1}`}
                             width={120}
                             height={120}
-                            className='w-full h-full object-cover'
+                            className="w-full h-full object-cover"
                             unoptimized={
                               imageUrl?.startsWith("data:") ||
                               imageUrl?.startsWith("blob:")
@@ -699,16 +778,16 @@ export function DynamicDataCreateModal({
                           />
                         </div>
                         <Button
-                          type='button'
-                          variant='destructive'
-                          size='sm'
-                          className='absolute -top-1 -right-1 h-5 w-5 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg'
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-1 -right-1 h-5 w-5 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleRemoveImage(field.key, index);
                           }}
                         >
-                          <X className='h-2.5 w-2.5' />
+                          <X className="h-2.5 w-2.5" />
                         </Button>
                       </div>
                     ))}
@@ -738,36 +817,36 @@ export function DynamicDataCreateModal({
                     ref={(el) => {
                       fileInputRefs.current[field.key] = el;
                     }}
-                    type='file'
+                    type="file"
                     accept={acceptedImageFormats.join(",")}
                     multiple={maxImageUpload > 1}
                     onChange={(e) => handleFileChange(e, field.key)}
-                    className='hidden'
+                    className="hidden"
                   />
-                  <div className='p-8 text-center'>
-                    <div className='space-y-3'>
-                      <div className='mx-auto w-12 h-12 text-gray-400'>
+                  <div className="p-8 text-center">
+                    <div className="space-y-3">
+                      <div className="mx-auto w-12 h-12 text-gray-400">
                         {isUploading ? (
-                          <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-primary'></div>
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                         ) : (
-                          <Upload className='w-12 h-12' />
+                          <Upload className="w-12 h-12" />
                         )}
                       </div>
-                      <div className='space-y-1'>
-                        <p className='text-base font-medium text-gray-900'>
+                      <div className="space-y-1">
+                        <p className="text-base font-medium text-gray-900">
                           {isUploading
                             ? "Processing images..."
                             : existingImages.length > 0
                             ? "Replace or add more images"
                             : "Upload images"}
                         </p>
-                        <p className='text-sm text-gray-600'>
+                        <p className="text-sm text-gray-600">
                           Drop files here or{" "}
-                          <span className='text-primary font-medium'>
+                          <span className="text-primary font-medium">
                             browse
                           </span>
                         </p>
-                        <p className='text-xs text-gray-500 mt-2'>
+                        <p className="text-xs text-gray-500 mt-2">
                           {acceptedImageFormats
                             .map((format) => format.split("/")[1].toUpperCase())
                             .join(", ")}{" "}
@@ -785,14 +864,166 @@ export function DynamicDataCreateModal({
 
               {/* Show message when upload limit reached */}
               {!canUploadMore && existingImages.length >= maxImageUpload && (
-                <div className='text-center p-4 bg-gray-50 rounded-lg border'>
-                  <p className='text-sm text-gray-600'>
+                <div className="text-center p-4 bg-gray-50 rounded-lg border">
+                  <p className="text-sm text-gray-600">
                     Maximum {maxImageUpload} image
                     {maxImageUpload > 1 ? "s" : ""} uploaded. Remove an image to
                     add a new one.
                   </p>
                 </div>
               )}
+            </div>
+          );
+
+        case "pdf":
+          const currentPdf =
+            typeof value === "string" && value.trim() !== ""
+              ? (value as string)
+              : null;
+          const isPdfUploading = uploading[field.key];
+          const isPdfDragActive = dragActive[field.key];
+
+          return (
+            <div className="space-y-4">
+              {/* PDF Preview */}
+              {currentPdf && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-gray-700">
+                      Current PDF
+                    </p>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleRemovePdf(field.key)}
+                      className="text-xs h-7 text-red-600 hover:text-red-700"
+                    >
+                      Remove PDF
+                    </Button>
+                  </div>
+                  <div className="p-4 bg-gray-50/50 rounded-lg border">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                        <svg
+                          className="w-6 h-6 text-red-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          PDF Document
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Click to view or download
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (currentPdf.startsWith("data:")) {
+                            // For data URLs, create a download link
+                            const link = document.createElement("a");
+                            link.href = currentPdf;
+                            link.download = "document.pdf";
+                            link.click();
+                          } else {
+                            // For regular URLs, open in new tab
+                            window.open(currentPdf, "_blank");
+                          }
+                        }}
+                        className="text-xs h-7"
+                      >
+                        View PDF
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload Area */}
+              <div
+                className={cn(
+                  "relative border-2 border-dashed rounded-lg transition-all duration-200",
+                  isPdfDragActive
+                    ? "border-primary bg-primary/5 scale-[1.02]"
+                    : "border-gray-300 hover:border-gray-400 hover:bg-gray-50/50",
+                  isPdfUploading && "pointer-events-none opacity-50",
+                  error && "border-red-500 bg-red-50/30",
+                  "cursor-pointer"
+                )}
+                onDragEnter={(e) => handleDrag(e, field.key)}
+                onDragLeave={(e) => handleDrag(e, field.key)}
+                onDragOver={(e) => handleDrag(e, field.key)}
+                onDrop={(e) => handlePdfDrop(e, field.key)}
+                onClick={() => openFileDialog(field.key)}
+              >
+                <input
+                  ref={(el) => {
+                    fileInputRefs.current[field.key] = el;
+                  }}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={(e) => handlePdfFileChange(e, field.key)}
+                  className="hidden"
+                />
+                <div className="p-8 text-center">
+                  <div className="space-y-3">
+                    <div className="mx-auto w-12 h-12 text-gray-400">
+                      {isPdfUploading ? (
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                      ) : (
+                        <svg
+                          className="w-12 h-12"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 3v6a1 1 0 001 1h6"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-base font-medium text-gray-900">
+                        {isPdfUploading
+                          ? "Uploading PDF..."
+                          : currentPdf
+                          ? "Replace PDF"
+                          : "Upload PDF"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Drop PDF file here or{" "}
+                        <span className="text-primary font-medium">browse</span>
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        PDF files only • Max {maxImageSizeInMB}MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           );
 
@@ -816,6 +1047,9 @@ export function DynamicDataCreateModal({
       handleMultiselectToggle,
       handleRemoveMultiselectItem,
       openFileDialog,
+      handlePdfDrop,
+      handlePdfFileChange,
+      handleRemovePdf,
     ]
   );
 
@@ -857,26 +1091,26 @@ export function DynamicDataCreateModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className='max-w-full md:min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom'>
+      <DialogContent className="max-w-full md:min-w-3xl max-h-[90vh] overflow-y-auto scrollbar-custom">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
 
-        <div className='space-y-6 py-4'>
+        <div className="space-y-6 py-4">
           {fieldsBySection.map((section) => (
-            <div key={section.key} className='space-y-4'>
+            <div key={section.key} className="space-y-4">
               {section.title && (
-                <div className='space-y-1'>
-                  <h3 className='text-lg font-medium'>{section.title}</h3>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-medium">{section.title}</h3>
                   {section.description && (
-                    <p className='text-sm text-gray-600'>
+                    <p className="text-sm text-gray-600">
                       {section.description}
                     </p>
                   )}
                 </div>
               )}
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {section.fields.map((field) => (
                   <div
                     key={field.key}
@@ -886,18 +1120,18 @@ export function DynamicDataCreateModal({
                         : "md:col-span-1"
                     )}
                   >
-                    <div className='space-y-2'>
+                    <div className="space-y-2">
                       {field.type !== "switch" && (
                         <Label htmlFor={field.key}>
                           {field.label}
                           {field.required && (
-                            <span className='text-red-500 ml-1'>*</span>
+                            <span className="text-red-500 ml-1">*</span>
                           )}
                         </Label>
                       )}
                       {renderField(field)}
                       {errors[field.key] && (
-                        <p className='text-sm text-red-600'>
+                        <p className="text-sm text-red-600">
                           {errors[field.key]}
                         </p>
                       )}
@@ -910,7 +1144,7 @@ export function DynamicDataCreateModal({
         </div>
 
         <DialogFooter>
-          <Button variant='outline' onClick={handleClose}>
+          <Button variant="outline" onClick={handleClose}>
             {cancelButtonText}
           </Button>
           <Button onClick={handleSave}>{saveButtonText}</Button>

@@ -59,10 +59,36 @@ export default function UserManagement({
       width: "120px",
       align: "center",
       options: [
-        { value: "active", label: "Active", color: "#16a34a" },
-        { value: "inactive", label: "Inactive", color: "#ca8a04" },
-        { value: "blocked", label: "Blocked", color: "#dc2626" },
-        { value: "pending", label: "Pending", color: "#6b7280" },
+        {
+          value: "active",
+          label: "Active",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "canceled",
+          label: "Canceled",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+          color: "#818181",
+          textColor: "#0F304E",
+        },
+        {
+          value: "pending",
+          label: "Pending",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
       ],
     },
   ];

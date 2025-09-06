@@ -124,18 +124,6 @@ export default function ManagementPosts({
       sortable: true,
     },
     {
-      key: "rating",
-      label: "Rating",
-      type: "number",
-      sortable: true,
-      render: (value) => (
-        <div className='flex items-center gap-1'>
-          <span>⭐</span>
-          <span>{typeof value === "number" ? value.toFixed(1) : "N/A"}</span>
-        </div>
-      ),
-    },
-    {
       key: "isFeatured",
       label: "Featured",
       type: "checkbox",
@@ -198,7 +186,6 @@ export default function ManagementPosts({
         if (!socialLinks || Object.keys(socialLinks).length === 0) {
           return <span className='text-gray-400'>No links</span>;
         }
-        const linkCount = Object.keys(socialLinks).length;
         return (
           <div className='flex items-center gap-1'>
             <div className='flex space-x-4'>
@@ -303,7 +290,6 @@ export default function ManagementPosts({
     imageKey: "images",
     descriptionKey: "description",
     statusKey: "isFeatured",
-    badgeKeys: ["type", "rating"],
     metaKeys: ["location", "phone", "totalEvent"],
     showDetailsButton: true,
     primaryAction: {
@@ -334,7 +320,6 @@ export default function ManagementPosts({
     enableSort: true,
     sortOptions: [
       { key: "title", label: "Title" },
-      { key: "rating", label: "Rating" },
       { key: "totalEvent", label: "Total Event" },
       { key: "price", label: "Price" },
     ],
@@ -366,17 +351,6 @@ export default function ManagementPosts({
         options: [
           { value: "true", label: "Supported" },
           { value: "false", label: "Not Supported" },
-        ],
-      },
-      {
-        key: "rating",
-        label: "Rating Range",
-        type: "select",
-        options: [
-          { value: "4.5-5", label: "4.5 - 5.0" },
-          { value: "4-4.5", label: "4.0 - 4.5" },
-          { value: "3.5-4", label: "3.5 - 4.0" },
-          { value: "0-3.5", label: "Below 3.5" },
         ],
       },
     ],
@@ -1031,7 +1005,7 @@ export default function ManagementPosts({
         ];
 
     // Enhanced offline data processing
-    let enhancedOfflineData =
+    const enhancedOfflineData =
       processedData.offlineData as PostDataItem["offlineData"];
 
     if (processedData.offlineSupported && enhancedOfflineData) {
@@ -1111,7 +1085,6 @@ export default function ManagementPosts({
       socialLinks: processedData.socialLinks as PostDataItem["socialLinks"],
       offlineSupported: Boolean(processedData.offlineSupported),
       offlineData: enhancedOfflineData,
-      rating: Math.round((Math.random() * 2 + 3) * 10) / 10, // Generate random rating between 3.0-5.0
     };
 
     const updatedPosts = [newPostData, ...posts];
@@ -1134,7 +1107,7 @@ export default function ManagementPosts({
         : editingPost.images;
 
     // Enhanced offline data processing for updates
-    let enhancedOfflineData =
+    const enhancedOfflineData =
       processedData.offlineData as PostDataItem["offlineData"];
 
     if (processedData.offlineSupported && enhancedOfflineData) {

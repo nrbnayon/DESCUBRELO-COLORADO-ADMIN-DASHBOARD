@@ -60,10 +60,30 @@ export default function UserSubscriptions({
       width: "100px",
       align: "center",
       options: [
-        { value: "active", label: "Active", color: "#16a34a" },
-        { value: "inactive", label: "Inactive", color: "#ca8a04" },
-        { value: "blocked", label: "Blocked", color: "#dc2626" },
-        { value: "pending", label: "Pending", color: "#6b7280" },
+        {
+          value: "active",
+          label: "Active",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "pending",
+          label: "Pending",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
       ],
     },
     {
@@ -75,10 +95,30 @@ export default function UserSubscriptions({
       width: "100px",
       align: "center",
       options: [
-        { value: "free", label: "Free", color: "#9ca3af" },
-        { value: "basic", label: "Basic", color: "#10b981" },
-        { value: "premium", label: "Premium", color: "#f59e0b" },
-        { value: "enterprise", label: "Enterprise", color: "#1e40af" },
+        {
+          value: "free",
+          label: "Free",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
+        {
+          value: "basic",
+          label: "Basic",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "premium",
+          label: "Premium",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "enterprise",
+          label: "Enterprise",
+          color: "#DBEAFE",
+          textColor: "#1E3A8A",
+        },
       ],
     },
   ];
@@ -204,26 +244,32 @@ export default function UserSubscriptions({
       section: "account",
       gridCol: "half",
       options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        { value: "blocked", label: "Blocked" },
-        { value: "pending", label: "Pending" },
+        {
+          value: "active",
+          label: "Active",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "pending",
+          label: "Pending",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
       ],
     },
-    // {
-    //   key: "accountType",
-    //   label: "User Subscription Status",
-    //   type: "select",
-    //   required: true,
-    //   section: "account",
-    //   gridCol: "half",
-    //   options: [
-    //     { value: "free", label: "Free" },
-    //     { value: "basic", label: "Basic" },
-    //     { value: "premium", label: "Premium" },
-    //     { value: "enterprise", label: "Enterprise" },
-    //   ],
-    // },
   ];
 
   // Filter Configuration for User Table
@@ -233,10 +279,30 @@ export default function UserSubscriptions({
       label: "Status",
       type: "select",
       options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        { value: "blocked", label: "Blocked" },
-        { value: "pending", label: "Pending" },
+        {
+          value: "active",
+          label: "Active",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "pending",
+          label: "Pending",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
       ],
     },
     {
@@ -244,10 +310,30 @@ export default function UserSubscriptions({
       label: "Subscriptions",
       type: "select",
       options: [
-        { value: "free", label: "Free" },
-        { value: "basic", label: "Basic" },
-        { value: "premium", label: "Premium" },
-        { value: "enterprise", label: "Enterprise" },
+        {
+          value: "free",
+          label: "Free",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
+        {
+          value: "basic",
+          label: "Basic",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "premium",
+          label: "Premium",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "enterprise",
+          label: "Enterprise",
+          color: "#DBEAFE",
+          textColor: "#1E3A8A",
+        },
       ],
     },
   ];

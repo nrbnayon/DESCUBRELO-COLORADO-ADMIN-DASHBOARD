@@ -1,7 +1,7 @@
 // src\app\(dashboard)\components\Categories\ManagementCategories.tsx
 "use client";
 
-import { categoriesData } from "@/data/categoriesData";
+import { categoriesData, CategoryDataItem } from "@/data/categoriesData";
 import { useState } from "react";
 import type {
   GenericDataItem,
@@ -25,14 +25,7 @@ interface CategoryManagementProps {
   pageUrl?: string;
 }
 
-interface CategoryDataItem extends GenericDataItem {
-  name: string;
-  avatar: string;
-  status: "active" | "inactive" | "blocked" | "pending";
-  description: string;
-  createdAt: string;
-  isActive: boolean;
-}
+
 
 export default function ManagementCategories({
   itemsPerPage = 10,
@@ -64,10 +57,30 @@ export default function ManagementCategories({
       width: "120px",
       align: "center",
       options: [
-        { value: "active", label: "Active", color: "#16a34a" },
-        { value: "inactive", label: "Inactive", color: "#ca8a04" },
-        { value: "blocked", label: "Blocked", color: "#dc2626" },
-        { value: "pending", label: "Pending", color: "#6b7280" },
+        {
+          value: "active",
+          label: "Active",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "pending",
+          label: "Pending",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
       ],
     },
   ];
@@ -87,20 +100,12 @@ export default function ManagementCategories({
       },
     },
     {
-      key: "avatar",
+      key: "image",
       label: "Category Picture",
       type: "file",
       section: "details",
       gridCol: "full",
       placeholder: "Upload category picture (max 5MB)",
-    },
-    {
-      key: "description",
-      label: "Description",
-      type: "textarea",
-      section: "details",
-      gridCol: "full",
-      placeholder: "Enter category description",
     },
     {
       key: "status",
@@ -110,10 +115,30 @@ export default function ManagementCategories({
       section: "account",
       gridCol: "half",
       options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        { value: "blocked", label: "Blocked" },
-        { value: "pending", label: "Pending" },
+        {
+          value: "active",
+          label: "Active",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "pending",
+          label: "Pending",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
       ],
     },
   ];
@@ -134,20 +159,11 @@ export default function ManagementCategories({
       gridCol: "full",
     },
     {
-      key: "avatar",
+      key: "image",
       label: "Category Picture",
-      type: "image", // Changed to "image" to match DynamicDataCreateModal's image handling
+      type: "image",
       required: false,
       placeholder: "Upload category picture (max 5MB)",
-      section: "basic",
-      gridCol: "full",
-    },
-    {
-      key: "description",
-      label: "Description",
-      type: "textarea",
-      required: false,
-      placeholder: "Enter category description (optional)",
       section: "basic",
       gridCol: "full",
     },
@@ -157,10 +173,30 @@ export default function ManagementCategories({
       type: "select",
       required: true,
       options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        { value: "blocked", label: "Blocked" },
-        { value: "pending", label: "Pending" },
+        {
+          value: "active",
+          label: "Active",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "pending",
+          label: "Pending",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
       ],
       section: "basic",
       gridCol: "half",
@@ -172,7 +208,6 @@ export default function ManagementCategories({
     {
       key: "basic",
       title: "Basic Information",
-      description: "Enter the basic details for the new category",
     },
   ];
 
@@ -183,10 +218,30 @@ export default function ManagementCategories({
       label: "Status",
       type: "select",
       options: [
-        { value: "active", label: "Active" },
-        { value: "inactive", label: "Inactive" },
-        { value: "blocked", label: "Blocked" },
-        { value: "pending", label: "Pending" },
+        {
+          value: "active",
+          label: "Active",
+          color: "#ECFDF3",
+          textColor: "#027A48",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+          color: "#FFF9E0",
+          textColor: "#C8AA00",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+          color: "#FEF3F2",
+          textColor: "#B42318",
+        },
+        {
+          value: "pending",
+          label: "Pending",
+          color: "#F3F4F6",
+          textColor: "#374151",
+        },
       ],
     },
   ];
@@ -234,7 +289,6 @@ export default function ManagementCategories({
   // Table Configuration for Category Management
   const categoryTableConfig: TableConfig = {
     title: "",
-    description: "",
     searchPlaceholder: "Search category by name",
     itemsPerPage: itemsPerPage,
     enableSearch: true,
@@ -250,18 +304,15 @@ export default function ManagementCategories({
   // Edit Modal Configuration for Category Form
   const categoryEditModalConfig: EditModalConfig = {
     title: "Edit Category",
-    description: "Update category information and settings",
     width: "xl",
     sections: [
       {
         key: "details",
         title: "Category Information",
-        description: "Basic category details and information",
       },
       {
         key: "account",
         title: "Status & Settings",
-        description: "Category status and configuration",
       },
     ],
   };
@@ -271,17 +322,15 @@ export default function ManagementCategories({
     const newCategoryData = {
       id: `cat${Date.now()}`,
       name: String(data.name || ""),
-      avatar:
-        String(data.avatar || "") ||
+      image:
+        String(data.image || "") ||
         `https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=40&h=40&fit=crop&crop=face`,
       status: String(data.status || "active") as
         | "active"
         | "inactive"
         | "blocked"
         | "pending",
-      description: String(data.description || ""),
       createdAt: new Date().toISOString(),
-      isActive: String(data.status || "active") === "active",
     };
 
     const updatedCategories = [newCategoryData, ...categories];
@@ -405,9 +454,8 @@ export default function ManagementCategories({
         onClose={() => setCreateModalOpen(false)}
         onSave={handleCreateCategory}
         title="Create New Category"
-        description="Add a new category to organize your content"
-        fields={createFormFields} // Using the corrected createFormFields
-        sections={createModalSections} // Using the existing createModalSections
+        fields={createFormFields} 
+        sections={createModalSections}
         initialData={{ status: "active" }}
         saveButtonText="Create Category"
         cancelButtonText="Cancel"

@@ -94,7 +94,7 @@ export default function LoginForm() {
               alt="logo"
               width={120}
               height={120}
-              className="w-[100px] h-[100px] md:w-[200px] md:h-[200px]"
+              className="w-[100px] h-[100px] md:w-[200px] md:h-[120px]"
             />
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl leading-tight">

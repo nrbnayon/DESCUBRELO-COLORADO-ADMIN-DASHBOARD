@@ -3,94 +3,85 @@ import type { GenericDataItem } from "../types/dynamicTableTypes";
 export interface CategoryDataItem extends GenericDataItem {
   id: string;
   name: string;
-  avatar?: string;
+  image?: string;
   status: "active" | "inactive" | "blocked" | "pending";
-  description?: string;
   createdAt: string;
   updatedAt?: string;
-  isActive: boolean;
+  isActive?: boolean;
 }
 
 // Sample category data
 export const categoriesData: CategoryDataItem[] = [
   {
     id: "cat1",
-    name: "Technology",
-    avatar:
-      "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=40&h=40&fit=crop&crop=face",
+    name: "Colorado Hiking",
+    image:
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=40&h=40&fit=crop&crop=face",
     status: "active",
-    description: "Technology related content",
+    description: "Hiking trails and adventures in Colorado's mountains",
     createdAt: "2023-01-15T00:00:00Z",
-    isActive: true,
   },
   {
     id: "cat2",
-    name: "Design",
-    avatar:
-      "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=40&h=40&fit=crop&crop=face",
+    name: "Colorado Travel",
+    image:
+      "https://images.unsplash.com/photo-1517404215738-15263e9f9178?w=40&h=40&fit=crop&crop=face",
     status: "active",
-    description: "Design and creative content",
+    description: "Travel guides and destinations across Colorado",
     createdAt: "2023-02-20T00:00:00Z",
-    isActive: true,
   },
   {
     id: "cat3",
-    name: "Business",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+    name: "Outdoor Gear Stores",
+    image:
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=40&h=40&fit=crop&crop=face",
     status: "inactive",
-    description: "Business and entrepreneurship",
+    description: "Retail for hiking and outdoor gear in Colorado",
     createdAt: "2022-11-10T00:00:00Z",
-    isActive: false,
   },
   {
     id: "cat4",
-    name: "Education",
-    avatar:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
+    name: "Colorado Camping",
+    image:
+      "https://images.unsplash.com/photo-1504851149312-7a075b496cc7?w=40&h=40&fit=crop&crop=face",
     status: "active",
-    description: "Educational content and resources",
+    description: "Camping sites and resources in Colorado",
     createdAt: "2023-04-05T00:00:00Z",
-    isActive: true,
   },
   {
     id: "cat5",
-    name: "Healthcare",
-    avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=40&h=40&fit=crop&crop=face",
+    name: "Adventure Tours",
+    image:
+      "https://images.unsplash.com/photo-1534787019598-6d48f173b418?w=40&h=40&fit=crop&crop=face",
     status: "pending",
-    description: "Healthcare and medical content",
+    description: "Guided adventure tours in Colorado's wilderness",
     createdAt: "2023-03-22T00:00:00Z",
-    isActive: false,
   },
   {
     id: "cat6",
-    name: "Finance",
-    avatar:
-      "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=40&h=40&fit=crop&crop=face",
+    name: "Skiing & Snowboarding",
+    image:
+      "https://images.unsplash.com/photo-1519944246722-4e876a8b0f0d?w=40&h=40&fit=crop&crop=face",
     status: "active",
-    description: "Financial services and advice",
+    description: "Ski resorts and snowboarding activities in Colorado",
     createdAt: "2023-07-01T00:00:00Z",
-    isActive: true,
   },
   {
     id: "cat7",
-    name: "Entertainment",
-    avatar:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=40&h=40&fit=crop&crop=face",
+    name: "Colorado Wildlife",
+    image:
+      "https://images.unsplash.com/photo-1545486336-5a5b0929f7d7?w=40&h=40&fit=crop&crop=face",
     status: "blocked",
-    description: "Entertainment and media content",
+    description: "Wildlife exploration and conservation in Colorado",
     createdAt: "2022-12-08T00:00:00Z",
-    isActive: false,
   },
   {
     id: "cat8",
-    name: "Sports",
-    avatar:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face",
+    name: "Mountain Biking",
+    image:
+      "https://images.unsplash.com/photo-1598195950283-0a6d6a8a4b2b?w=40&h=40&fit=crop&crop=face",
     status: "active",
-    description: "Sports and fitness content",
+    description: "Mountain biking trails and events in Colorado",
     createdAt: "2023-05-12T00:00:00Z",
-    isActive: true,
   },
 ];

@@ -68,81 +68,81 @@ interface NotificationData extends GenericDataItem {
   };
 }
 
-// Fixed mock data with deterministic values
 const generateMockNotifications = (): NotificationData[] => {
-  // Use a fixed base date for consistent server/client rendering
-  const baseDate = new Date("2024-08-04T10:00:00Z");
+  const baseDate = new Date("2025-08-31T10:00:00Z");
 
   const staticNotifications: NotificationData[] = [
     {
       id: "1",
-      title: "New User Registration",
-      message: "John Doe has successfully registered to the platform",
+      title: "New Trail Registration",
+      message: "John Doe has registered for the Rocky Mountain Trail hike",
       type: "user",
       isRead: false,
       createdAt: new Date(baseDate.getTime() - 1000 * 60 * 5), // 5 minutes ago
       updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 5),
       priority: "medium",
-      category: "User Management",
+      category: "Hiking",
       metadata: {
         userId: "user_123",
         userName: "John Doe",
         userAvatar: "/placeholder.svg",
+        trailName: "Rocky Mountain Trail",
       },
     },
     {
       id: "2",
-      title: "Payment Received",
+      title: "Camping Reservation Confirmed",
       message:
-        "Payment of $299.99 has been successfully processed for Order #ORD-2024-001",
+        "Reservation for $199.99 confirmed for Campsite #COL-2025-001 at Estes Park",
       type: "payment",
       isRead: false,
       createdAt: new Date(baseDate.getTime() - 1000 * 60 * 15), // 15 minutes ago
       updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 15),
       priority: "high",
-      category: "Financial",
+      category: "Travel",
       metadata: {
-        amount: 299.99,
-        orderId: "ORD-2024-001",
+        amount: 199.99,
+        reservationId: "COL-2025-001",
         userId: "user_456",
         userName: "Sarah Johnson",
+        location: "Estes Park",
       },
     },
     {
       id: "3",
-      title: "System Maintenance",
+      title: "Trail Maintenance Scheduled",
       message:
-        "Scheduled maintenance will begin at 2:00 AM UTC. Expected downtime: 30 minutes",
+        "Scheduled maintenance on Colorado Trail begins at 6:00 AM MST. Expected closure: 2 hours",
       type: "system",
       isRead: true,
       createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 2), // 2 hours ago
       updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 30),
       priority: "urgent",
-      category: "System",
+      category: "Outdoor Management",
       metadata: {
-        systemComponent: "Database Server",
+        trailName: "Colorado Trail",
       },
     },
     {
       id: "4",
-      title: "Security Alert",
-      message: "Multiple failed login attempts detected from IP 192.168.1.100",
+      title: "Wildlife Alert",
+      message: "Bear sighting reported near Boulder Flatirons trail",
       type: "warning",
       isRead: false,
       createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 1), // 1 hour ago
       updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 1),
       priority: "urgent",
-      category: "Security",
+      category: "Wildlife",
       metadata: {
-        ipAddress: "192.168.1.100",
-        attemptCount: 5,
+        location: "Boulder Flatirons",
+        sightingType: "Bear",
       },
     },
     {
       id: "5",
-      title: "Data Backup Completed",
+      title: "Trail Map Backup Completed",
       message:
-        "Daily backup process completed successfully. 1.2GB of data backed up.",
+        "Daily backup of Colorado trail maps completed. 1.5GB of data backed up.",
       type: "success",
       isRead: true,
       createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 6), // 6 hours ago
@@ -150,53 +150,93 @@ const generateMockNotifications = (): NotificationData[] => {
       priority: "low",
       category: "System",
       metadata: {
-        backupSize: "1.2GB",
+        backupSize: "1.5GB",
         backupLocation: "AWS S3",
       },
     },
     {
       id: "6",
-      title: "Profile Update Request",
+      title: "Gear Rental Request",
       message:
-        "User Emma Wilson has requested to update their profile information",
+        "User Emma Wilson has requested to rent hiking gear for Pikes Peak",
       type: "info",
       isRead: false,
       createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 12), // 12 hours ago
       updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 12),
       priority: "medium",
-      category: "User Management",
+      category: "Outdoor Gear",
       metadata: {
         userId: "user_789",
         userName: "Emma Wilson",
         userAvatar: "/placeholder.svg",
-        updateType: "Profile Information",
+        gearType: "Hiking Gear",
+        location: "Pikes Peak",
       },
     },
   ];
 
   // Generate additional mock data with deterministic values
-  const additionalNotifications = Array.from({ length: 25 }, (_, i) => ({
-    id: `${7 + i}`,
-    title: `Sample Notification ${7 + i}`,
-    message: `This is a sample notification message for item ${7 + i}`,
-    type: ["info", "success", "warning", "error", "user", "system", "payment"][
-      i % 7
-    ] as NotificationData["type"],
-    isRead: i % 3 === 0, // Deterministic pattern instead of Math.random()
-    createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * (i + 1)),
-    updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * (i + 1)),
-    priority: ["low", "medium", "high", "urgent"][
-      i % 4
-    ] as NotificationData["priority"],
-    category: ["User Management", "Financial", "System", "Security"][i % 4],
-    metadata: {
-      userId: `user_${7 + i}`,
-      userName: `User ${7 + i}`,
-    },
-  }));
+  const additionalNotifications = Array.from({ length: 25 }, (_, i) => {
+    const index = i + 7;
+    const categories = [
+      "Hiking",
+      "Travel",
+      "Outdoor Management",
+      "Wildlife",
+      "Outdoor Gear",
+    ];
+    const types: NotificationData["type"][] = [
+      "info",
+      "success",
+      "warning",
+      "error",
+      "user",
+      "system",
+      "payment",
+    ];
+    const priorities: NotificationData["priority"][] = [
+      "low",
+      "medium",
+      "high",
+      "urgent",
+    ];
+    const trails = [
+      "Pikes Peak",
+      "Garden of the Gods",
+      "Maroon Bells",
+      "Great Sand Dunes",
+      "Mesa Verde",
+    ];
+    const locations = [
+      "Estes Park",
+      "Boulder",
+      "Aspen",
+      "Durango",
+      "Telluride",
+    ];
+
+    return {
+      id: `${index}`,
+      title: `Colorado Activity Update ${index}`,
+      message: `Update for ${categories[i % 5]} at ${locations[i % 5]}`,
+      type: types[i % 7],
+      isRead: i % 3 === 0,
+      createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * (i + 1)),
+      updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * (i + 1)),
+      priority: priorities[i % 4],
+      category: categories[i % 5],
+      metadata: {
+        userId: `user_${index}`,
+        userName: `User ${index}`,
+        location: locations[i % 5],
+        trailName: trails[i % 5],
+      },
+    };
+  });
 
   return [...staticNotifications, ...additionalNotifications];
 };
+
 
 // Column configuration for ViewModal
 const notificationColumns: ColumnConfig[] = [

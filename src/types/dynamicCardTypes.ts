@@ -24,7 +24,7 @@ interface OfflineData {
   tileBounds?: OfflineTileBounds; // Bounds of the downloaded tile region
   zoomRange?: OfflineZoomRange; // Min and max zoom for offline tiles
   downloadProgress?: number; // Download progress (0 to 100)
-  [key: string]: any; // Extra offline-related fields
+  [key: string]: unknown; // Extra offline-related fields
 }
 
 export interface GenericDataItem {
@@ -48,9 +48,8 @@ export interface GenericDataItem {
   categories?: string[];
   offlineSupported?: boolean; // Indicates if this item supports offline use
   offlineData?: OfflineData; // Offline map & data info
-  [key: string]: any;
+  [key: string]: unknown;
 }
-
 
 export type FieldType =
   | "text"
@@ -81,6 +80,7 @@ export type FieldType =
   | "daterange"
   | "slider"
   | "autocomplete"
+  | "pdf"
   | "hidden";
 
 export type GridColType = "full" | "half" | "third" | "quarter";
@@ -194,7 +194,7 @@ export interface FormSection {
 }
 
 export interface CardConfig {
-  titleKey: string;
+  titleKey?: string;
   subtitleKey?: string;
   imageKey?: string;
   descriptionKey?: string;

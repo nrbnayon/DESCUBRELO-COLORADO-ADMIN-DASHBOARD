@@ -8,6 +8,7 @@ export interface GenericDataItem {
   name?: string;
   avatar?: string;
   subtitle?: string;
+  status?: string;
   [key: string]: DataValue | DataValue[] | File[] | unknown;
 }
 
@@ -46,7 +47,13 @@ export interface SelectOption {
   value: string;
   label: string;
   color?: string;
-  [key: string]:DataValue | DataValue[] | File[] | unknown| string | undefined;
+  [key: string]:
+    | DataValue
+    | DataValue[]
+    | File[]
+    | unknown
+    | string
+    | undefined;
 }
 
 export interface ColumnConfig {
@@ -64,7 +71,8 @@ export interface ColumnConfig {
   className?: string;
   headerClassName?: string;
   options?: SelectOption[];
-  showAvatar?: boolean; // New property for avatar display
+  showAvatar?: boolean;
+  avatarKey?: string;
   [key: string]:
     | DataValue
     | DataValue[]
@@ -139,6 +147,8 @@ export interface ActionConfig {
   onClick: (item: GenericDataItem) => void;
   show?: (item: GenericDataItem) => boolean;
   className?: string;
+  pageUrl?: string;
+  route?: string;
   [key: string]:
     | DataValue
     | DataValue[]
