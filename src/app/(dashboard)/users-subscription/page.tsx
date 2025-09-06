@@ -10,7 +10,7 @@ export default function ManageUserPage() {
       <div className="p-2 md:p-6">
         <h1 className="text-2xl font-bold mb-4">Manage</h1>
         <UserSubscriptions
-          itemsPerPage={15}
+          itemsPerPage={20}
           title="All User Subscription"
           buttonText=""
           pageUrl=""

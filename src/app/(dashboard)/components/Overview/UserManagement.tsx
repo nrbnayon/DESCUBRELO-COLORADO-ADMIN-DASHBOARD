@@ -12,7 +12,7 @@ import type {
   EditModalConfig,
 } from "@/types/dynamicTableTypes";
 import { DynamicTable } from "@/components/common/DynamicTable";
-import { Eye, Edit } from "lucide-react";
+import { Eye, Edit, Trash } from "lucide-react";
 
 interface UserManagementProps {
   itemsPerPage?: number;
@@ -220,19 +220,6 @@ export default function UserManagement({
         { value: "pending", label: "Pending" },
       ],
     },
-    {
-      key: "accountType",
-      label: "Account Type",
-      type: "select",
-      required: true,
-      section: "account",
-      gridCol: "half",
-      options: [
-        { value: "free", label: "Free" },
-        { value: "premium", label: "Premium" },
-        { value: "enterprise", label: "Enterprise" },
-      ],
-    },
   ];
 
   // Filter Configuration for User Table
@@ -248,31 +235,28 @@ export default function UserManagement({
         { value: "pending", label: "Pending" },
       ],
     },
-    {
-      key: "accountType",
-      label: "Account Type",
-      type: "select",
-      options: [
-        { value: "free", label: "Free" },
-        { value: "premium", label: "Premium" },
-        { value: "enterprise", label: "Enterprise" },
-      ],
-    },
   ];
 
   // Action Configuration for User Table
   const userActions: ActionConfig[] = [
     {
       key: "view",
-      label: "View",
-      icon: <Eye className="w-4 h-4" />,
+      label: "",
+      icon: <Eye className='w-4 h-4' />,
       variant: "ghost",
       onClick: (item) => console.log("View user:", item.name),
     },
     {
       key: "edit",
-      label: "Edit",
-      icon: <Edit className="w-4 h-4" />,
+      label: "",
+      icon: <Edit className='w-4 h-4' />,
+      variant: "ghost",
+      onClick: (item) => console.log("Edit user:", item.name),
+    },
+    {
+      key: "delete",
+      label: "",
+      icon: <Trash className='w-5 h-5 text-red-500' />,
       variant: "ghost",
       onClick: (item) => console.log("Edit user:", item.name),
     },
@@ -386,7 +370,7 @@ export default function UserManagement({
   };
 
   return (
-    <div className="mx-auto">
+    <div className='mx-auto'>
       <DynamicTable
         data={users}
         columns={userColumns}
