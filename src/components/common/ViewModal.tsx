@@ -108,11 +108,12 @@ export const ViewModal: React.FC<ViewModalProps> = ({
         if (option) {
           return (
             <Badge
-              variant='secondary'
-              className='text-xs border-0'
+              variant="secondary"
+              className="text-xs border-0"
               style={{
                 backgroundColor: option.color || "#f1f5f9",
-                color: option.textColor || "#334155",
+                color: (option.textColor ||
+                  "#334155") as React.CSSProperties["color"],
               }}
             >
               {option.label || String(value || "")}
@@ -136,11 +137,12 @@ export const ViewModal: React.FC<ViewModalProps> = ({
                 return (
                   <Badge
                     key={index}
-                    variant='secondary'
-                    className='text-xs border-0'
+                    variant="secondary"
+                    className="text-xs border-0"
                     style={{
                       backgroundColor: option.color || "#f1f5f9",
-                      color: option.textColor || "#334155",
+                      color: (option.textColor ||
+                        "#334155") as React.CSSProperties["color"],
                     }}
                   >
                     {option.label || String(val || "")}

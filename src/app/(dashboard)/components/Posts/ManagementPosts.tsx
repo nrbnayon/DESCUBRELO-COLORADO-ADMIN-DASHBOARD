@@ -50,8 +50,8 @@ export default function ManagementPosts({
       searchable: true,
       align: "left",
       render: (value, item) => (
-        <div className='flex items-center gap-3'>
-          <div className='w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0'>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
             <Image
               src={
                 Array.isArray(item.images) &&
@@ -61,15 +61,15 @@ export default function ManagementPosts({
                   : "/placeholder.svg?height=48&width=48"
               }
               alt={String(value)}
-              className='w-full h-full object-cover'
+              className="w-full h-full object-cover"
               width={48}
               height={48}
             />
           </div>
-          <div className='min-w-0 flex-1'>
-            <p className='font-medium text-sm truncate'>{String(value)}</p>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-sm truncate">{String(value)}</p>
             {typeof item.name === "string" && item.name && (
-              <p className='text-xs text-gray-500 truncate'>{item.name}</p>
+              <p className="text-xs text-gray-500 truncate">{item.name}</p>
             )}
           </div>
         </div>
@@ -90,20 +90,20 @@ export default function ManagementPosts({
       render: (value) => {
         const images = Array.isArray(value) ? value : [];
         return (
-          <div className='flex gap-1'>
+          <div className="flex gap-1">
             {images.slice(0, 3).map((img, idx) => (
-              <div key={idx} className='w-8 h-8 rounded overflow-hidden'>
+              <div key={idx} className="w-8 h-8 rounded overflow-hidden">
                 <Image
                   src={typeof img === "string" ? img : "/placeholder.svg"}
                   alt={`Image ${idx + 1}`}
-                  className='w-full h-full object-cover'
+                  className="w-full h-full object-cover"
                   width={32}
                   height={32}
                 />
               </div>
             ))}
             {images.length > 3 && (
-              <div className='w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs'>
+              <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs">
                 +{images.length - 3}
               </div>
             )}
@@ -147,17 +147,17 @@ export default function ManagementPosts({
       render: (value) => {
         const categories = Array.isArray(value) ? value : [];
         return (
-          <div className='flex flex-wrap gap-1'>
+          <div className="flex flex-wrap gap-1">
             {categories.slice(0, 2).map((cat, idx) => (
               <span
                 key={idx}
-                className='px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded'
+                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
               >
                 {cat}
               </span>
             ))}
             {categories.length > 2 && (
-              <span className='px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded'>
+              <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
                 +{categories.length - 2}
               </span>
             )}
@@ -184,69 +184,69 @@ export default function ManagementPosts({
       render: (value) => {
         const socialLinks = value as PostDataItem["socialLinks"];
         if (!socialLinks || Object.keys(socialLinks).length === 0) {
-          return <span className='text-gray-400'>No links</span>;
+          return <span className="text-gray-400">No links</span>;
         }
         return (
-          <div className='flex items-center gap-1'>
-            <div className='flex space-x-4'>
+          <div className="flex items-center gap-1">
+            <div className="flex space-x-4">
               {socialLinks.facebook && (
                 <Link
                   href={socialLinks.facebook}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-6 h-6 p-1 bg-blue-600 rounded-full text-white'
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-6 h-6 p-1 bg-blue-600 rounded-full text-white"
                 >
-                  <Facebook className='w-4 h-4' />
+                  <Facebook className="w-4 h-4" />
                 </Link>
               )}
               {socialLinks.linkedin && (
                 <Link
                   href={socialLinks.linkedin}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-6 h-6 p-1 bg-blue-700 rounded-full text-white'
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-6 h-6 p-1 bg-blue-700 rounded-full text-white"
                 >
-                  <Linkedin className='w-4 h-4' />
+                  <Linkedin className="w-4 h-4" />
                 </Link>
               )}
               {socialLinks.twitter && (
                 <Link
                   href={socialLinks.twitter}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-6 h-6 p-1 bg-black rounded-full text-white'
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-6 h-6 p-1 bg-black rounded-full text-white"
                 >
-                  <Twitter className='w-4 h-4' />
+                  <Twitter className="w-4 h-4" />
                 </Link>
               )}
               {socialLinks.instagram && (
                 <Link
                   href={socialLinks.instagram}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-6 h-6 p-1 bg-pink-600 rounded-full text-white'
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-6 h-6 p-1 bg-pink-600 rounded-full text-white"
                 >
-                  <Instagram className='w-4 h-4' />
+                  <Instagram className="w-4 h-4" />
                 </Link>
               )}
               {socialLinks.tiktok && (
                 <Link
                   href={socialLinks.tiktok}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-6 h-6 p-1 bg-black rounded-full text-white'
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-6 h-6 p-1 bg-black rounded-full text-white"
                 >
-                  <Music2 className='w-4 h-4' />
+                  <Music2 className="w-4 h-4" />
                 </Link>
               )}
               {socialLinks.website && (
                 <Link
                   href={socialLinks.website}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='w-6 h-6 p-1 bg-gray-600 rounded-full text-white'
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-6 h-6 p-1 bg-gray-600 rounded-full text-white"
                 >
-                  <Globe className='w-4 h-4' />
+                  <Globe className="w-4 h-4" />
                 </Link>
               )}
             </div>
@@ -362,10 +362,10 @@ export default function ManagementPosts({
       label: "Edit Post",
       icon: (
         <Lordicon
-          src='https://cdn.lordicon.com/cbtlerlm.json'
-          trigger='hover'
+          src="https://cdn.lordicon.com/cbtlerlm.json"
+          trigger="hover"
           size={16}
-          className='mt-1'
+          className="mt-1"
           colors={{
             primary: "#9ca3af",
             secondary: "",
@@ -381,10 +381,10 @@ export default function ManagementPosts({
       label: "Delete Post",
       icon: (
         <Lordicon
-          src='https://cdn.lordicon.com/jmkrnisz.json'
-          trigger='hover'
+          src="https://cdn.lordicon.com/jmkrnisz.json"
+          trigger="hover"
           size={16}
-          className='mt-1'
+          className="mt-1"
           colors={{
             primary: "#FF0000",
             secondary: "#FFFFFF",
@@ -850,10 +850,11 @@ export default function ManagementPosts({
   ];
 
   // Enhanced processFormData to handle nested offline data
+  // Enhanced processFormData to handle nested offline data
   const processFormData = (data: Record<string, unknown>) => {
     const processedData: Record<string, unknown> = {};
     const socialLinks: Record<string, string> = {};
-    const offlineData: Record<string, any> = {};
+    const offlineData: Record<string, unknown> = {};
 
     Object.entries(data).forEach(([key, value]) => {
       if (key.startsWith("socialLinks.")) {
@@ -876,12 +877,20 @@ export default function ManagementPosts({
             if (child.startsWith("southwest.")) {
               const coordKey = child.replace("southwest.", "");
               if (typeof value === "number") {
-                offlineData.tileBounds.southwest[coordKey] = value;
+                const tileBounds = offlineData.tileBounds as {
+                  southwest: Record<string, number>;
+                  northeast: Record<string, number>;
+                };
+                tileBounds.southwest[coordKey] = value;
               }
             } else if (child.startsWith("northeast.")) {
               const coordKey = child.replace("northeast.", "");
               if (typeof value === "number") {
-                offlineData.tileBounds.northeast[coordKey] = value;
+                const tileBounds = offlineData.tileBounds as {
+                  southwest: Record<string, number>;
+                  northeast: Record<string, number>;
+                };
+                tileBounds.northeast[coordKey] = value;
               }
             }
           } else if (parent === "zoomRange") {
@@ -889,7 +898,8 @@ export default function ManagementPosts({
               offlineData.zoomRange = {};
             }
             if (typeof value === "number") {
-              offlineData.zoomRange[child] = value;
+              const zoomRange = offlineData.zoomRange as Record<string, number>;
+              zoomRange[child] = value;
             }
           }
         } else {
@@ -1234,18 +1244,18 @@ export default function ManagementPosts({
   };
 
   return (
-    <div className='w-full mx-auto'>
-      <div className='w-full flex justify-between items-center mb-6'>
-        <h2 className='text-foreground text-xl font-semibold'>{title}</h2>
+    <div className="w-full mx-auto">
+      <div className="w-full flex justify-between items-center mb-6">
+        <h2 className="text-foreground text-xl font-semibold">{title}</h2>
         <Button
-          className='flex items-center gap-2 border-primary/30 rounded-md'
-          size='lg'
+          className="flex items-center gap-2 border-primary/30 rounded-md"
+          size="lg"
           onClick={() => setCreateModalOpen(true)}
         >
-          <span className='mt-1.5'>
+          <span className="mt-1.5">
             <Lordicon
-              src='https://cdn.lordicon.com/ueoydrft.json'
-              trigger='hover'
+              src="https://cdn.lordicon.com/ueoydrft.json"
+              trigger="hover"
               size={20}
               colors={{
                 primary: "",
@@ -1266,7 +1276,7 @@ export default function ManagementPosts({
         searchFilterConfig={searchFilterConfig}
         onDataChange={handleDataChange}
         loading={isLoading}
-        emptyMessage='No posts found'
+        emptyMessage="No posts found"
         itemsPerPage={itemsPerPage}
       />
 
@@ -1274,8 +1284,8 @@ export default function ManagementPosts({
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onSave={handleCreatePost}
-        title='Create New Post'
-        description='Create and publish posts with comprehensive information and offline map integration'
+        title="Create New Post"
+        description="Create and publish posts with comprehensive information and offline map integration"
         fields={createFormFields}
         sections={createModalSections}
         initialData={{
@@ -1290,8 +1300,8 @@ export default function ManagementPosts({
           "offlineData.zoomRange.minZoom": 10,
           "offlineData.zoomRange.maxZoom": 18,
         }}
-        saveButtonText='Create Post'
-        cancelButtonText='Cancel'
+        saveButtonText="Create Post"
+        cancelButtonText="Cancel"
         maxImageSizeInMB={5}
         maxImageUpload={10}
         acceptedImageFormats={[
@@ -1310,13 +1320,13 @@ export default function ManagementPosts({
             setEditingPost(null);
           }}
           onSave={handleUpdatePost}
-          title='Edit Post'
-          description='Update post information and offline map settings'
+          title="Edit Post"
+          description="Update post information and offline map settings"
           fields={createFormFields}
           sections={createModalSections}
           initialData={getEditInitialData()}
-          saveButtonText='Update Post'
-          cancelButtonText='Cancel'
+          saveButtonText="Update Post"
+          cancelButtonText="Cancel"
           maxImageUpload={10}
           maxImageSizeInMB={5}
           acceptedImageFormats={[

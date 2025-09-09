@@ -36,9 +36,9 @@ export interface PostDataItem extends GenericDataItem {
       maxZoom: number;
     };
     downloadProgress?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export const postsData: PostDataItem[] = [

@@ -21,9 +21,9 @@ import Image from "next/image";
 const otpSchema = z.object({
   otp: z
     .string()
-    .min(6, "OTP must be 6 digits")
-    .max(6, "OTP must be 6 digits")
-    .regex(/^\d{6}$/, "OTP must contain only numbers"),
+    .min(4, "OTP must be 4 digits")
+    .max(4, "OTP must be 4 digits")
+    .regex(/^\d{4}$/, "OTP must contain only numbers"),
 });
 
 type OtpFormData = z.infer<typeof otpSchema>;
@@ -32,7 +32,7 @@ export default function VerifyOtp() {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(120);
+  const [timeLeft, setTimeLeft] = useState(180);
   const [email, setEmail] = useState("");
   const router = useRouter();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -74,7 +74,7 @@ export default function VerifyOtp() {
       const timePassed = Math.floor(
         (Date.now() - parseInt(otpSentTime)) / 1000
       );
-      const remainingTime = Math.max(0, 120 - timePassed);
+      const remainingTime = Math.max(0, 180 - timePassed);
       setTimeLeft(remainingTime);
       localStorage.setItem(timerKey, remainingTime.toString());
     }
@@ -164,11 +164,11 @@ export default function VerifyOtp() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Reset timer
-      setTimeLeft(120);
+      setTimeLeft(180);
       const newSentTime = Date.now();
       localStorage.setItem("otpSentTime", newSentTime.toString());
       const timerKey = `otpTimer_${email}`;
-      localStorage.setItem(timerKey, "120");
+      localStorage.setItem(timerKey, "180");
 
       toast.success("OTP resent successfully!", {
         description: `New verification code sent to ${email}`,
@@ -213,7 +213,7 @@ export default function VerifyOtp() {
             Verify Your Email
           </h1>
           <p className="text-xs sm:text-sm md:text-base lg:text-lg opacity-90 px-2 sm:px-0">
-            We&lsquo;ve sent a 6-digit verification code to your email address.
+            We&lsquo;ve sent a 4-digit verification code to your email address.
             Enter the code below to continue.
           </p>
           <div className="pt-2 sm:pt-4 space-y-3">
@@ -264,7 +264,7 @@ export default function VerifyOtp() {
                 </label>
                 <div className="flex justify-center">
                   <InputOTP
-                    maxLength={6}
+                    maxLength={4}
                     value={otp}
                     onChange={handleOtpChange}
                     disabled={isLoading || timeLeft === 0}
@@ -284,14 +284,6 @@ export default function VerifyOtp() {
                       />
                       <InputOTPSlot
                         index={3}
-                        className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
-                      />
-                      <InputOTPSlot
-                        index={4}
-                        className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
-                      />
-                      <InputOTPSlot
-                        index={5}
                         className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
                       />
                     </InputOTPGroup>
@@ -373,19 +365,6 @@ export default function VerifyOtp() {
                 </Button>
               </div>
             </form>
-
-            {/* Additional Info */}
-            <div className="mt-4 sm:mt-6 text-center">
-              <p className="text-xs text-muted-foreground px-2 sm:px-0">
-                Having trouble?{" "}
-                <Link
-                  href="/support"
-                  className="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-500 dark:hover:text-indigo-300"
-                >
-                  Contact Support
-                </Link>
-              </p>
-            </div>
           </CardContent>
         </Card>
       </div>
