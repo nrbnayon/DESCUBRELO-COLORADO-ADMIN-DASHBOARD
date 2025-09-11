@@ -1,12 +1,10 @@
 // src/components/common/StatsCard.tsx
-import React from "react";
+"use client";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import { AlarmClockPlus, TrendingUp, TrendingDown } from "lucide-react";
-import {
-  MetricCardProps,
-  MetricData,
-} from "@/types/statsCardDataTypes";
-import { defaultMetrics } from "@/data/statsCardDataSets";
+import { MetricCardProps, MetricData } from "@/types/statsCardDataTypes";
+import { useGetAllUsersQuery } from "@/store/api/usersApi";
 
 const MetricCard: React.FC<MetricCardProps> = ({
   title,
@@ -66,7 +64,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
           className="text-gray-400 hover:text-gray-600 transition-colors duration-150"
           aria-label="More options"
         >
-          <AlarmClockPlus  size={20} />
+          <AlarmClockPlus size={20} />
         </button>
       </div>
 
@@ -143,11 +141,141 @@ interface StatsCardProps {
   metrics?: MetricData[];
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({ metrics = defaultMetrics }) => {
+const StatsCard: React.FC<StatsCardProps> = ({ metrics }) => {
+  const {
+    data: usersData,
+    isLoading,
+    error,
+  } = useGetAllUsersQuery({
+    page: 1,
+    limit: 1000, // Get all users for accurate stats
+  });
+
+  const calculatedMetrics = useMemo(() => {
+    if (!usersData?.data?.result) {
+      return [];
+    }
+
+    const users = usersData.data.result;
+    const totalUsers = users.length;
+
+    // Calculate active users (assuming users with status 'active')
+    const activeUsers = users.filter((user) => user.status === "active").length;
+
+    // Calculate subscribers
+    const subscribers = users.filter((user) => user.isSubscribed).length;
+
+    // Generate mock sparkline data based on actual numbers
+    const generateSparklineData = (
+      currentValue: number,
+      trend: "up" | "down"
+    ) => {
+      const points = [];
+      const variance = Math.floor(currentValue * 0.1); // 10% variance
+      let startValue =
+        trend === "up" ? currentValue - variance : currentValue + variance;
+
+      for (let i = 0; i < 12; i++) {
+        if (trend === "up") {
+          startValue += Math.floor(Math.random() * (variance / 3)) + 1;
+        } else {
+          startValue -= Math.floor(Math.random() * (variance / 3)) + 1;
+        }
+        points.push(Math.max(0, startValue));
+      }
+
+      // Ensure last point matches current value
+      points[points.length - 1] = currentValue;
+      return points;
+    };
+
+    // Calculate trends (mock calculations - in real app, you'd compare with historical data)
+    const totalUsersTrend = totalUsers > 0 ? "up" : "down";
+    const totalUsersTrendValue = Math.floor(Math.random() * 50) + 10; // Mock trend percentage
+
+    const activeUsersTrend = activeUsers > totalUsers * 0.5 ? "up" : "down";
+    const activeUsersTrendValue = Math.floor(Math.random() * 30) + 5; // Mock trend percentage
+
+    const subscribersTrend = subscribers > 0 ? "up" : "down";
+    const subscribersTrendValue = Math.floor(Math.random() * 40) + 15; // Mock trend percentage
+
+    return [
+      {
+        title: "Total Users",
+        value: totalUsers.toLocaleString(),
+        trend: totalUsersTrend as "up" | "down",
+        trendValue: totalUsersTrendValue.toString(),
+        trendColor:
+          totalUsersTrend === "up" ? "text-green-600" : "text-red-500",
+        sparklinePoints: generateSparklineData(totalUsers, totalUsersTrend),
+      },
+      {
+        title: "Active Users",
+        value: activeUsers.toLocaleString(),
+        trend: activeUsersTrend as "up" | "down",
+        trendValue: activeUsersTrendValue.toString(),
+        trendColor:
+          activeUsersTrend === "up" ? "text-green-600" : "text-red-500",
+        sparklinePoints: generateSparklineData(activeUsers, activeUsersTrend),
+      },
+      {
+        title: "Total Subscribers",
+        value: subscribers.toLocaleString(),
+        trend: subscribersTrend as "up" | "down",
+        trendValue: subscribersTrendValue.toString(),
+        trendColor:
+          subscribersTrend === "up" ? "text-green-600" : "text-red-500",
+        sparklinePoints: generateSparklineData(subscribers, subscribersTrend),
+      },
+    ];
+  }, [usersData]);
+
+  // Use provided metrics or calculated metrics from API
+  const displayMetrics = metrics || calculatedMetrics;
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-lg border border-primary/30 p-6 relative shadow-sm animate-pulse"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="h-4 bg-gray-200 rounded w-24"></div>
+                <div className="h-5 w-5 bg-gray-200 rounded"></div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-32"></div>
+                </div>
+                <div className="w-30 h-12 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="mx-auto">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+          <p className="text-red-600">
+            Failed to load statistics. Please try again later.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {metrics.map((metric, index) => (
+        {displayMetrics.map((metric, index) => (
           <MetricCard
             key={`${metric.title}-${index}`}
             title={metric.title}
@@ -164,56 +292,3 @@ const StatsCard: React.FC<StatsCardProps> = ({ metrics = defaultMetrics }) => {
 };
 
 export default StatsCard;
-
-
-//
-// Example usage in src/pages/Dashboard.tsx
-// import React from "react";
-// import StatsCard from "@/components/common/StatsCard";
-// import { MetricData } from "@/types/statsCardDataTypes";
-
-// const Dashboard: React.FC = () => {
-//   // Example of custom metrics
-//   const customMetrics: MetricData[] = [
-//     {
-//       title: "Revenue",
-//       value: "$15,230",
-//       trend: "up",
-//       trendValue: "25",
-//       trendColor: "text-green-600",
-//       sparklinePoints: [100, 120, 110, 130, 150, 140, 160, 180, 170, 190, 200, 220],
-//     },
-//     {
-//       title: "New Users",
-//       value: "850",
-//       trend: "down",
-//       trendValue: "5",
-//       trendColor: "text-red-500",
-//       sparklinePoints: [50, 48, 45, 42, 40, 38, 35, 33, 30, 28, 25, 22],
-//     },
-//     {
-//       title: "Engagement",
-//       value: "65%",
-//       trend: "up",
-//       trendValue: "15",
-//       trendColor: "text-green-600",
-//       sparklinePoints: [20, 25, 30, 28, 32, 35, 40, 45, 50, 55, 60, 65],
-//     },
-//   ];
-
-//   return (
-//     <div className="p-6">
-//       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-//       {/* Using default metrics */}
-//       <StatsCard />
-      
-//       {/* Using custom metrics */}
-//       <div className="mt-8">
-//         <h2 className="text-xl font-semibold mb-4">Custom Metrics</h2>
-//         <StatsCard metrics={customMetrics} />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;

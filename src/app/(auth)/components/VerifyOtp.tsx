@@ -16,26 +16,27 @@ import { Loader2, ArrowLeft, Clock, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useVerifyEmailMutation } from "@/store/api/authApi";
 
 // Validation schema
 const otpSchema = z.object({
   otp: z
     .string()
-    .min(4, "OTP must be 4 digits")
-    .max(4, "OTP must be 4 digits")
-    .regex(/^\d{4}$/, "OTP must contain only numbers"),
+    .min(6, "OTP must be 6 digits")
+    .max(6, "OTP must be 6 digits")
+    .regex(/^\d{6}$/, "OTP must contain only numbers"),
 });
 
 type OtpFormData = z.infer<typeof otpSchema>;
 
 export default function VerifyOtp() {
   const [otp, setOtp] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [timeLeft, setTimeLeft] = useState(180);
   const [email, setEmail] = useState("");
   const router = useRouter();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [verifyEmail, { isLoading }] = useVerifyEmailMutation();
 
   const {
     handleSubmit,
@@ -113,46 +114,39 @@ export default function VerifyOtp() {
   };
 
   const onSubmit = async (data: OtpFormData) => {
-    setIsLoading(true);
-
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Log the form data to console
-      console.log("OTP Verification Data:", {
+      const result = await verifyEmail({
         email,
-        otp: data.otp,
-        timestamp: new Date().toISOString(),
-      });
+        oneTimeCode: parseInt(data.otp),
+      }).unwrap();
 
-      // Simulate successful OTP verification
-      toast.success("OTP verified successfully!", {
-        description: "Redirecting to reset password...",
-        duration: 2000,
-      });
+      if (result.success) {
+        toast.success("OTP verified successfully!", {
+          description: "Redirecting to reset password...",
+          duration: 2000,
+        });
 
-      // Store verification status
-      localStorage.setItem("otpVerified", "true");
-      localStorage.setItem("verificationTime", Date.now().toString());
+        // Store verification status
+        localStorage.setItem("otpVerified", "true");
+        localStorage.setItem("verificationTime", Date.now().toString());
 
-      // Clear timer from localStorage
-      const timerKey = `otpTimer_${email}`;
-      localStorage.removeItem(timerKey);
+        // Clear timer from localStorage
+        const timerKey = `otpTimer_${email}`;
+        localStorage.removeItem(timerKey);
 
-      // Redirect to reset password after a short delay
-      setTimeout(() => {
-        router.push("/reset-password");
-      }, 1000);
+        // Redirect to reset password after a short delay
+        setTimeout(() => {
+          router.push("/reset-password");
+        }, 1000);
+      }
     } catch (error) {
-      console.error("OTP verification error:", error);
+      const err = error as { data?: { message?: string } };
       toast.error("Invalid OTP", {
-        description: "Please check the code and try again.",
+        description:
+          err?.data?.message || "Please check the code and try again.",
         duration: 3000,
       });
       setError("otp", { message: "Invalid OTP code" });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -264,7 +258,7 @@ export default function VerifyOtp() {
                 </label>
                 <div className="flex justify-center">
                   <InputOTP
-                    maxLength={4}
+                    maxLength={6}
                     value={otp}
                     onChange={handleOtpChange}
                     disabled={isLoading || timeLeft === 0}
@@ -284,6 +278,14 @@ export default function VerifyOtp() {
                       />
                       <InputOTPSlot
                         index={3}
+                        className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
+                      />
+                      <InputOTPSlot
+                        index={4}
+                        className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
+                      />
+                      <InputOTPSlot
+                        index={5}
                         className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
                       />
                     </InputOTPGroup>

@@ -1,6 +1,5 @@
 // src/app/(dashboard)/components/Posts/ManagementPosts.tsx
 "use client";
-import { PostDataItem, postsData } from "@/data/postsData";
 import { useState } from "react";
 import type {
   GenericDataItem,
@@ -9,6 +8,7 @@ import type {
   CardConfig,
   FormField,
   SearchFilterConfig,
+  OfflineData,
 } from "@/types/dynamicCardTypes";
 import { DynamicCard3D } from "@/components/common/DynamicCard3D";
 import { DynamicDataCreateModal } from "@/components/common/DynamicDataCreateModal";
@@ -24,7 +24,57 @@ import {
   Music2,
   Twitter,
 } from "lucide-react";
+import {
+  useGetAllPostsQuery,
+  useCreatePostMutation,
+  useUpdatePostMutation,
+  useDeletePostMutation,
+} from "@/store/api/postsApi";
+import { getImageUrl } from "@/lib/utils";
+import { toast } from "sonner";
+import { useGetActiveCategoriesQuery } from "@/store/api/categoriesApi";
 
+// Define Post interface based on API response
+interface Post {
+  _id?: string;
+  id: string;
+  title: string;
+  name?: string;
+  description: string;
+  images: string[];
+  type: string;
+  dateRange?: string;
+  isFeatured: boolean;
+  categories: string[];
+  address?: string;
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+  phone?: string;
+  openingHours?: string;
+  price?: number;
+  totalEvent?: number;
+  socialLinks?: Record<string, string>;
+  offlineSupported: boolean;
+  offlineData?: {
+    mapTiles?: boolean;
+    detailsAvailable?: boolean;
+    navigationSupported?: boolean;
+    tileRegionName?: string;
+    tileBounds?: {
+      southwest: { latitude: number; longitude: number };
+      northeast: { latitude: number; longitude: number };
+    };
+    zoomRange?: {
+      minZoom: number;
+      maxZoom: number;
+    };
+    [key: string]: unknown;
+  };
+  status: "active" | "inactive" | "draft" | "pending" | "archived";
+  createdAt: string;
+  updatedAt: string;
+}
 interface PostManagementProps {
   itemsPerPage?: number;
   title?: string;
@@ -36,11 +86,41 @@ export default function ManagementPosts({
   itemsPerPage = 12,
   title = "All Posts",
 }: PostManagementProps) {
-  const [posts, setPosts] = useState(postsData);
-  const [isLoading] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<PostDataItem | null>(null);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<Record<string, unknown>>({});
+
+  const {
+    data: postsResponse,
+    isLoading,
+    refetch,
+  } = useGetAllPostsQuery({
+    page,
+    limit: itemsPerPage,
+    ...filters,
+  });
+
+  // console.log("Get all post data::", postsResponse);
+
+  const [createPost] = useCreatePostMutation();
+  const [updatePost] = useUpdatePostMutation();
+  const [deletePost] = useDeletePostMutation();
+
+  const posts: GenericDataItem[] =
+    postsResponse?.data?.map(
+      (post): GenericDataItem => ({
+        ...post,
+        id: post?._id || post?.id,
+        images: post.images?.map((img) => getImageUrl(img)) || [],
+        offlineData: post.offlineData as OfflineData | undefined,
+      })
+    ) || [];
+  
+  const { data: categoriesResponse } = useGetActiveCategoriesQuery();
+
+
 
   const postColumns: ColumnConfig[] = [
     {
@@ -50,26 +130,26 @@ export default function ManagementPosts({
       searchable: true,
       align: "left",
       render: (value, item) => (
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+        <div className='flex items-center gap-3'>
+          <div className='w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0'>
             <Image
               src={
                 Array.isArray(item.images) &&
                 item.images.length > 0 &&
                 typeof item.images[0] === "string"
                   ? item.images[0]
-                  : "/placeholder.svg?height=48&width=48"
+                  : "/placeholder.svg"
               }
               alt={String(value)}
-              className="w-full h-full object-cover"
+              className='w-full h-full object-cover'
               width={48}
               height={48}
             />
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-sm truncate">{String(value)}</p>
+          <div className='min-w-0 flex-1'>
+            <p className='font-medium text-sm truncate'>{String(value)}</p>
             {typeof item.name === "string" && item.name && (
-              <p className="text-xs text-gray-500 truncate">{item.name}</p>
+              <p className='text-xs text-gray-500 truncate'>{item.name}</p>
             )}
           </div>
         </div>
@@ -81,6 +161,13 @@ export default function ManagementPosts({
       type: "textarea",
       sortable: false,
       searchable: true,
+      render: (value) => (
+        <div className='max-w-xs'>
+          <p className='text-sm truncate' title={String(value)}>
+            {String(value)}
+          </p>
+        </div>
+      ),
     },
     {
       key: "images",
@@ -90,20 +177,20 @@ export default function ManagementPosts({
       render: (value) => {
         const images = Array.isArray(value) ? value : [];
         return (
-          <div className="flex gap-1">
+          <div className='flex gap-1'>
             {images.slice(0, 3).map((img, idx) => (
-              <div key={idx} className="w-8 h-8 rounded overflow-hidden">
+              <div key={idx} className='w-8 h-8 rounded overflow-hidden'>
                 <Image
                   src={typeof img === "string" ? img : "/placeholder.svg"}
                   alt={`Image ${idx + 1}`}
-                  className="w-full h-full object-cover"
+                  className='w-full h-full object-cover'
                   width={32}
                   height={32}
                 />
               </div>
             ))}
             {images.length > 3 && (
-              <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs">
+              <div className='w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs'>
                 +{images.length - 3}
               </div>
             )}
@@ -147,17 +234,17 @@ export default function ManagementPosts({
       render: (value) => {
         const categories = Array.isArray(value) ? value : [];
         return (
-          <div className="flex flex-wrap gap-1">
+          <div className='flex flex-wrap gap-1'>
             {categories.slice(0, 2).map((cat, idx) => (
               <span
                 key={idx}
-                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded"
+                className='px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded'
               >
                 {cat}
               </span>
             ))}
             {categories.length > 2 && (
-              <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+              <span className='px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded'>
                 +{categories.length - 2}
               </span>
             )}
@@ -182,71 +269,71 @@ export default function ManagementPosts({
       label: "Social Links",
       sortable: false,
       render: (value) => {
-        const socialLinks = value as PostDataItem["socialLinks"];
+        const socialLinks = value as Record<string, string>;
         if (!socialLinks || Object.keys(socialLinks).length === 0) {
-          return <span className="text-gray-400">No links</span>;
+          return <span className='text-gray-400'>No links</span>;
         }
         return (
-          <div className="flex items-center gap-1">
-            <div className="flex space-x-4">
+          <div className='flex items-center gap-1'>
+            <div className='flex space-x-1'>
               {socialLinks.facebook && (
                 <Link
                   href={socialLinks.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-6 h-6 p-1 bg-blue-600 rounded-full text-white"
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='w-6 h-6 p-1 bg-blue-600 rounded-full text-white'
                 >
-                  <Facebook className="w-4 h-4" />
+                  <Facebook className='w-4 h-4' />
                 </Link>
               )}
               {socialLinks.linkedin && (
                 <Link
                   href={socialLinks.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-6 h-6 p-1 bg-blue-700 rounded-full text-white"
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='w-6 h-6 p-1 bg-blue-700 rounded-full text-white'
                 >
-                  <Linkedin className="w-4 h-4" />
+                  <Linkedin className='w-4 h-4' />
                 </Link>
               )}
               {socialLinks.twitter && (
                 <Link
                   href={socialLinks.twitter}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-6 h-6 p-1 bg-black rounded-full text-white"
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='w-6 h-6 p-1 bg-black rounded-full text-white'
                 >
-                  <Twitter className="w-4 h-4" />
+                  <Twitter className='w-4 h-4' />
                 </Link>
               )}
               {socialLinks.instagram && (
                 <Link
                   href={socialLinks.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-6 h-6 p-1 bg-pink-600 rounded-full text-white"
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='w-6 h-6 p-1 bg-pink-600 rounded-full text-white'
                 >
-                  <Instagram className="w-4 h-4" />
+                  <Instagram className='w-4 h-4' />
                 </Link>
               )}
               {socialLinks.tiktok && (
                 <Link
                   href={socialLinks.tiktok}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-6 h-6 p-1 bg-black rounded-full text-white"
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='w-6 h-6 p-1 bg-black rounded-full text-white'
                 >
-                  <Music2 className="w-4 h-4" />
+                  <Music2 className='w-4 h-4' />
                 </Link>
               )}
               {socialLinks.website && (
                 <Link
                   href={socialLinks.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-6 h-6 p-1 bg-gray-600 rounded-full text-white"
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='w-6 h-6 p-1 bg-gray-600 rounded-full text-white'
                 >
-                  <Globe className="w-4 h-4" />
+                  <Globe className='w-4 h-4' />
                 </Link>
               )}
             </div>
@@ -282,6 +369,32 @@ export default function ManagementPosts({
         </span>
       ),
     },
+    {
+      key: "status",
+      label: "Status",
+      type: "select",
+      sortable: true,
+      filterable: true,
+      render: (value) => {
+        const statusColors = {
+          active: "bg-green-100 text-green-800",
+          inactive: "bg-gray-100 text-gray-800",
+          draft: "bg-yellow-100 text-yellow-800",
+          pending: "bg-blue-100 text-blue-800",
+          archived: "bg-red-100 text-red-800",
+        };
+        return (
+          <span
+            className={`px-2 py-1 rounded text-xs ${
+              statusColors[value as keyof typeof statusColors] ||
+              "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {String(value).charAt(0).toUpperCase() + String(value).slice(1)}
+          </span>
+        );
+      },
+    },
   ];
 
   const cardConfig: CardConfig = {
@@ -296,7 +409,7 @@ export default function ManagementPosts({
       key: "edit",
       label: "Edit",
       variant: "outline",
-      onClick: (item) => handleEditPost(item as PostDataItem),
+      onClick: (item) => handleEditPost(item as unknown as Post),
     },
     customFields: [
       {
@@ -322,18 +435,24 @@ export default function ManagementPosts({
       { key: "title", label: "Title" },
       { key: "totalEvent", label: "Total Event" },
       { key: "price", label: "Price" },
+      { key: "createdAt", label: "Created Date" },
     ],
     filters: [
       {
         key: "type",
         label: "Type",
         type: "select",
-        options: Array.from(
-          new Set(postsData.map((post) => post.type).filter(Boolean))
-        ).map((type) => ({
-          value: type!,
-          label: type!,
-        })),
+        options:
+          categoriesResponse?.data?.map((category) => ({
+            value: category.name,
+            label: category.name,
+          })) ||
+          Array.from(
+            new Set(posts.map((post) => post.type).filter(Boolean))
+          ).map((type) => ({
+            value: type!,
+            label: type!,
+          })),
       },
       {
         key: "isFeatured",
@@ -353,6 +472,18 @@ export default function ManagementPosts({
           { value: "false", label: "Not Supported" },
         ],
       },
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        options: [
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
+          { value: "draft", label: "Draft" },
+          { value: "pending", label: "Pending" },
+          { value: "archived", label: "Archived" },
+        ],
+      },
     ],
   };
 
@@ -362,10 +493,10 @@ export default function ManagementPosts({
       label: "Edit Post",
       icon: (
         <Lordicon
-          src="https://cdn.lordicon.com/cbtlerlm.json"
-          trigger="hover"
+          src='https://cdn.lordicon.com/cbtlerlm.json'
+          trigger='hover'
           size={16}
-          className="mt-1"
+          className='mt-1'
           colors={{
             primary: "#9ca3af",
             secondary: "",
@@ -374,17 +505,17 @@ export default function ManagementPosts({
         />
       ),
       variant: "ghost",
-      onClick: (item) => handleEditPost(item as PostDataItem),
+      onClick: (item) => handleEditPost(item as unknown as Post),
     },
     {
       key: "delete",
       label: "Delete Post",
       icon: (
         <Lordicon
-          src="https://cdn.lordicon.com/jmkrnisz.json"
-          trigger="hover"
+          src='https://cdn.lordicon.com/jmkrnisz.json'
+          trigger='hover'
           size={16}
-          className="mt-1"
+          className='mt-1'
           colors={{
             primary: "#FF0000",
             secondary: "#FFFFFF",
@@ -416,8 +547,13 @@ export default function ManagementPosts({
       label: "Type/Category",
       type: "select",
       required: true,
-      options: [
-        { value: "Hiking", label: "Hiking" }, // all categories will came from category api
+      options: categoriesResponse?.data?.map((category) => ({
+        value: category.name,
+        label: category.name,
+      })) || [
+        { value: "Concert", label: "Concert" },
+        { value: "Food", label: "Food" },
+        { value: "Hiking", label: "Hiking" },
       ],
       section: "basic",
       gridCol: "half",
@@ -474,7 +610,10 @@ export default function ManagementPosts({
       label: "Price",
       type: "number",
       required: false,
-      placeholder: "$$$",
+      placeholder: "Enter price",
+      validation: {
+        min: 0,
+      },
       section: "content",
       gridCol: "half",
     },
@@ -501,20 +640,33 @@ export default function ManagementPosts({
       label: "Phone Number",
       type: "tel",
       required: false,
-      placeholder: "+1-555-0123",
+      placeholder: "+1234567890",
       section: "location",
       gridCol: "half",
+      validation: {
+        pattern: "^[\\+]?[0-9]{7,15}$",
+        custom: (value: unknown) => {
+          if (!value || value === "") return null;
+          const cleanPhone = String(value).replace(/[\s\-\(\)]/g, '');
+          if (!/^[\+]?[0-9]{7,15}$/.test(cleanPhone)) {
+            return "Please enter a valid phone number (7-15 digits)";
+          }
+          return null;
+        },
+      },
+      helpText: "Enter phone number with country code (e.g., +1234567890)",
     },
     {
       key: "latitude",
       label: "Latitude",
-      type: "text",
+      type: "number",
       required: false,
-      placeholder: "37.7749 (e.g., 37.7749 or -37.7749)",
+      placeholder: "37.7749",
       section: "location",
       gridCol: "half",
       validation: {
-        pattern: "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$",
+        min: -90,
+        max: 90,
         custom: (value: unknown) => {
           if (!value || value === "") return null;
           const num = parseFloat(String(value));
@@ -524,18 +676,19 @@ export default function ManagementPosts({
           return null;
         },
       },
-      helpText: "Valid range: -90 to +90 degrees (decimal format)",
+      helpText: "Valid range: -90 to +90 degrees",
     },
     {
       key: "longitude",
       label: "Longitude",
-      type: "text",
+      type: "number",
       required: false,
-      placeholder: "-122.4194 (e.g., 122.4194 or -122.4194)",
+      placeholder: "-122.4194",
       section: "location",
       gridCol: "half",
       validation: {
-        pattern: "^[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$",
+        min: -180,
+        max: 180,
         custom: (value: unknown) => {
           if (!value || value === "") return null;
           const num = parseFloat(String(value));
@@ -545,7 +698,7 @@ export default function ManagementPosts({
           return null;
         },
       },
-      helpText: "Valid range: -180 to +180 degrees (decimal format)",
+      helpText: "Valid range: -180 to +180 degrees",
     },
     {
       key: "openingHours",
@@ -561,13 +714,19 @@ export default function ManagementPosts({
       label: "Categories",
       type: "multiselect",
       required: false,
-      options: [
-        { value: "hiking", label: "Hiking" }, // all categories will came from category api
+      options: categoriesResponse?.data?.map((category) => ({
+        value: category.name.toLowerCase(),
+        label: category.name,
+      })) || [
+        { value: "Concert", label: "Concert" },
+        { value: "Food", label: "Food" },
+        { value: "Hiking", label: "Hiking" },
       ],
       section: "categories",
       gridCol: "full",
       helpText: "Select multiple categories that apply to this post",
     },
+
     {
       key: "socialLinks.facebook",
       label: "Facebook",
@@ -644,7 +803,7 @@ export default function ManagementPosts({
       key: "offlineData.mapTiles",
       label: "Map Tiles Available",
       type: "switch",
-      required: true,
+      required: false,
       section: "offline",
       gridCol: "third",
       helpText: "Offline map tiles available",
@@ -654,7 +813,7 @@ export default function ManagementPosts({
       key: "offlineData.detailsAvailable",
       label: "Details Available Offline",
       type: "switch",
-      required: true,
+      required: false,
       section: "offline",
       gridCol: "third",
       helpText: "Post details accessible offline",
@@ -664,7 +823,7 @@ export default function ManagementPosts({
       key: "offlineData.navigationSupported",
       label: "Navigation Supported",
       type: "switch",
-      required: true,
+      required: false,
       section: "offline",
       gridCol: "third",
       helpText: "Navigation features work offline",
@@ -674,107 +833,18 @@ export default function ManagementPosts({
       key: "offlineData.tileRegionName",
       label: "Tile Region Name",
       type: "text",
-      required: true,
+      required: false,
       placeholder: "e.g., region_001_downtown",
       section: "offline",
       gridCol: "full",
-      helpText:
-        "Unique identifier for the offline map region (auto-generated if empty)",
-      condition: (formData) => Boolean(formData.offlineSupported),
-    },
-    {
-      key: "offlineData.tileBounds.southwest.latitude",
-      label: "Southwest Latitude",
-      type: "text",
-      required: true,
-      placeholder: "37.7639",
-      validation: {
-        pattern: "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$",
-        custom: (value: unknown) => {
-          if (!value || value === "") return null;
-          const num = parseFloat(String(value));
-          if (isNaN(num)) return "Please enter a valid latitude";
-          if (num < -90 || num > 90)
-            return "Latitude must be between -90 and 90";
-          return null;
-        },
-      },
-      section: "offline",
-      gridCol: "quarter",
-      helpText: "Southwest corner latitude for tile bounds",
-      condition: (formData) => Boolean(formData.offlineSupported),
-    },
-    {
-      key: "offlineData.tileBounds.southwest.longitude",
-      label: "Southwest Longitude",
-      type: "text",
-      required: true,
-      placeholder: "-122.4304",
-      validation: {
-        pattern: "^[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$",
-        custom: (value: unknown) => {
-          if (!value || value === "") return null;
-          const num = parseFloat(String(value));
-          if (isNaN(num)) return "Please enter a valid longitude";
-          if (num < -180 || num > 180)
-            return "Longitude must be between -180 and 180";
-          return null;
-        },
-      },
-      section: "offline",
-      gridCol: "quarter",
-      helpText: "Southwest corner longitude for tile bounds",
-      condition: (formData) => Boolean(formData.offlineSupported),
-    },
-    {
-      key: "offlineData.tileBounds.northeast.latitude",
-      label: "Northeast Latitude",
-      type: "text",
-      required: true,
-      placeholder: "37.7859",
-      validation: {
-        pattern: "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$",
-        custom: (value: unknown) => {
-          if (!value || value === "") return null;
-          const num = parseFloat(String(value));
-          if (isNaN(num)) return "Please enter a valid latitude";
-          if (num < -90 || num > 90)
-            return "Latitude must be between -90 and 90";
-          return null;
-        },
-      },
-      section: "offline",
-      gridCol: "quarter",
-      helpText: "Northeast corner latitude for tile bounds",
-      condition: (formData) => Boolean(formData.offlineSupported),
-    },
-    {
-      key: "offlineData.tileBounds.northeast.longitude",
-      label: "Northeast Longitude",
-      type: "text",
-      required: true,
-      placeholder: "-122.4084",
-      validation: {
-        pattern: "^[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$",
-        custom: (value: unknown) => {
-          if (!value || value === "") return null;
-          const num = parseFloat(String(value));
-          if (isNaN(num)) return "Please enter a valid longitude";
-          if (num < -180 || num > 180)
-            return "Longitude must be between -180 and 180";
-          return null;
-        },
-      },
-      section: "offline",
-      gridCol: "quarter",
-      helpText: "Northeast corner longitude for tile bounds",
+      helpText: "Unique identifier for the offline map region",
       condition: (formData) => Boolean(formData.offlineSupported),
     },
     {
       key: "offlineData.zoomRange.minZoom",
       label: "Minimum Zoom Level",
       type: "number",
-      required: true,
+      required: false,
       placeholder: "10",
       validation: {
         min: 0,
@@ -782,14 +852,14 @@ export default function ManagementPosts({
       },
       section: "offline",
       gridCol: "half",
-      helpText: "Minimum zoom level for offline tiles (0-22)",
+      helpText: "Minimum zoom level for offline maps (0-22)",
       condition: (formData) => Boolean(formData.offlineSupported),
     },
     {
       key: "offlineData.zoomRange.maxZoom",
       label: "Maximum Zoom Level",
       type: "number",
-      required: true,
+      required: false,
       placeholder: "18",
       validation: {
         min: 0,
@@ -797,8 +867,83 @@ export default function ManagementPosts({
       },
       section: "offline",
       gridCol: "half",
-      helpText: "Maximum zoom level for offline tiles (0-22)",
+      helpText: "Maximum zoom level for offline maps (0-22)",
       condition: (formData) => Boolean(formData.offlineSupported),
+    },
+    {
+      key: "offlineData.tileBounds.southwest.latitude",
+      label: "Southwest Latitude",
+      type: "number",
+      required: false,
+      placeholder: "37.7639",
+      validation: {
+        min: -90,
+        max: 90,
+      },
+      section: "offline",
+      gridCol: "half",
+      helpText: "Southwest corner latitude for tile bounds",
+      condition: (formData) => Boolean(formData.offlineSupported),
+    },
+    {
+      key: "offlineData.tileBounds.southwest.longitude",
+      label: "Southwest Longitude",
+      type: "number",
+      required: false,
+      placeholder: "-122.4304",
+      validation: {
+        min: -180,
+        max: 180,
+      },
+      section: "offline",
+      gridCol: "half",
+      helpText: "Southwest corner longitude for tile bounds",
+      condition: (formData) => Boolean(formData.offlineSupported),
+    },
+    {
+      key: "offlineData.tileBounds.northeast.latitude",
+      label: "Northeast Latitude",
+      type: "number",
+      required: false,
+      placeholder: "37.7859",
+      validation: {
+        min: -90,
+        max: 90,
+      },
+      section: "offline",
+      gridCol: "half",
+      helpText: "Northeast corner latitude for tile bounds",
+      condition: (formData) => Boolean(formData.offlineSupported),
+    },
+    {
+      key: "offlineData.tileBounds.northeast.longitude",
+      label: "Northeast Longitude",
+      type: "number",
+      required: false,
+      placeholder: "-122.4084",
+      validation: {
+        min: -180,
+        max: 180,
+      },
+      section: "offline",
+      gridCol: "half",
+      helpText: "Northeast corner longitude for tile bounds",
+      condition: (formData) => Boolean(formData.offlineSupported),
+    },
+    {
+      key: "status",
+      label: "Status",
+      type: "select",
+      required: false,
+      options: [
+        { value: "active", label: "Active" },
+        { value: "inactive", label: "Inactive" },
+        { value: "draft", label: "Draft" },
+        { value: "pending", label: "Pending" },
+        { value: "archived", label: "Archived" },
+      ],
+      section: "content",
+      gridCol: "half",
     },
   ];
 
@@ -849,8 +994,6 @@ export default function ManagementPosts({
     },
   ];
 
-  // Enhanced processFormData to handle nested offline data
-  // Enhanced processFormData to handle nested offline data
   const processFormData = (data: Record<string, unknown>) => {
     const processedData: Record<string, unknown> = {};
     const socialLinks: Record<string, string> = {};
@@ -864,49 +1007,8 @@ export default function ManagementPosts({
         }
       } else if (key.startsWith("offlineData.")) {
         const offlineKeyPath = key.replace("offlineData.", "");
-
-        // Handle nested structure for tileBounds and zoomRange
-        if (offlineKeyPath.includes(".")) {
-          const [parent, child] = offlineKeyPath.split(".");
-
-          if (parent === "tileBounds") {
-            if (!offlineData.tileBounds) {
-              offlineData.tileBounds = { southwest: {}, northeast: {} };
-            }
-
-            if (child.startsWith("southwest.")) {
-              const coordKey = child.replace("southwest.", "");
-              if (typeof value === "number") {
-                const tileBounds = offlineData.tileBounds as {
-                  southwest: Record<string, number>;
-                  northeast: Record<string, number>;
-                };
-                tileBounds.southwest[coordKey] = value;
-              }
-            } else if (child.startsWith("northeast.")) {
-              const coordKey = child.replace("northeast.", "");
-              if (typeof value === "number") {
-                const tileBounds = offlineData.tileBounds as {
-                  southwest: Record<string, number>;
-                  northeast: Record<string, number>;
-                };
-                tileBounds.northeast[coordKey] = value;
-              }
-            }
-          } else if (parent === "zoomRange") {
-            if (!offlineData.zoomRange) {
-              offlineData.zoomRange = {};
-            }
-            if (typeof value === "number") {
-              const zoomRange = offlineData.zoomRange as Record<string, number>;
-              zoomRange[child] = value;
-            }
-          }
-        } else {
-          // Handle direct offline data properties
-          if (value !== undefined && value !== null && value !== "") {
-            offlineData[offlineKeyPath] = value;
-          }
+        if (value !== undefined && value !== null && value !== "") {
+          offlineData[offlineKeyPath] = value;
         }
       } else {
         processedData[key] = value;
@@ -918,295 +1020,234 @@ export default function ManagementPosts({
     }
 
     if (Object.keys(offlineData).length > 0) {
-      // Auto-generate downloadedAt timestamp if offline is supported
-      if (processedData.offlineSupported) {
-        offlineData.downloadedAt = new Date().toISOString();
-      }
       processedData.offlineData = offlineData;
     }
 
     return processedData;
   };
 
-  const processCategories = (value: unknown): string[] => {
-    if (Array.isArray(value)) {
-      return value.filter(
-        (item) => typeof item === "string" && item.trim().length > 0
-      );
-    }
-    if (typeof value === "string" && value.trim()) {
-      return value
-        .split(",")
-        .map((cat) => cat.trim())
-        .filter((cat) => cat.length > 0);
-    }
-    return [];
-  };
+  const handleCreatePost = async (data: Record<string, unknown>) => {
+    try {
+      const formData = new FormData();
 
-  // Generate default offline region name
-  const generateOfflineRegionName = (
-    title: string,
-    location?: string
-  ): string => {
-    const sanitizedTitle = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "_")
-      .substring(0, 20);
-    const sanitizedLocation = location
-      ? location
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, "_")
-          .substring(0, 15)
-      : "location";
-    const timestamp = Date.now().toString().slice(-6);
-    return `${sanitizedTitle}_${sanitizedLocation}_${timestamp}`;
-  };
+      // Add basic fields
+      formData.append("title", String(data.title || ""));
+      formData.append("description", String(data.description || ""));
+      formData.append("type", String(data.type || ""));
+      formData.append("isFeatured", data.isFeatured ? "true" : "false");
 
-  // Generate default tile bounds based on coordinates
-  const generateDefaultTileBounds = (latitude?: number, longitude?: number) => {
-    if (!latitude || !longitude) return undefined;
+      // Add optional fields
+      if (data.location) formData.append("location", String(data.location));
+      if (data.address) formData.append("address", String(data.address));
+      if (data.phone) formData.append("phone", String(data.phone));
+      if (data.price !== undefined && data.price !== "") formData.append("price", String(data.price));
+      if (data.totalEvent !== undefined && data.totalEvent !== "")
+        formData.append("totalEvent", String(data.totalEvent));
+      if (data.latitude !== undefined && data.latitude !== "") formData.append("latitude", String(data.latitude));
+      if (data.longitude !== undefined && data.longitude !== "") formData.append("longitude", String(data.longitude));
+      if (data.openingHours)
+        formData.append("openingHours", String(data.openingHours));
+      if (data.dateRange) formData.append("dateRange", String(data.dateRange));
+      formData.append("offlineSupported", data.offlineSupported ? "true" : "false");
 
-    // Create a bounding box with ~5km radius around the point
-    const latDelta = 0.045; // approximately 5km at equator
-    const lngDelta = 0.045;
-
-    return {
-      southwest: {
-        latitude: latitude - latDelta,
-        longitude: longitude - lngDelta,
-      },
-      northeast: {
-        latitude: latitude + latDelta,
-        longitude: longitude + lngDelta,
-      },
-    };
-  };
-
-  const handleCreatePost = (data: Record<string, unknown>) => {
-    const processedData = processFormData(data);
-    const imagesValue = Array.isArray(processedData.images)
-      ? processedData.images
-      : processedData.images
-      ? [processedData.images]
-      : [
-          "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=400&h=300&fit=crop",
-        ];
-
-    // Enhanced offline data processing
-    const enhancedOfflineData =
-      processedData.offlineData as PostDataItem["offlineData"];
-
-    if (processedData.offlineSupported && enhancedOfflineData) {
-      // Auto-generate region name if not provided
-      if (!enhancedOfflineData.tileRegionName) {
-        enhancedOfflineData.tileRegionName = generateOfflineRegionName(
-          String(processedData.title || "post"),
-          String(processedData.location || "")
+      // Add categories
+      if (data.categories && Array.isArray(data.categories)) {
+        data.categories.forEach((cat) =>
+          formData.append("categories[]", String(cat))
         );
       }
 
-      // Auto-generate tile bounds if coordinates are available but bounds aren't set
-      if (
-        !enhancedOfflineData.tileBounds &&
-        processedData.latitude &&
-        processedData.longitude
-      ) {
-        enhancedOfflineData.tileBounds = generateDefaultTileBounds(
-          Number(processedData.latitude),
-          Number(processedData.longitude)
-        );
+      // Add social links
+      const processedData = processFormData(data);
+      const socialLinks = processedData.socialLinks;
+      if (socialLinks) {
+        formData.append("socialLinks", JSON.stringify(socialLinks));
       }
 
-      // Set default zoom range if not provided
-      if (!enhancedOfflineData.zoomRange) {
-        enhancedOfflineData.zoomRange = {
-          minZoom: 10,
-          maxZoom: 18,
-        };
+      // Add offline data
+      const offlineData = processedData.offlineData;
+      if (offlineData) {
+        formData.append("offlineData", JSON.stringify(offlineData));
       }
 
-      // Set default download progress if not provided
-      if (enhancedOfflineData.downloadProgress === undefined) {
-        enhancedOfflineData.downloadProgress = 0; // Always start at 0, frontend will update this
+      // Handle images
+      if (data.images && Array.isArray(data.images)) {
+        for (let i = 0; i < data.images.length; i++) {
+          const image = data.images[i];
+          if (image instanceof File) {
+            formData.append("images", image);
+          } else if (typeof image === "string" && image.startsWith("data:")) {
+            // Convert base64 to blob
+            const response = await fetch(image);
+            const blob = await response.blob();
+            formData.append("images", blob, `image-${i}.png`);
+          }
+        }
+      }
+
+      const result = await createPost(formData).unwrap();
+      if (result.success) {
+        toast.success("Post created successfully");
+        setCreateModalOpen(false);
+        refetch();
+      }
+    } catch (error: unknown) {
+      console.log("Post create error::", error);
+
+      if (typeof error === "object" && error !== null && "data" in error) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err.data?.message || "Failed to create post");
+      } else {
+        toast.error("Failed to create post");
       }
     }
-
-    const newPostData: PostDataItem = {
-      id: `post${Date.now()}`,
-      title: String(processedData.title || ""),
-      description: String(processedData.description || ""),
-      images: imagesValue,
-      type: String(processedData.type || "General"),
-      dateRange: processedData.dateRange
-        ? String(processedData.dateRange)
-        : undefined,
-      isFeatured: Boolean(processedData.isFeatured),
-      categories: processCategories(processedData.categories),
-      address: processedData.address
-        ? String(processedData.address)
-        : undefined,
-      location: processedData.location
-        ? String(processedData.location)
-        : undefined,
-      latitude:
-        typeof processedData.latitude === "string" &&
-        processedData.latitude.trim()
-          ? parseFloat(processedData.latitude)
-          : undefined,
-      longitude:
-        typeof processedData.longitude === "string" &&
-        processedData.longitude.trim()
-          ? parseFloat(processedData.longitude)
-          : undefined,
-      phone: processedData.phone ? String(processedData.phone) : undefined,
-      openingHours: processedData.openingHours
-        ? String(processedData.openingHours)
-        : undefined,
-      price:
-        typeof processedData.price === "number"
-          ? processedData.price
-          : undefined,
-      totalEvent:
-        typeof processedData.totalEvent === "number"
-          ? processedData.totalEvent
-          : undefined,
-      socialLinks: processedData.socialLinks as PostDataItem["socialLinks"],
-      offlineSupported: Boolean(processedData.offlineSupported),
-      offlineData: enhancedOfflineData,
-    };
-
-    const updatedPosts = [newPostData, ...posts];
-    setPosts(updatedPosts);
-    console.log("New post created:", newPostData);
   };
 
-  const handleEditPost = (post: PostDataItem) => {
-    setEditingPost(post);
+  const handleEditPost = (post: Post) => {
+    const postToEdit = {
+      ...post,
+      id: post._id || post.id,
+    };
+    setEditingPost(postToEdit);
     setEditModalOpen(true);
   };
 
-  const handleUpdatePost = (data: Record<string, unknown>) => {
-    if (!editingPost) return;
+ const handleUpdatePost = async (data: Record<string, unknown>) => {
+   if (!editingPost || !editingPost.id) {
+     toast.error("Invalid post data");
+     return;
+   }
 
-    const processedData = processFormData(data);
-    const imagesValue =
-      Array.isArray(processedData.images) && processedData.images.length > 0
-        ? processedData.images
-        : editingPost.images;
+   try {
+     const formData = new FormData();
 
-    // Enhanced offline data processing for updates
-    const enhancedOfflineData =
-      processedData.offlineData as PostDataItem["offlineData"];
+     // Filter out automatic backend fields that shouldn't be sent from frontend
+     const fieldsToExclude = [
+       "_id",
+       "id",
+       "createdBy", 
+       "createdAt", 
+       "updatedAt", 
+       "__v", 
+     ];
 
-    if (processedData.offlineSupported && enhancedOfflineData) {
-      // Auto-generate region name if not provided
-      if (!enhancedOfflineData.tileRegionName) {
-        enhancedOfflineData.tileRegionName = generateOfflineRegionName(
-          String(processedData.title || editingPost.title || "post"),
-          String(processedData.location || editingPost.location || "")
-        );
-      }
+     // Add fields that have changed, excluding read-only fields and nested object fields
+     Object.keys(data).forEach((key) => {
+       if (fieldsToExclude.includes(key)) {
+         return; // Skip read-only fields
+       }
 
-      // Auto-generate tile bounds if coordinates are available but bounds aren't set
-      const lat =
-        typeof processedData.latitude === "number"
-          ? processedData.latitude
-          : editingPost.latitude;
-      const lng =
-        typeof processedData.longitude === "number"
-          ? processedData.longitude
-          : editingPost.longitude;
+       // Skip nested object fields - they'll be handled separately
+       if (key.startsWith("socialLinks.") || key.startsWith("offlineData.")) {
+         return;
+       }
 
-      if (!enhancedOfflineData.tileBounds && lat && lng) {
-        enhancedOfflineData.tileBounds = generateDefaultTileBounds(lat, lng);
-      }
+       const value = data[key];
+       if (value !== undefined && value !== null) {
+         if (key === "images" && Array.isArray(value)) {
+           // Handle images separately
+           return;
+         } else if (key === "categories" && Array.isArray(value)) {
+           value.forEach((cat) => formData.append("categories[]", String(cat)));
+         } else if (typeof value === "object") {
+           formData.append(key, JSON.stringify(value));
+         } else {
+           formData.append(key, String(value));
+         }
+       }
+     });
 
-      // Set default zoom range if not provided
-      if (!enhancedOfflineData.zoomRange) {
-        enhancedOfflineData.zoomRange = editingPost.offlineData?.zoomRange || {
-          minZoom: 10,
-          maxZoom: 18,
-        };
-      }
+     // Handle images
+     if (data.images && Array.isArray(data.images)) {
+       for (let i = 0; i < data.images.length; i++) {
+         const image = data.images[i];
+         if (image instanceof File) {
+           formData.append("images", image);
+         } else if (typeof image === "string" && image.startsWith("data:")) {
+           const response = await fetch(image);
+           const blob = await response.blob();
+           formData.append("images", blob, `image-${i}.png`);
+         }
+       }
+     }
 
-      // Set default download progress if not provided
-      if (enhancedOfflineData.downloadProgress === undefined) {
-        enhancedOfflineData.downloadProgress = 0; // Always start at 0, frontend will update this
-      }
+     // Process nested data (excluding read-only fields)
+     const processedData = processFormData(
+       Object.fromEntries(
+         Object.entries(data).filter(([key]) => !fieldsToExclude.includes(key))
+       )
+     );
 
-      // Don't auto-update downloadedAt during edit unless specifically changing offline settings
-      if (!enhancedOfflineData.downloadedAt) {
-        enhancedOfflineData.downloadedAt =
-          editingPost.offlineData?.downloadedAt || new Date().toISOString();
-      }
+     if (processedData.socialLinks) {
+       formData.append(
+         "socialLinks",
+         JSON.stringify(processedData.socialLinks)
+       );
+     }
+     if (processedData.offlineData) {
+       formData.append(
+         "offlineData",
+         JSON.stringify(processedData.offlineData)
+       );
+     }
+
+     const result = await updatePost({
+       id: editingPost.id,
+       data: formData,
+     }).unwrap();
+
+     if (result.success) {
+       toast.success("Post updated successfully");
+       setEditModalOpen(false);
+       setEditingPost(null);
+       refetch();
+     }
+   } catch (error: unknown) {
+     console.log("Post update error::", error);
+
+     if (typeof error === "object" && error !== null && "data" in error) {
+       const err = error as { data?: { message?: string } };
+       toast.error(err.data?.message || "Failed to Update post");
+     } else {
+       toast.error("Failed to update post");
+     }
+   }
+ };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!postId || postId === "undefined") {
+      toast.error("Invalid post ID");
+      return;
     }
 
-    const updatedPostData: PostDataItem = {
-      ...editingPost,
-      title: String(processedData.title || ""),
-      name: processedData.name ? String(processedData.name) : undefined,
-      description: String(processedData.description || ""),
-      images: imagesValue,
-      type: String(processedData.type || "General"),
-      dateRange: processedData.dateRange
-        ? String(processedData.dateRange)
-        : editingPost.dateRange,
-      isFeatured: Boolean(processedData.isFeatured),
-      categories: processCategories(processedData.categories),
-      address: processedData.address
-        ? String(processedData.address)
-        : editingPost.address,
-      location: processedData.location
-        ? String(processedData.location)
-        : editingPost.location,
-      latitude:
-        typeof processedData.latitude === "string" &&
-        processedData.latitude.trim()
-          ? parseFloat(processedData.latitude)
-          : editingPost.latitude,
-      longitude:
-        typeof processedData.longitude === "string" &&
-        processedData.longitude.trim()
-          ? parseFloat(processedData.longitude)
-          : editingPost.longitude,
-      phone: processedData.phone
-        ? String(processedData.phone)
-        : editingPost.phone,
-      openingHours: processedData.openingHours
-        ? String(processedData.openingHours)
-        : editingPost.openingHours,
-      price:
-        typeof processedData.price === "number"
-          ? processedData.price
-          : editingPost.price,
-      totalEvent:
-        typeof processedData.totalEvent === "number"
-          ? processedData.totalEvent
-          : editingPost.totalEvent,
-      socialLinks: enhancedOfflineData
-        ? (processedData.socialLinks as PostDataItem["socialLinks"]) ||
-          editingPost.socialLinks
-        : editingPost.socialLinks,
-      offlineSupported: Boolean(processedData.offlineSupported),
-      offlineData: enhancedOfflineData || editingPost.offlineData,
-    };
+    try {
+      await deletePost(postId).unwrap();
+      toast.success("Post deleted successfully");
+      refetch();
+    } catch (error: unknown) {
+      console.log("Post delete error::", error);
 
-    const updatedPosts = posts.map((post) =>
-      post.id === editingPost.id ? updatedPostData : post
-    );
-    setPosts(updatedPosts);
-    setEditingPost(null);
-    console.log("Post updated:", updatedPostData);
-  };
-
-  const handleDeletePost = (postId: string) => {
-    const updatedPosts = posts.filter((post) => post.id !== postId);
-    setPosts(updatedPosts);
-    console.log("Post deleted:", postId);
+      if (typeof error === "object" && error !== null && "data" in error) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err.data?.message || "Failed to delete post");
+      } else {
+        toast.error("Failed to delete post");
+      }
+    }
   };
 
   const handleDataChange = (newData: GenericDataItem[]) => {
-    setPosts(newData as PostDataItem[]);
+    console.log("Posts data changed:", newData);
+    refetch();
+  };
+
+  const handleFiltersChange = (newFilters: Record<string, unknown>) => {
+    setFilters(newFilters);
+    setPage(1); // Reset to first page when filters change
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
   };
 
   const getEditInitialData = () => {
@@ -1230,32 +1271,28 @@ export default function ManagementPosts({
       "offlineData.navigationSupported":
         offlineDataData.navigationSupported || false,
       "offlineData.tileRegionName": offlineDataData.tileRegionName || "",
-      "offlineData.tileBounds.southwest.latitude":
-        offlineDataData.tileBounds?.southwest?.latitude?.toString() || "",
-      "offlineData.tileBounds.southwest.longitude":
-        offlineDataData.tileBounds?.southwest?.longitude?.toString() || "",
-      "offlineData.tileBounds.northeast.latitude":
-        offlineDataData.tileBounds?.northeast?.latitude?.toString() || "",
-      "offlineData.tileBounds.northeast.longitude":
-        offlineDataData.tileBounds?.northeast?.longitude?.toString() || "",
       "offlineData.zoomRange.minZoom": offlineDataData.zoomRange?.minZoom || 10,
       "offlineData.zoomRange.maxZoom": offlineDataData.zoomRange?.maxZoom || 18,
+      "offlineData.tileBounds.southwest.latitude": offlineDataData.tileBounds?.southwest?.latitude || "",
+      "offlineData.tileBounds.southwest.longitude": offlineDataData.tileBounds?.southwest?.longitude || "",
+      "offlineData.tileBounds.northeast.latitude": offlineDataData.tileBounds?.northeast?.latitude || "",
+      "offlineData.tileBounds.northeast.longitude": offlineDataData.tileBounds?.northeast?.longitude || "",
     };
   };
 
   return (
-    <div className="w-full mx-auto">
-      <div className="w-full flex justify-between items-center mb-6">
-        <h2 className="text-foreground text-xl font-semibold">{title}</h2>
+    <div className='w-full mx-auto'>
+      <div className='w-full flex justify-between items-center mb-6'>
+        <h2 className='text-foreground text-xl font-semibold'>{title}</h2>
         <Button
-          className="flex items-center gap-2 border-primary/30 rounded-md"
-          size="lg"
+          className='flex items-center gap-2 border-primary/30 rounded-md'
+          size='lg'
           onClick={() => setCreateModalOpen(true)}
         >
-          <span className="mt-1.5">
+          <span className='mt-1.5'>
             <Lordicon
-              src="https://cdn.lordicon.com/ueoydrft.json"
-              trigger="hover"
+              src='https://cdn.lordicon.com/ueoydrft.json'
+              trigger='hover'
               size={20}
               colors={{
                 primary: "",
@@ -1276,22 +1313,27 @@ export default function ManagementPosts({
         searchFilterConfig={searchFilterConfig}
         onDataChange={handleDataChange}
         loading={isLoading}
-        emptyMessage="No posts found"
+        emptyMessage='No posts found'
         itemsPerPage={itemsPerPage}
+        currentPage={page}
+        onPageChange={handlePageChange}
+        totalItems={postsResponse?.pagination?.total || 0}
+        onFiltersChange={handleFiltersChange}
       />
 
       <DynamicDataCreateModal
         isOpen={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onSave={handleCreatePost}
-        title="Create New Post"
-        description="Create and publish posts with comprehensive information and offline map integration"
+        title='Create New Post'
+        description='Create and publish posts with comprehensive information and offline map integration'
         fields={createFormFields}
         sections={createModalSections}
         initialData={{
           isFeatured: false,
-          type: "Technology",
+          type: categoriesResponse?.data?.[0]?.name || "Hiking",
           totalEvent: 0,
+          price: 0,
           offlineSupported: false,
           categories: [],
           "offlineData.mapTiles": false,
@@ -1299,9 +1341,10 @@ export default function ManagementPosts({
           "offlineData.navigationSupported": false,
           "offlineData.zoomRange.minZoom": 10,
           "offlineData.zoomRange.maxZoom": 18,
+          status: "active",
         }}
-        saveButtonText="Create Post"
-        cancelButtonText="Cancel"
+        saveButtonText='Create Post'
+        cancelButtonText='Cancel'
         maxImageSizeInMB={5}
         maxImageUpload={10}
         acceptedImageFormats={[
@@ -1320,13 +1363,13 @@ export default function ManagementPosts({
             setEditingPost(null);
           }}
           onSave={handleUpdatePost}
-          title="Edit Post"
-          description="Update post information and offline map settings"
+          title='Edit Post'
+          description='Update post information and offline map settings'
           fields={createFormFields}
           sections={createModalSections}
           initialData={getEditInitialData()}
-          saveButtonText="Update Post"
-          cancelButtonText="Cancel"
+          saveButtonText='Update Post'
+          cancelButtonText='Cancel'
           maxImageUpload={10}
           maxImageSizeInMB={5}
           acceptedImageFormats={[

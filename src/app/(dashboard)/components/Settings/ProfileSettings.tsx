@@ -1,6 +1,6 @@
 // src\app\(dashboard)\components\Settings\ProfileSettings.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,6 +30,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
+import {
+  useGetMeQuery,
+  useUpdateProfileMutation,
+  useUpdateProfileImageMutation,
+} from "@/store/api/usersApi";
+import { getImageUrl } from "@/lib/utils";
+import { logout } from "@/store/slices/authSlice";
 
 // Validation schema
 const profileSchema = z.object({
@@ -47,6 +54,14 @@ export default function ProfileSettings() {
   const [isUploading, setIsUploading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  const { data: userData, refetch } = useGetMeQuery();
+  const [updateProfile, { isLoading: isUpdatingProfile }] =
+    useUpdateProfileMutation();
+  const [updateProfileImage, { isLoading: isUpdatingImage }] =
+    useUpdateProfileImageMutation();
+
+  const user = userData?.data;
+
   const {
     register,
     handleSubmit,
@@ -55,12 +70,28 @@ export default function ProfileSettings() {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      full_name: "Nrb Nayon",
-      phone: "+880 1234 567890",
-      bio: "Full-stack developer specializing in MERN stack with a passion for creating scalable web applications.",
-      location: "Dhaka, Bangladesh",
+      full_name: user?.fullName || "",
+      phone: user?.phoneNumber || "",
+      bio: user?.bio || "",
+      location: user?.address || "",
     },
   });
+
+  // Update form when user data loads
+  useEffect(() => {
+    if (user) {
+      reset({
+        full_name: user.fullName || "",
+        phone: user.phoneNumber || "",
+        bio: user.bio || "",
+        location: user.address || "",
+      });
+
+      if (user.image) {
+        setProfileImage(getImageUrl(user.image));
+      }
+    }
+  }, [user, reset]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -76,26 +107,56 @@ export default function ProfileSettings() {
       }
 
       setIsUploading(true);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setProfileImage(e.target?.result as string);
-        setIsUploading(false);
-        toast.success("Profile image updated successfully!");
-      };
-      reader.readAsDataURL(file);
+
+      const formData = new FormData();
+      formData.append("image", file);
+
+      updateProfileImage(formData)
+        .unwrap()
+        .then((result) => {
+          if (result.success) {
+            setProfileImage(getImageUrl(result.data.image));
+            toast.success("Profile image updated successfully!");
+            refetch();
+          }
+        })
+        .catch((error: unknown) => {
+          if (typeof error === "object" && error !== null && "data" in error) {
+            const err = error as { data?: { message?: string } };
+            toast.error(err.data?.message || "Failed to update profile image");
+          } else {
+            toast.error("Failed to update profile image");
+          }
+        })
+        .finally(() => {
+          setIsUploading(false);
+        });
     }
   };
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Profile updated:", data);
-      toast.success("Profile updated successfully!");
-      setIsEditing(false);
-    } catch (error) {
-      console.log("Faild update profile::", error);
-      toast.error("Failed to update profile. Please try again.");
+      const result = await updateProfile({
+        fullName: data.full_name,
+        phoneNumber: data.phone,
+        bio: data.bio,
+        address: data.location,
+      }).unwrap();
+
+      if (result.success) {
+        toast.success("Profile updated successfully!");
+        setIsEditing(false);
+        refetch();
+      }
+    } catch (error: unknown) {
+      if (typeof error === "object" && error !== null && "data" in error) {
+        const err = error as { data?: { message?: string } };
+        toast.error(
+          err.data?.message || "Failed to update profile. Please try again."
+        );
+      } else {
+        toast.error("Failed to update profile. Please try again.");
+      }
     }
   };
 
@@ -112,6 +173,16 @@ export default function ProfileSettings() {
 
   const handleDeleteCancel = () => {
     setIsDialogOpen(false);
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      toast.error("Logout failed. Please try again.");
+    }
   };
 
   const handleDeleteConfirm = () => {
@@ -181,7 +252,7 @@ export default function ProfileSettings() {
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="hidden"
-                      disabled={isUploading}
+                      disabled={isUploading || isUpdatingImage}
                     />
                   </label>
                 </div>
@@ -193,7 +264,7 @@ export default function ProfileSettings() {
                   JPG, PNG or GIF. Max 5MB.
                 </p>
 
-                {isUploading && (
+                {(isUploading || isUpdatingImage) && (
                   <div className="mb-4">
                     <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div className="h-full bg-slate-900 rounded-full animate-pulse w-3/4"></div>
@@ -212,7 +283,7 @@ export default function ProfileSettings() {
                 <div className="w-full">
                   <button
                     onClick={() => {
-                      console.log("Logout clicked");
+                      handleLogout();
                     }}
                     className="w-full cursor-pointer"
                   >
@@ -302,11 +373,13 @@ export default function ProfileSettings() {
                     <button
                       type="submit"
                       onClick={handleSubmit(onSubmit)}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || isUpdatingProfile}
                       className="inline-flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 font-medium"
                     >
                       <Save className="w-4 h-4" />
-                      {isSubmitting ? "Saving..." : "Save Changes"}
+                      {isSubmitting || isUpdatingProfile
+                        ? "Saving..."
+                        : "Save Changes"}
                     </button>
                   </div>
                 )}
@@ -350,7 +423,7 @@ export default function ProfileSettings() {
                     </label>
                     <input
                       type="email"
-                      value="nayon@example.com"
+                      value={user?.email || ""}
                       disabled
                       className="w-full px-4 py-3 border-2 border-primary/30 bg-slate-50 rounded-md cursor-not-allowed text-black"
                     />
@@ -446,7 +519,7 @@ export default function ProfileSettings() {
               <div className="w-full">
                 <button
                   onClick={() => {
-                    console.log("Logout clicked");
+                    handleLogout();
                   }}
                   className="w-full cursor-pointer"
                 >

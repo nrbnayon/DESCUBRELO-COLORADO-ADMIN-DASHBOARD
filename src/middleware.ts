@@ -8,15 +8,22 @@ import { NextRequest, NextResponse } from "next/server";
 // Protected routes - these require authentication
 export const PROTECTED_ROUTES = [
   "/overview",
-  
-  "/add-sound"
+  "/manage-categories",
+  "/manage-post",
+  "/manage-users",
+  "/user-subscription",
+  "/notifications",
+  "/profile",
+  "/banner",
+  "/welcome",
+  "/add-sound",
+  "/settings",
   // others
 ];
 
 // Authentication routes - redirect to overview if already logged in
 const AUTH_ROUTES = [
   "/login",
-  "/signup",
   "/forgot-password",
   "/reset-password",
   "/reset-success",

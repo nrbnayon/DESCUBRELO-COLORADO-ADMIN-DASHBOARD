@@ -8,18 +8,30 @@ import { Shield, Save, Eye, EyeOff, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { passwordValidationSchema } from "@/lib/formDataValidation";
+import { useChangePasswordMutation } from "@/store/api/authApi";
+
 type PasswordFormData = z.infer<typeof passwordValidationSchema>;
+
+interface ApiError {
+  data?: {
+    message?: string;
+  };
+  error?: string;
+  message?: string;
+}
+
 export default function ChangePassword() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [changePassword, { isLoading }] = useChangePasswordMutation();
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     watch,
+    reset,
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordValidationSchema),
     defaultValues: {
@@ -28,7 +40,9 @@ export default function ChangePassword() {
       confirmPassword: "",
     },
   });
+
   const newPassword = watch("newPassword");
+
   // Password strength validation
   const passwordValidation = {
     hasMinLength: newPassword ? newPassword.length >= 8 : false,
@@ -40,30 +54,28 @@ export default function ChangePassword() {
   };
 
   const onSubmit = async (data: PasswordFormData) => {
-    setIsLoading(true);
-
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const result = await changePassword({
+        currentPassword: data.currentPassword,
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      }).unwrap();
 
-      // Log the form data to console (excluding passwords for security)
-      console.log("Password Change Data:", {
-        passwordLength: data.newPassword.length,
-        timestamp: new Date().toISOString(),
-      });
+      if (result.success) {
+        toast.success("Password updated successfully!", {
+          description: "Your password has been changed.",
+          duration: 2000,
+        });
 
-      toast.success("Password updated successfully!", {
-        description: "Your password has been changed.",
-        duration: 2000,
-      });
+        // Reset form
+        reset();
+      }
     } catch (error) {
-      console.error("Password change error:", error);
+      const apiError = error as ApiError;
       toast.error("Password update failed", {
-        description: "Please try again later.",
+        description: apiError?.data?.message || "Please try again later.",
         duration: 3000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -124,7 +136,7 @@ export default function ChangePassword() {
                 </button>
               </div>
               {errors.currentPassword && (
-                <p className="text-error text-xs mt-1">
+                <p className="text-red-600 text-xs mt-1">
                   {errors.currentPassword.message}
                 </p>
               )}
@@ -164,7 +176,7 @@ export default function ChangePassword() {
                   </button>
                 </div>
                 {errors.newPassword && (
-                  <p className="text-error text-xs mt-1">
+                  <p className="text-red-600 text-xs mt-1">
                     {errors.newPassword.message}
                   </p>
                 )}
@@ -203,7 +215,7 @@ export default function ChangePassword() {
                   </button>
                 </div>
                 {errors.confirmPassword && (
-                  <p className="text-error text-xs mt-1">
+                  <p className="text-red-600 text-xs mt-1">
                     {errors.confirmPassword.message}
                   </p>
                 )}
@@ -264,7 +276,7 @@ export default function ChangePassword() {
         </div>
 
         {/* Two-Factor Authentication */}
-        <div className="border border-primary/30 rounded-lg p-4 sm:p-6">
+        {/* <div className="border border-primary/30 rounded-lg p-4 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h4 className="text-base sm:text-lg font-medium text-gray-900">
@@ -275,7 +287,7 @@ export default function ChangePassword() {
               </p>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

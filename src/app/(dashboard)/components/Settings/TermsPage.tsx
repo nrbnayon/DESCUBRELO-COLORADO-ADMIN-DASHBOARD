@@ -38,61 +38,44 @@ import {
   SearchFilterState,
 } from "@/types/dynamicCardTypes";
 import { ColumnConfig, GenericDataItem } from "@/types/dynamicTableTypes";
+import {
+  useGetAllTermsQuery,
+  useCreateTermsMutation,
+  useUpdateTermsMutation,
+  useDeleteTermsMutation,
+  useReorderTermsMutation,
+} from "@/store/api/termsApi";
+import { toast } from "sonner";
+import CircularLoader from "@/components/common/CircularLoader";
 
 // Types
 interface TermsItem extends GenericDataItem {
+  _id: string;
   id: string;
   title: string;
   description: string;
   category: string;
   status: "active" | "inactive";
   order: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// Mock data
-const mockTermsData: TermsItem[] = [
-  {
-    id: "1",
-    title: "Terms of Service",
-    description: "General terms and conditions for using our platform",
-    category: "legal",
-    status: "active",
-    order: 1,
-  },
-  {
-    id: "2",
-    title: "Privacy Policy",
-    description: "How we collect, use, and protect your personal information",
-    category: "privacy",
-    status: "active",
-    order: 2,
-  },
-  {
-    id: "3",
-    title: "Cookie Policy",
-    description:
-      "Information about our use of cookies and tracking technologies",
-    category: "privacy",
-    status: "active",
-    order: 3,
-  },
-  {
-    id: "4",
-    title: "Data Processing Agreement",
-    description: "Terms for data processing and GDPR compliance",
-    category: "compliance",
-    status: "active",
-    order: 4,
-  },
-  {
-    id: "5",
-    title: "Refund Policy",
-    description: "Terms and conditions for refunds and cancellations",
-    category: "commercial",
-    status: "inactive",
-    order: 5,
-  },
-];
+// Response types
+interface TermsResponse {
+  _id?: string;
+  data: TermsItem[];
+  meta?: {
+    total: number;
+    page: number;
+    limit: number;
+  };
+  summary?: {
+    activeTerms: number;
+    inactiveTerms: number;
+    totalCategories: number;
+  };
+}
 
 // Form fields configuration
 const formFields: FormField[] = [
@@ -111,7 +94,7 @@ const formFields: FormField[] = [
   {
     key: "description",
     label: "Description",
-    type: "textarea",
+    type: "markdown",
     required: true,
     placeholder: "Enter the full terms content with markdown support...",
     gridCol: "full",
@@ -127,7 +110,7 @@ const formFields: FormField[] = [
     gridCol: "half",
     options: [
       { label: "Legal", value: "legal" },
-      { label: "Privacy & Ploicy", value: "privacy&policy" },
+      { label: "Privacy & Policy", value: "privacy&policy" },
       { label: "Terms & Condition", value: "terms&condition" },
     ],
   },
@@ -178,10 +161,8 @@ const searchFilterConfig: SearchFilterConfig = {
       placeholder: "All Category",
       options: [
         { label: "Legal", value: "legal" },
-        { label: "Privacy", value: "privacy" },
-        { label: "Compliance", value: "compliance" },
-        { label: "Commercial", value: "commercial" },
-        { label: "Technical", value: "technical" },
+        { label: "Privacy & Policy", value: "privacy&policy" },
+        { label: "Terms & Condition", value: "terms&condition" },
       ],
     },
   ],
@@ -203,10 +184,8 @@ const columnConfig: ColumnConfig[] = [
     type: "select",
     options: [
       { label: "Legal", value: "legal" },
-      { label: "Privacy", value: "privacy" },
-      { label: "Compliance", value: "compliance" },
-      { label: "Commercial", value: "commercial" },
-      { label: "Technical", value: "technical" },
+      { label: "Privacy & Policy", value: "privacy&policy" },
+      { label: "Terms & Condition", value: "terms&condition" },
     ],
   },
   {
@@ -222,7 +201,6 @@ const columnConfig: ColumnConfig[] = [
 ];
 
 export default function TermsAdminPage() {
-  const [termsData, setTermsData] = useState<TermsItem[]>(mockTermsData);
   const [searchFilterState, setSearchFilterState] = useState<SearchFilterState>(
     {
       search: "",
@@ -243,9 +221,34 @@ export default function TermsAdminPage() {
     item: TermsItem | null;
   }>({ isOpen: false, item: null });
 
+  const {
+    data: termsResponse,
+    isLoading,
+    refetch,
+  } = useGetAllTermsQuery({
+    page: searchFilterState.page,
+    limit: searchFilterState.itemsPerPage,
+    search: searchFilterState.search,
+    ...searchFilterState.filters,
+  });
+
+  const [createTerms] = useCreateTermsMutation();
+  const [updateTerms] = useUpdateTermsMutation();
+  const [deleteTerms] = useDeleteTermsMutation();
+  const [reorderTerms] = useReorderTermsMutation();
+
+  // Transform and memoize termsData to normalize _id to id
+  const termsData = useMemo(() => {
+    const rawData = (termsResponse as TermsResponse)?.data || [];
+    return rawData.map((item) => ({
+      ...item,
+      id: item._id, // Map _id to id for consistency
+    }));
+  }, [termsResponse]);
+
   // Filter, search, and sort terms
   const filteredTerms = useMemo(() => {
-    const filtered = termsData.filter((item) => {
+    const filtered = termsData.filter((item: TermsItem) => {
       // Search filter
       const matchesSearch =
         searchFilterState.search === "" ||
@@ -270,9 +273,10 @@ export default function TermsAdminPage() {
 
     // Sort
     if (searchFilterState.sortBy) {
-      filtered.sort((a, b) => {
-        const aValue = a[searchFilterState.sortBy as keyof TermsItem];
-        const bValue = b[searchFilterState.sortBy as keyof TermsItem];
+      filtered.sort((a: TermsItem, b: TermsItem) => {
+        const sortKey = searchFilterState.sortBy as keyof TermsItem;
+        const aValue = a[sortKey];
+        const bValue = b[sortKey];
 
         let comparison = 0;
 
@@ -296,55 +300,86 @@ export default function TermsAdminPage() {
       });
     } else {
       // Default sort by order
-      filtered.sort((a, b) => a.order - b.order);
+      filtered.sort((a: TermsItem, b: TermsItem) => a.order - b.order);
     }
 
     return filtered;
   }, [termsData, searchFilterState]);
 
   // Handle create
-  const handleCreate = useCallback((data: Record<string, unknown>) => {
-    const newItem: TermsItem = {
-      id: Date.now().toString(),
-      title: data.title as string,
-      description: data.description as string,
-      category: data.category as string,
-      status: data.status as "active" | "inactive",
-      order: data.order as number,
-    };
-
-    setTermsData((prev) => [...prev, newItem]);
-  }, []);
+  const handleCreate = useCallback(
+    (data: Record<string, unknown>) => {
+      createTerms({
+        title: data.title as string,
+        description: data.description as string,
+        category: data.category as string,
+        status: data.status as "active" | "inactive",
+        order: data.order as number,
+      })
+        .unwrap()
+        .then((result) => {
+          if (result.success) {
+            toast.success("Terms created successfully");
+            setIsCreateModalOpen(false);
+            refetch();
+          }
+        })
+        .catch((error) => {
+          toast.error(error?.data?.message || "Failed to create terms");
+        });
+    },
+    [createTerms, refetch]
+  );
 
   // Handle edit
   const handleEdit = useCallback(
     (data: Record<string, unknown>) => {
       if (!editingItem) return;
 
-      setTermsData((prev) =>
-        prev.map((item) =>
-          item.id === editingItem.id
-            ? {
-                ...item,
-                title: data.title as string,
-                description: data.description as string,
-                category: data.category as string,
-                status: data.status as "active" | "inactive",
-                order: data.order as number,
-              }
-            : item
-        )
-      );
-      setEditingItem(null);
+      // Use the original _id for the API call
+      updateTerms({
+        id: editingItem._id,
+        data: {
+          title: data.title as string,
+          description: data.description as string,
+          category: data.category as string,
+          status: data.status as "active" | "inactive",
+          order: data.order as number,
+        },
+      })
+        .unwrap()
+        .then((result) => {
+          if (result.success) {
+            toast.success("Terms updated successfully");
+            setIsEditModalOpen(false);
+            setEditingItem(null);
+            refetch();
+          }
+        })
+        .catch((error) => {
+          toast.error(error?.data?.message || "Failed to update terms");
+        });
     },
-    [editingItem]
+    [editingItem, updateTerms, refetch]
   );
 
   // Handle delete
-  const handleDelete = useCallback((item: TermsItem) => {
-    setTermsData((prev) => prev.filter((t) => t.id !== item.id));
-    setDeleteDialog({ isOpen: false, item: null });
-  }, []);
+  const handleDelete = useCallback(
+    (item: TermsItem) => {
+      // Use the original _id for the API call
+      deleteTerms(item._id)
+        .unwrap()
+        .then(() => {
+          toast.success("Terms deleted successfully");
+          setDeleteDialog({ isOpen: false, item: null });
+          refetch();
+        })
+        .catch((error) => {
+          toast.error(error?.data?.message || "Failed to delete terms");
+        });
+    },
+    [deleteTerms, refetch]
+  );
 
   // Handle order change
   const handleOrderChange = useCallback(
@@ -361,23 +396,25 @@ export default function TermsAdminPage() {
         direction === "up" ? currentIndex - 1 : currentIndex + 1;
       const targetItem = filteredTerms[targetIndex];
 
-      setTermsData((prev) =>
-        prev.map((t) => {
-          if (t.id === item.id) {
-            return { ...t, order: targetItem.order };
-          }
-          if (t.id === targetItem.id) {
-            return { ...t, order: item.order };
-          }
-          return t;
+      const reorderData = [
+        { id: item._id, order: targetItem.order }, // Use _id for API
+        { id: targetItem._id, order: item.order }, // Use _id for API
+      ];
+
+      reorderTerms(reorderData)
+        .unwrap()
+        .then(() => {
+          refetch();
         })
-      );
+        .catch((error) => {
+          toast.error(error?.data?.message || "Failed to reorder terms");
+        });
     },
-    [filteredTerms]
+    [filteredTerms, reorderTerms, refetch]
   );
 
   // Get status color
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800 border-green-200";
@@ -386,40 +423,55 @@ export default function TermsAdminPage() {
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  };
+  }, []);
 
   // Get category color
-  const getCategoryColor = (category: string) => {
+  const getCategoryColor = useCallback((category: string) => {
     switch (category) {
       case "legal":
         return "bg-blue-100 text-blue-800 border-blue-200";
-      case "privacy":
+      case "privacy&policy":
         return "bg-purple-100 text-purple-800 border-purple-200";
-      case "compliance":
+      case "terms&condition":
         return "bg-orange-100 text-orange-800 border-orange-200";
-      case "commercial":
-        return "bg-teal-100 text-teal-800 border-teal-200";
-      case "technical":
-        return "bg-indigo-100 text-indigo-800 border-indigo-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  };
+  }, []);
 
-  const openEditModal = (item: TermsItem) => {
+  const openEditModal = useCallback((item: TermsItem) => {
     setEditingItem(item);
     setIsEditModalOpen(true);
-  };
+  }, []);
 
-  const openViewModal = (item: TermsItem) => {
+  const openViewModal = useCallback((item: TermsItem) => {
     setViewingItem(item);
     setIsViewModalOpen(true);
-  };
+  }, []);
 
-  const getEditInitialData = () => {
+  const getEditInitialData = useCallback(() => {
     if (!editingItem) return {};
     return { ...editingItem };
-  };
+  }, [editingItem]);
+
+  // Memoize response data for consistent referencing
+  const responseData = useMemo(() => {
+    if (!termsResponse) {
+      return {
+        total: 0,
+        activeTerms: 0,
+        inactiveTerms: 0,
+        totalCategories: 0,
+      };
+    }
+
+    return {
+      total: termsResponse.meta?.total || 0,
+      activeTerms: termsResponse.summary?.activeTerms || 0,
+      inactiveTerms: termsResponse.summary?.inactiveTerms || 0,
+      totalCategories: termsResponse.summary?.totalCategories || 0,
+    };
+  }, [termsResponse]);
 
   return (
     <div className="p-3 md:p-6 space-y-3 md:space-y-6">
@@ -462,7 +514,7 @@ export default function TermsAdminPage() {
             <div>
               <p className="text-sm text-gray-600">Total Terms</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {termsData.length}
+                {responseData.total}
               </p>
             </div>
             <FileText className="w-8 h-8 text-gray-400" />
@@ -474,7 +526,7 @@ export default function TermsAdminPage() {
             <div>
               <p className="text-sm text-gray-600">Active</p>
               <p className="text-2xl font-semibold text-green-600">
-                {termsData.filter((t) => t.status === "active").length}
+                {responseData.activeTerms}
               </p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-400" />
@@ -486,7 +538,7 @@ export default function TermsAdminPage() {
             <div>
               <p className="text-sm text-gray-600">Inactive</p>
               <p className="text-2xl font-semibold text-red-600">
-                {termsData.filter((t) => t.status === "inactive").length}
+                {responseData.inactiveTerms}
               </p>
             </div>
             <Edit className="w-8 h-8 text-red-400" />
@@ -498,7 +550,7 @@ export default function TermsAdminPage() {
             <div>
               <p className="text-sm text-gray-600">Categories</p>
               <p className="text-2xl font-semibold text-blue-600">
-                {new Set(termsData.map((t) => t.category)).size}
+                {responseData.totalCategories}
               </p>
             </div>
             <FileText className="w-8 h-8 text-blue-400" />
@@ -508,7 +560,21 @@ export default function TermsAdminPage() {
 
       {/* Terms List */}
       <div className="space-y-4">
-        {filteredTerms.length === 0 ? (
+        {isLoading ? (
+          <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+            <CircularLoader
+              size={60}
+              thickness={5}
+              gap={4}
+              message=""
+              outerColor="border-primary"
+              innerColor="border-red-500"
+              textColor="text-blue-600"
+              className="py-12"
+              showMessage={false}
+            />
+          </div>
+        ) : filteredTerms.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
             <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
@@ -529,9 +595,9 @@ export default function TermsAdminPage() {
               )}
           </div>
         ) : (
-          filteredTerms.map((item, index) => (
+          filteredTerms.map((item: TermsItem, index: number) => (
             <div
-              key={item.id}
+              key={item._id} // Use _id as the key
               className="bg-white rounded-lg border border-gray-200 p-3 md:p-6 hover:shadow-md transition-all duration-200"
             >
               <div className="flex items-start justify-between">
@@ -557,8 +623,12 @@ export default function TermsAdminPage() {
                             item.category
                           )}`}
                         >
-                          {item.category.charAt(0).toUpperCase() +
-                            item.category.slice(1)}
+                          {item.category === "privacy&policy"
+                            ? "Privacy & Policy"
+                            : item.category === "terms&condition"
+                            ? "Terms & Condition"
+                            : item.category.charAt(0).toUpperCase() +
+                              item.category.slice(1)}
                         </Badge>
                       </div>
                       <p className="text-gray-600 text-xs md:text-sm leading-relaxed">

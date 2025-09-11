@@ -1,7 +1,6 @@
-// src\app\(dashboard)\components\Categories\ManagementCategories.tsx
+// src/app/(dashboard)/components/Categories/ManagementCategories.tsx
 "use client";
 
-import { categoriesData, CategoryDataItem } from "@/data/categoriesData";
 import { useState } from "react";
 import type {
   GenericDataItem,
@@ -17,6 +16,24 @@ import Lordicon from "@/components/lordicon/lordicon-wrapper";
 import { Button } from "@/components/ui/button";
 import { DynamicDataCreateModal } from "@/components/common/DynamicDataCreateModal";
 import type { FormField } from "@/types/dynamicCardTypes";
+import {
+  useGetAllCategoriesQuery,
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+} from "@/store/api/categoriesApi";
+import { getImageUrl } from "@/lib/utils";
+import { toast } from "sonner";
+
+interface Category {
+  _id?: string;
+  id: string;
+  name: string;
+  image?: string;
+  status: "active" | "inactive" | "pending" | "blocked" | "expired";
+  createdAt: string;
+  updatedAt?: string;
+}
 
 interface CategoryManagementProps {
   itemsPerPage?: number;
@@ -25,17 +42,123 @@ interface CategoryManagementProps {
   pageUrl?: string;
 }
 
-
-
 export default function ManagementCategories({
   itemsPerPage = 10,
   title = "All Categories",
   buttonText = "Show all",
   pageUrl = "/manage-categories",
 }: CategoryManagementProps) {
-  const [categories, setCategories] = useState(categoriesData);
-  const [isLoading, setIsLoading] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [page, setPage] = useState(1);
+
+  // Remove unused setFilters since filters are handled by the table component
+  const [currentFilters] = useState<Record<string, unknown>>({});
+
+  const {
+    data: categoriesResponse,
+    isLoading,
+    refetch,
+  } = useGetAllCategoriesQuery({
+    page,
+    limit: itemsPerPage,
+    ...currentFilters,
+  });
+
+  console.log("All categories::", categoriesResponse);
+
+  const [createCategory] = useCreateCategoryMutation();
+  const [updateCategory] = useUpdateCategoryMutation();
+  const [deleteCategory] = useDeleteCategoryMutation();
+
+  const categories: GenericDataItem[] =
+    categoriesResponse?.data?.map((category: Category) => ({
+      ...category,
+      id: category._id || category.id,
+      avatar: category.image ? getImageUrl(category.image) : undefined,
+    })) || [];
+
+  const handleDeleteCategory = async (catId: string) => {
+    if (!catId || catId === "undefined") {
+      toast.error("Invalid category ID");
+      return;
+    }
+
+    try {
+      await deleteCategory(catId).unwrap();
+      toast.success("Category deleted successfully");
+      refetch();
+    } catch (error: unknown) {
+      console.log("Category delete error::", error);
+
+      if (typeof error === "object" && error !== null && "data" in error) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err.data?.message || "Failed to delete category");
+      } else {
+        toast.error("Failed to delete category");
+      }
+    }
+  };
+
+  const handleEditCategory = (category: GenericDataItem) => {
+    const categoryToEdit = {
+      ...category,
+      id: category._id || category.id,
+    } as Category;
+    setEditingCategory(categoryToEdit);
+    setEditModalOpen(true);
+  };
+
+  const handleUpdateCategory = async (data: Record<string, unknown>) => {
+    if (!editingCategory || !editingCategory.id) {
+      toast.error("Invalid category data");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+
+      formData.append("name", String(data.name || ""));
+      formData.append("status", String(data.status || "active"));
+
+      // Handle image update
+      if (data.image && Array.isArray(data.image) && data.image.length > 0) {
+        const imageData = data.image[0];
+        if (imageData instanceof File) {
+          formData.append("image", imageData);
+        } else if (
+          typeof imageData === "string" &&
+          imageData.startsWith("data:")
+        ) {
+          const response = await fetch(imageData);
+          const blob = await response.blob();
+          formData.append("image", blob, "category-image.png");
+        }
+      }
+
+      const result = await updateCategory({
+        id: editingCategory.id,
+        data: formData,
+      }).unwrap();
+
+      if (result.success) {
+        toast.success("Category updated successfully");
+        setEditModalOpen(false);
+        setEditingCategory(null);
+        refetch();
+      }
+    } catch (error: unknown) {
+      console.log("Category update error::", error);
+
+      if (typeof error === "object" && error !== null && "data" in error) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err.data?.message || "Failed to update category");
+      } else {
+        toast.error("Failed to update category");
+      }
+    }
+  };
 
   // Column Configuration for Category Table
   const categoryColumns: ColumnConfig[] = [
@@ -162,7 +285,7 @@ export default function ManagementCategories({
       key: "image",
       label: "Category Picture",
       type: "image",
-      required: false,
+      required: true,
       placeholder: "Upload category picture (max 5MB)",
       section: "basic",
       gridCol: "full",
@@ -176,26 +299,70 @@ export default function ManagementCategories({
         {
           value: "active",
           label: "Active",
-          color: "#ECFDF3",
-          textColor: "#027A48",
         },
         {
           value: "inactive",
           label: "Inactive",
-          color: "#FFF9E0",
-          textColor: "#C8AA00",
         },
         {
           value: "blocked",
           label: "Blocked",
-          color: "#FEF3F2",
-          textColor: "#B42318",
         },
         {
           value: "pending",
           label: "Pending",
-          color: "#F3F4F6",
-          textColor: "#374151",
+        },
+      ],
+      section: "basic",
+      gridCol: "half",
+    },
+  ];
+
+  // Edit Modal Form Fields
+  const editFormFields: FormField[] = [
+    {
+      key: "name",
+      label: "Category Name",
+      type: "text",
+      required: true,
+      placeholder: "Enter category name",
+      validation: {
+        minLength: 2,
+        maxLength: 50,
+      },
+      section: "basic",
+      gridCol: "full",
+    },
+    {
+      key: "image",
+      label: "Category Picture",
+      type: "image",
+      required: true,
+      placeholder: "Upload category picture (max 5MB)",
+      section: "basic",
+      gridCol: "full",
+    },
+    {
+      key: "status",
+      label: "Status",
+      type: "select",
+      required: true,
+      options: [
+        {
+          value: "active",
+          label: "Active",
+        },
+        {
+          value: "inactive",
+          label: "Inactive",
+        },
+        {
+          value: "blocked",
+          label: "Blocked",
+        },
+        {
+          value: "pending",
+          label: "Pending",
         },
       ],
       section: "basic",
@@ -282,7 +449,26 @@ export default function ManagementCategories({
         />
       ),
       variant: "ghost",
-      onClick: (item) => console.log("Edit category:", item.name),
+      onClick: (item) => handleEditCategory(item),
+    },
+    {
+      key: "delete",
+      label: "",
+      icon: (
+        <Lordicon
+          src="https://cdn.lordicon.com/jmkrnisz.json"
+          trigger="hover"
+          size={16}
+          className="mt-1"
+          colors={{
+            primary: "#FF0000",
+            secondary: "#FFFFFF",
+          }}
+          stroke={4}
+        />
+      ),
+      variant: "ghost",
+      onClick: (item) => handleDeleteCategory(item.id),
     },
   ];
 
@@ -318,41 +504,55 @@ export default function ManagementCategories({
   };
 
   // Handle creating new category
-  const handleCreateCategory = (data: Record<string, unknown>) => {
-    const newCategoryData = {
-      id: `cat${Date.now()}`,
-      name: String(data.name || ""),
-      image:
-        String(data.image || "") ||
-        `https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=40&h=40&fit=crop&crop=face`,
-      status: String(data.status || "active") as
-        | "active"
-        | "inactive"
-        | "blocked"
-        | "pending",
-      createdAt: new Date().toISOString(),
-    };
+  const handleCreateCategory = async (data: Record<string, unknown>) => {
+    try {
+      const formData = new FormData();
 
-    const updatedCategories = [newCategoryData, ...categories];
-    setCategories(updatedCategories);
+      formData.append("name", String(data.name || ""));
+      formData.append("status", String(data.status || "active"));
 
-    console.log("New category created:", newCategoryData);
+      if (data.image && Array.isArray(data.image) && data.image.length > 0) {
+        const imageData = data.image[0];
+        if (imageData instanceof File) {
+          formData.append("image", imageData);
+        } else if (
+          typeof imageData === "string" &&
+          imageData.startsWith("data:")
+        ) {
+          const response = await fetch(imageData);
+          const blob = await response.blob();
+          formData.append("image", blob, "category-image.png");
+        }
+      } else {
+        toast.error("Category image is required");
+        return;
+      }
+
+      const result = await createCategory(formData).unwrap();
+      if (result.success) {
+        toast.success("Category created successfully");
+        setCreateModalOpen(false);
+        refetch();
+      }
+    } catch (error: unknown) {
+      console.log("Category create error::", error);
+
+      if (typeof error === "object" && error !== null && "data" in error) {
+        const err = error as { data?: { message?: string } };
+        toast.error(err.data?.message || "Failed to create category");
+      } else {
+        toast.error("Failed to create category");
+      }
+    }
   };
 
   const handleDataChange = (newData: GenericDataItem[]) => {
-    // Type assertion since we know the data structure matches CategoryDataItem
-    setCategories(newData as CategoryDataItem[]);
     console.log("Categories data changed:", newData);
-  };
-
-  const handleCategoryEdit = (category: GenericDataItem) => {
-    console.log("Category edited:", category);
-    // Here you would typically make an API call to update the category
+    refetch();
   };
 
   const handleCategoryDelete = (categoryId: string) => {
-    console.log("Category deleted:", categoryId);
-    // Here you would typically make an API call to delete the category
+    handleDeleteCategory(categoryId);
   };
 
   const handleCategoriesSelect = (selectedIds: string[]) => {
@@ -364,7 +564,7 @@ export default function ManagementCategories({
     console.log("Exporting categories:", exportData);
     // Convert data to CSV format
     const headers = categoryColumns.map((col) => col.label).join(",");
-    const csvData = (exportData as CategoryDataItem[])
+    const csvData = exportData
       .map((category) =>
         categoryColumns
           .map((col) => {
@@ -395,13 +595,36 @@ export default function ManagementCategories({
   };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setCategories([...categoriesData]);
-      setIsLoading(false);
-      console.log("Categories data refreshed");
-    }, 1000);
+    refetch();
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  // Fixed getEditInitialData function to handle image properly
+  const getEditInitialData = () => {
+    if (!editingCategory) return {};
+
+    // Create a clean initial data object
+    const initialData: Record<string, unknown> = {
+      name: editingCategory.name || "",
+      status: editingCategory.status || "active",
+    };
+
+    // Handle image - only include if it exists and is a valid string
+    if (editingCategory.image && typeof editingCategory.image === "string") {
+      const imageUrl = getImageUrl(editingCategory.image);
+      if (imageUrl) {
+        initialData.image = [imageUrl];
+      } else {
+        initialData.image = [];
+      }
+    } else {
+      initialData.image = [];
+    }
+
+    return initialData;
   };
 
   return (
@@ -438,14 +661,17 @@ export default function ManagementCategories({
         tableConfig={categoryTableConfig}
         editModalConfig={categoryEditModalConfig}
         onDataChange={handleDataChange}
-        onItemEdit={handleCategoryEdit}
+        onItemEdit={handleEditCategory}
         onItemDelete={handleCategoryDelete}
         onItemsSelect={handleCategoriesSelect}
         onExport={handleExport}
         onRefresh={handleRefresh}
+        onPageChange={handlePageChange}
         buttonText={buttonText}
         pageUrl={pageUrl}
         isLoading={isLoading}
+        currentPage={page}
+        totalItems={categoriesResponse?.meta?.total || 0}
       />
 
       {/* Create Category Modal */}
@@ -454,7 +680,8 @@ export default function ManagementCategories({
         onClose={() => setCreateModalOpen(false)}
         onSave={handleCreateCategory}
         title="Create New Category"
-        fields={createFormFields} 
+        description="Add a new category to organize your content"
+        fields={createFormFields}
         sections={createModalSections}
         initialData={{ status: "active" }}
         saveButtonText="Create Category"
@@ -468,6 +695,33 @@ export default function ManagementCategories({
           "image/webp",
         ]}
       />
+
+      {/* Edit Category Modal */}
+      {editingCategory && (
+        <DynamicDataCreateModal
+          isOpen={editModalOpen}
+          onClose={() => {
+            setEditModalOpen(false);
+            setEditingCategory(null);
+          }}
+          onSave={handleUpdateCategory}
+          title="Edit Category"
+          description="Update category information"
+          fields={editFormFields}
+          sections={createModalSections}
+          initialData={getEditInitialData()}
+          saveButtonText="Update Category"
+          cancelButtonText="Cancel"
+          maxImageSizeInMB={5}
+          maxImageUpload={1}
+          acceptedImageFormats={[
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/webp",
+          ]}
+        />
+      )}
     </div>
   );
 }

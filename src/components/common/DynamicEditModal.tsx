@@ -25,7 +25,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+import { cn, getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import type {
   GenericDataItem,
@@ -326,10 +326,10 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
               <SelectContent>
                 {config.options?.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
-                    <div className="flex items-center gap-2">
+                    <div className='flex items-center gap-2'>
                       {option.color && (
                         <div
-                          className="w-3 h-3 rounded-full"
+                          className='w-3 h-3 rounded-full'
                           style={{ backgroundColor: option.color }}
                         />
                       )}
@@ -344,8 +344,8 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
         case "multiselect":
           const selectedValues = Array.isArray(value) ? value : [];
           return (
-            <div className="space-y-2">
-              <div className="flex flex-wrap gap-2 mb-2">
+            <div className='space-y-2'>
+              <div className='flex flex-wrap gap-2 mb-2'>
                 {selectedValues.map((val: string) => {
                   const option = config.options?.find(
                     (opt) => opt.value === val
@@ -353,18 +353,18 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                   return (
                     <Badge
                       key={val}
-                      variant="secondary"
-                      className="flex items-center gap-1"
+                      variant='secondary'
+                      className='flex items-center gap-1'
                     >
                       {option?.color && (
                         <div
-                          className="w-2 h-2 rounded-full"
+                          className='w-2 h-2 rounded-full'
                           style={{ backgroundColor: option.color }}
                         />
                       )}
                       {option?.label || val}
                       <X
-                        className="w-3 h-3 cursor-pointer"
+                        className='w-3 h-3 cursor-pointer'
                         onClick={() => {
                           const newValues = selectedValues.filter(
                             (v) => v !== val
@@ -393,10 +393,10 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                     ?.filter((opt) => !selectedValues.includes(opt.value))
                     .map((option) => (
                       <SelectItem key={option.value} value={option.value}>
-                        <div className="flex items-center gap-2">
+                        <div className='flex items-center gap-2'>
                           {option.color && (
                             <div
-                              className="w-3 h-3 rounded-full"
+                              className='w-3 h-3 rounded-full'
                               style={{ backgroundColor: option.color }}
                             />
                           )}
@@ -411,7 +411,7 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
 
         case "checkbox":
           return (
-            <div className="flex items-center space-x-2">
+            <div className='flex items-center space-x-2'>
               <Checkbox
                 id={fieldId}
                 checked={Boolean(value)}
@@ -420,7 +420,7 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                 }
                 className={cn(hasError && "border-red-500")}
               />
-              <Label htmlFor={fieldId} className="text-sm font-normal">
+              <Label htmlFor={fieldId} className='text-sm font-normal'>
                 {config.placeholder || config.label}
               </Label>
             </div>
@@ -430,9 +430,9 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
           return (
             <div className={cn("flex flex-col space-y-2", config.className)}>
               {config.options?.map((option) => (
-                <div key={option.value} className="flex items-center space-x-2">
+                <div key={option.value} className='flex items-center space-x-2'>
                   <input
-                    type="radio"
+                    type='radio'
                     id={`${fieldId}-${option.value}`}
                     name={fieldId}
                     value={option.value}
@@ -440,11 +440,11 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                     onChange={(e) =>
                       handleInputChange(config.key, e.target.value)
                     }
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    className='w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500'
                   />
                   <Label
                     htmlFor={`${fieldId}-${option.value}`}
-                    className="text-sm font-normal"
+                    className='text-sm font-normal'
                   >
                     {option.label}
                   </Label>
@@ -455,52 +455,56 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
 
         case "file":
         case "image":
-          const currentPreview = filePreviewUrl[config.key];
-          const hasImage =
-            currentPreview !== null && currentPreview !== undefined;
+          const currentPreview =
+            filePreviewUrl[config.key] ||
+            getImageUrl(existingImage[config.key]) ||
+            null;
+          const hasImage = currentPreview !== null;
+
+          const imageSrc = currentPreview?.startsWith("blob:")
+            ? currentPreview
+            : getImageUrl(currentPreview);
 
           return (
-            <div className="space-y-4">
+            <div className='space-y-4'>
               {hasImage ? (
-                // Show image preview with remove option
-                <div className="relative inline-block">
+                <div className='relative inline-block'>
                   <Image
-                    src={currentPreview || "/placeholder.svg"}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover rounded-lg border border-gray-200"
+                    src={imageSrc}
+                    alt='Preview'
+                    className='w-32 h-32 object-cover rounded-lg border border-gray-200'
                     width={128}
                     height={128}
                   />
                   <button
-                    type="button"
+                    type='button'
                     onClick={() => removeFile(config.key)}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                    className='absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors'
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Trash2 className='w-3 h-3' />
                   </button>
                 </div>
               ) : (
-                // Show upload section
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                <div className='border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors'>
                   <input
-                    type="file"
-                    accept="image/*"
+                    type='file'
+                    accept='image/*'
                     onChange={(e) =>
                       handleFileUpload(config.key, e.target.files)
                     }
-                    className="hidden"
+                    className='hidden'
                     id={fieldId}
                   />
-                  <label htmlFor={fieldId} className="cursor-pointer">
-                    <div className="space-y-2">
-                      <div className="w-12 h-12 mx-auto bg-gray-100 rounded-lg flex items-center justify-center">
-                        <Upload className="w-6 h-6 text-gray-500" />
+                  <label htmlFor={fieldId} className='cursor-pointer'>
+                    <div className='space-y-2'>
+                      <div className='w-12 h-12 mx-auto bg-gray-100 rounded-lg flex items-center justify-center'>
+                        <Upload className='w-6 h-6 text-gray-500' />
                       </div>
                       <div>
-                        <span className="text-blue-600 font-medium">
+                        <span className='text-blue-600 font-medium'>
                           Browse files
                         </span>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className='text-sm text-gray-500 mt-1'>
                           {config.placeholder || "Max file size 50MB"}
                         </p>
                       </div>
@@ -526,14 +530,14 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
 
         case "currency":
           return (
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+            <div className='relative'>
+              <span className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500'>
                 $
               </span>
               <Input
                 id={fieldId}
-                type="number"
-                step="0.01"
+                type='number'
+                step='0.01'
                 value={value?.toString() || ""}
                 onChange={(e) =>
                   handleInputChange(
@@ -553,13 +557,13 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
 
         case "percentage":
           return (
-            <div className="relative">
+            <div className='relative'>
               <Input
                 id={fieldId}
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
+                type='number'
+                min='0'
+                max='100'
+                step='0.1'
                 value={value?.toString() || ""}
                 onChange={(e) =>
                   handleInputChange(
@@ -574,7 +578,7 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                   config.className
                 )}
               />
-              <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+              <span className='absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500'>
                 %
               </span>
             </div>
@@ -605,17 +609,17 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
     };
 
     return (
-      <div className="space-y-2">
+      <div className='space-y-2'>
         {config.type !== "checkbox" && (
-          <Label htmlFor={fieldId} className="text-sm font-medium">
+          <Label htmlFor={fieldId} className='text-sm font-medium'>
             {config.label}
-            {config.required && <span className="text-red-500 ml-1">*</span>}
+            {config.required && <span className='text-red-500 ml-1'>*</span>}
           </Label>
         )}
         {renderInput()}
         {hasError && (
-          <p className="text-sm text-red-500 flex items-center gap-1">
-            <X className="w-3 h-3" />
+          <p className='text-sm text-red-500 flex items-center gap-1'>
+            <X className='w-3 h-3' />
             {hasError}
           </p>
         )}
@@ -653,15 +657,15 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
         )}
       >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
+          <DialogTitle className='flex items-center gap-3'>
             {formData.avatar && (
-              <Avatar className="w-8 h-8">
+              <Avatar className='w-8 h-8'>
                 <AvatarImage
                   src={formData.avatar || "/placeholder.svg"}
                   alt={formData.name || "User"}
                 />
                 <AvatarFallback>
-                  <User className="w-4 h-4" />
+                  <User className='w-4 h-4' />
                 </AvatarFallback>
               </Avatar>
             )}
@@ -672,7 +676,7 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className='space-y-6'>
           {Object.entries(fieldsBySection).map(
             ([sectionKey, sectionFields]) => {
               const sectionConfig = modalConfig.sections?.find(
@@ -685,19 +689,19 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
                   className={cn("space-y-4", sectionConfig?.className)}
                 >
                   {sectionConfig && (
-                    <div className="space-y-1">
-                      <h3 className="text-lg font-semibold">
+                    <div className='space-y-1'>
+                      <h3 className='text-lg font-semibold'>
                         {sectionConfig.title}
                       </h3>
                       {sectionConfig.description && (
-                        <p className="text-sm text-gray-600">
+                        <p className='text-sm text-gray-600'>
                           {sectionConfig.description}
                         </p>
                       )}
                     </div>
                   )}
                   {/* Always use 2-column grid layout */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     {sectionFields.map((config) => (
                       <div
                         key={config.key}
@@ -716,19 +720,19 @@ export const DynamicEditModal: React.FC<DynamicEditModalProps> = ({
           )}
         </div>
 
-        <DialogFooter className="flex justify-end gap-3 pt-6 border-t">
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
+        <DialogFooter className='flex justify-end gap-3 pt-6 border-t'>
+          <Button variant='outline' onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={isLoading}>
             {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div className='flex items-center gap-2'>
+                <div className='w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin' />
                 Saving...
               </div>
             ) : (
-              <div className="flex items-center gap-2">
-                <Save className="w-4 h-4" />
+              <div className='flex items-center gap-2'>
+                <Save className='w-4 h-4' />
                 Save Changes
               </div>
             )}

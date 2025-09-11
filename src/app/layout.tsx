@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { layoutMetadata } from "@/lib/seo/metadata";
 import Script from "next/script";
+import { Providers } from "@/components/providers/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,8 +59,10 @@ export default function RootLayout({
           disableTransitionOnChange
           // forcedTheme='light'
         >
-          {children}
-          <Toaster richColors position="top-center" />
+          <Providers>
+            {children}
+            <Toaster richColors position="top-center" />
+          </Providers>
         </ThemeProvider>
 
         {/* Load Lordicon script asynchronously */}

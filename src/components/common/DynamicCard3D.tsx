@@ -47,6 +47,10 @@ interface DynamicCard3DProps {
   loading?: boolean;
   emptyMessage?: string;
   itemsPerPage?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  totalItems?: number;
+  onFiltersChange?: (filters: Record<string, unknown>) => void;
 }
 
 export function DynamicCard3D({
@@ -59,6 +63,10 @@ export function DynamicCard3D({
   loading = false,
   emptyMessage = "No items found",
   itemsPerPage = 12,
+  currentPage = 1,
+  onPageChange,
+  totalItems,
+  onFiltersChange,
 }: DynamicCard3DProps) {
   const [selectedItem, setSelectedItem] = useState<GenericDataItem | null>(
     null
@@ -70,13 +78,18 @@ export function DynamicCard3D({
       filters: {},
       sortBy: undefined,
       sortOrder: undefined,
-      page: 1,
+      page: currentPage,
       itemsPerPage,
     }
   );
 
-  // Filter and search data
+  // Filter and search data (only if we're handling pagination internally)
   const filteredData = useMemo(() => {
+    // If external pagination is being used (totalItems provided), return data as-is
+    if (totalItems !== undefined) {
+      return data;
+    }
+
     let result = [...data];
 
     // Apply search
@@ -131,19 +144,58 @@ export function DynamicCard3D({
     }
 
     return result;
-  }, [data, searchFilterState, searchFilterConfig]);
+  }, [data, searchFilterState, searchFilterConfig, totalItems]);
 
-  // Paginate data
+  // Paginate data (only if we're handling pagination internally)
   const paginatedData = useMemo(() => {
+    // If external pagination is being used, return data as-is
+    if (totalItems !== undefined) {
+      return data;
+    }
+
     const startIndex =
       (searchFilterState.page - 1) * searchFilterState.itemsPerPage;
     const endIndex = startIndex + searchFilterState.itemsPerPage;
     return filteredData.slice(startIndex, endIndex);
-  }, [filteredData, searchFilterState.page, searchFilterState.itemsPerPage]);
+  }, [
+    filteredData,
+    searchFilterState.page,
+    searchFilterState.itemsPerPage,
+    totalItems,
+    data,
+  ]);
 
-  const totalPages = Math.ceil(
-    filteredData.length / searchFilterState.itemsPerPage
-  );
+  const totalPages =
+    totalItems !== undefined
+      ? Math.ceil(totalItems / itemsPerPage)
+      : Math.ceil(filteredData.length / searchFilterState.itemsPerPage);
+
+  const effectiveCurrentPage =
+    totalItems !== undefined ? currentPage : searchFilterState.page;
+
+  // Handle search filter state changes
+  const handleSearchFilterStateChange = (newState: SearchFilterState) => {
+    setSearchFilterState(newState);
+
+    // If external pagination, notify parent of filter changes
+    if (totalItems !== undefined && onFiltersChange) {
+      onFiltersChange({
+        search: newState.search,
+        ...newState.filters,
+        sortBy: newState.sortBy,
+        sortOrder: newState.sortOrder,
+      });
+    }
+
+    // If external pagination, notify parent of page changes
+    if (
+      totalItems !== undefined &&
+      onPageChange &&
+      newState.page !== effectiveCurrentPage
+    ) {
+      onPageChange(newState.page);
+    }
+  };
 
   // Helper function to format date/time values
   const formatDateTime = (value: unknown): string => {
@@ -264,7 +316,7 @@ export function DynamicCard3D({
   const renderCard = (item: GenericDataItem) => {
     const title = getFieldValue(item, cardConfig.titleKey);
     const subtitle = getFieldValue(item, cardConfig.subtitleKey);
-    const imageUrl = getImageUrl(item, cardConfig.imageKey); // FIXED: Use new helper
+    const imageUrl = getImageUrl(item, cardConfig.imageKey);
     const description = getFieldValue(item, cardConfig.descriptionKey);
     const status = getFieldValue(item, cardConfig.statusKey);
     const availableActions = getAvailableActions(item);
@@ -273,6 +325,8 @@ export function DynamicCard3D({
     const deleteAction = availableActions.find(
       (action) => action.key === "delete"
     );
+
+    // console.log("Get item data::", item, "Imgae url", imageUrl);
 
     return (
       <CardContainer
@@ -339,6 +393,7 @@ export function DynamicCard3D({
                     alt={typeof title === "string" ? title : "Image"}
                     width={400}
                     height={200}
+                    priority
                     className='w-full h-48 object-cover rounded-xl transition-transform group-hover/card:scale-105 duration-300'
                     unoptimized={
                       imageUrl.startsWith("data:") ||
@@ -346,7 +401,7 @@ export function DynamicCard3D({
                     }
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder.svg?height=200&width=400";
+                      target.src = "/placeholder.svg";
                     }}
                   />
                 </CardItem>
@@ -371,7 +426,9 @@ export function DynamicCard3D({
                       const value = getFieldValue(item, key);
                       if (!value) return null;
                       return (
-                        <div key={key}>{renderFieldValue(value, key)}</div>
+                        <div key={`${item.id}-${key}`}>
+                          {renderFieldValue(value, key)}
+                        </div>
                       );
                     })}
                   </div>
@@ -491,7 +548,7 @@ export function DynamicCard3D({
     if (totalPages <= 1) return null;
 
     const getVisiblePages = () => {
-      const current = searchFilterState.page;
+      const current = effectiveCurrentPage;
       const total = totalPages;
       const delta = 2;
       const range = [];
@@ -522,23 +579,44 @@ export function DynamicCard3D({
       return rangeWithDots;
     };
 
+    const handlePageChange = (newPage: number) => {
+      if (totalItems !== undefined && onPageChange) {
+        // External pagination
+        onPageChange(newPage);
+      } else {
+        // Internal pagination
+        setSearchFilterState((prev) => ({ ...prev, page: newPage }));
+      }
+    };
+
+    const currentDataLength =
+      totalItems !== undefined ? totalItems : filteredData.length;
+    const currentStartIndex =
+      totalItems !== undefined
+        ? (currentPage - 1) * itemsPerPage + 1
+        : (searchFilterState.page - 1) * searchFilterState.itemsPerPage + 1;
+    const currentEndIndex =
+      totalItems !== undefined
+        ? Math.min(currentPage * itemsPerPage, totalItems)
+        : Math.min(
+            searchFilterState.page * searchFilterState.itemsPerPage,
+            filteredData.length
+          );
+
     return (
       <div className='flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg'>
         <div className='text-sm text-muted-foreground'>
           Showing{" "}
           <span className='font-medium text-gray-900 dark:text-gray-100'>
-            {(searchFilterState.page - 1) * searchFilterState.itemsPerPage + 1}
+            {currentStartIndex}
           </span>{" "}
           to{" "}
           <span className='font-medium text-gray-900 dark:text-gray-100'>
-            {Math.min(
-              searchFilterState.page * searchFilterState.itemsPerPage,
-              filteredData.length
-            )}
+            {currentEndIndex}
           </span>{" "}
           of{" "}
           <span className='font-medium text-gray-900 dark:text-gray-100'>
-            {filteredData.length}
+            {currentDataLength}
           </span>{" "}
           results
         </div>
@@ -546,10 +624,8 @@ export function DynamicCard3D({
           <Button
             variant='outline'
             size='sm'
-            onClick={() =>
-              setSearchFilterState((prev) => ({ ...prev, page: prev.page - 1 }))
-            }
-            disabled={searchFilterState.page <= 1}
+            onClick={() => handlePageChange(effectiveCurrentPage - 1)}
+            disabled={effectiveCurrentPage <= 1}
             className='flex items-center gap-1'
           >
             ← Previous
@@ -562,15 +638,10 @@ export function DynamicCard3D({
                 ) : (
                   <Button
                     variant={
-                      page === searchFilterState.page ? "default" : "outline"
+                      page === effectiveCurrentPage ? "default" : "outline"
                     }
                     size='sm'
-                    onClick={() =>
-                      setSearchFilterState((prev) => ({
-                        ...prev,
-                        page: page as number,
-                      }))
-                    }
+                    onClick={() => handlePageChange(page as number)}
                     className='w-10 h-8 p-0'
                   >
                     {page}
@@ -582,10 +653,8 @@ export function DynamicCard3D({
           <Button
             variant='outline'
             size='sm'
-            onClick={() =>
-              setSearchFilterState((prev) => ({ ...prev, page: prev.page + 1 }))
-            }
-            disabled={searchFilterState.page >= totalPages}
+            onClick={() => handlePageChange(effectiveCurrentPage + 1)}
+            disabled={effectiveCurrentPage >= totalPages}
             className='flex items-center gap-1'
           >
             Next →
@@ -630,9 +699,12 @@ export function DynamicCard3D({
       {/* Search and Filter Bar */}
       {searchFilterConfig && (
         <SearchFilterBar
-          state={searchFilterState}
+          state={{
+            ...searchFilterState,
+            page: effectiveCurrentPage,
+          }}
           config={searchFilterConfig}
-          onStateChange={setSearchFilterState}
+          onStateChange={handleSearchFilterStateChange}
         />
       )}
 

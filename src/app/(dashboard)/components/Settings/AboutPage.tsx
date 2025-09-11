@@ -24,7 +24,7 @@ export default function AboutPage() {
                 alt="logo"
                 width={120}
                 height={120}
-                className="w-[100px] h-[100px] md:w-[200px] md:h-[200px]"
+                className="w-[100px] h-[100px] md:w-[150px] md:h-[140px]"
               />
             </div>
             <p className="text-gray-600">Version 1.0.0</p>

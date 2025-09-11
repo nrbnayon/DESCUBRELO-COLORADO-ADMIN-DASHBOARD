@@ -15,7 +15,7 @@ interface OfflineZoomRange {
   maxZoom: number;
 }
 
-interface OfflineData {
+export interface OfflineData {
   mapTiles?: boolean; // Are map tiles downloaded?
   detailsAvailable?: boolean; // Are detailed data available offline?
   navigationSupported?: boolean; // Is navigation supported offline?
@@ -28,6 +28,7 @@ interface OfflineData {
 }
 
 export interface GenericDataItem {
+  _id?: string;
   id: string;
   title?: string;
   description?: string;
@@ -81,7 +82,8 @@ export type FieldType =
   | "slider"
   | "autocomplete"
   | "pdf"
-  | "hidden";
+  | "hidden"
+  | "markdown";
 
 export type GridColType = "full" | "half" | "third" | "quarter";
 export type AlignType = "left" | "center" | "right";

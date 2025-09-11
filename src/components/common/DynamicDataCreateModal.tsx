@@ -30,6 +30,7 @@ import dynamic from "next/dynamic";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import { FormField } from "@/types/dynamicCardTypes";
+import { Textarea } from "../ui/textarea";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -560,6 +561,22 @@ export function DynamicDataCreateModal({
 
         case "textarea":
           return (
+            <Textarea
+              value={getStringValue(value)}
+              onChange={(e) => handleInputChange(field.key, e.target.value)}
+              placeholder={field.placeholder || "Enter text..."}
+              className={cn(
+                "w-full px-3 py-2 border rounded-md resize-vertical min-h-[100px] focus:outline-none focus:ring-2 focus:ring-primary/20",
+                error
+                  ? "border-red-500"
+                  : "border-primary/30 focus-visible:border-primary"
+              )}
+              rows={4}
+            />
+          );
+
+        case "markdown":
+          return (
             <MDEditor
               value={getStringValue(value)}
               onChange={(val) => handleInputChange(field.key, val || "")}
@@ -721,14 +738,15 @@ export function DynamicDataCreateModal({
           );
 
         case "image":
-          const existingImages = Array.isArray(value)
-            ? (value as string[])
-            : value && typeof value === "string" && value.trim() !== ""
-            ? [value as string]
+          const existingImages: string[] = Array.isArray(value)
+            ? value.filter(
+                (v): v is string => typeof v === "string" && v.trim() !== ""
+              )
+            : typeof value === "string" && value.trim() !== ""
+            ? [value]
             : [];
 
           const canUploadMore = existingImages.length < maxImageUpload;
-
           return (
             <div className="space-y-4">
               {/* Image Previews */}
@@ -752,29 +770,21 @@ export function DynamicDataCreateModal({
                       </Button>
                     )}
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-4 bg-gray-50/50 rounded-lg border">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {existingImages.map((imageUrl, index) => (
                       <div key={index} className="relative group">
                         <div className="aspect-square rounded-lg overflow-hidden border-2 border-white shadow-sm bg-white hover:shadow-md transition-shadow">
                           <Image
-                            src={
-                              imageUrl ||
-                              "/placeholder.svg?height=120&width=120&query=image" ||
-                              "/placeholder.svg"
-                            }
+                            src={imageUrl || "/placeholder.svg"}
                             alt={`Preview ${index + 1}`}
                             width={120}
                             height={120}
+                            priority
                             className="w-full h-full object-cover"
                             unoptimized={
-                              imageUrl?.startsWith("data:") ||
-                              imageUrl?.startsWith("blob:")
+                              imageUrl.startsWith("data:") ||
+                              imageUrl.startsWith("blob:")
                             }
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src =
-                                "/placeholder.svg?height=120&width=120";
-                            }}
                           />
                         </div>
                         <Button
@@ -807,10 +817,22 @@ export function DynamicDataCreateModal({
                     error && "border-red-500 bg-red-50/30",
                     "cursor-pointer"
                   )}
-                  onDragEnter={(e) => handleDrag(e, field.key)}
-                  onDragLeave={(e) => handleDrag(e, field.key)}
-                  onDragOver={(e) => handleDrag(e, field.key)}
-                  onDrop={(e) => handleDrop(e, field.key)}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    handleDrag(e, field.key);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    handleDrag(e, field.key);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    handleDrag(e, field.key);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleDrop(e, field.key);
+                  }}
                   onClick={() => openFileDialog(field.key)}
                 >
                   <input
@@ -862,7 +884,7 @@ export function DynamicDataCreateModal({
                 </div>
               )}
 
-              {/* Show message when upload limit reached */}
+              {/* Max Upload Limit Message */}
               {!canUploadMore && existingImages.length >= maxImageUpload && (
                 <div className="text-center p-4 bg-gray-50 rounded-lg border">
                   <p className="text-sm text-gray-600">

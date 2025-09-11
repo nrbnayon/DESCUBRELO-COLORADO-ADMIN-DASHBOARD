@@ -32,12 +32,64 @@ import type {
   SearchFilterConfig,
 } from "@/types/dynamicCardTypes";
 import type { GenericDataItem, ColumnConfig } from "@/types/dynamicTableTypes";
+import {
+  useGetUserNotificationsQuery,
+  useMarkNotificationAsReadMutation,
+  useMarkAllNotificationsAsReadMutation,
+  useDeleteUserNotificationMutation,
+} from "@/store/api/notificationsApi";
+import { toast } from "sonner";
+import CircularLoader from "@/components/common/CircularLoader";
 
-// Types
-interface NotificationData extends GenericDataItem {
-  id: string;
+// API Response Types - matching the actual API structure
+interface ApiNotification {
+  _id: string; // This is the actual notification ID we need
   title: string;
-  message: string;
+  content: string;
+  priority: "default" | "normal" | "medium" | "high";
+  type: string;
+  isRead: boolean;
+  isGlobal: boolean;
+  recipients: string[];
+  sentBy: {
+    id: string;
+    fullName: string;
+    email: string;
+    role: string;
+  };
+  sentAt?: string;
+  results?: {
+    success: number;
+    failed: number;
+    details: Array<{
+      userId: string;
+      token: string;
+      status: "ok" | "error";
+      error?: string;
+      messageId?: string;
+    }>;
+  };
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface UserNotificationItem {
+  _id: string; // User notification document ID
+  userId: string;
+  notificationId: ApiNotification; // Populated notification data
+  isRead: boolean;
+  readAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Component Types - normalized for UI use
+interface NotificationData extends GenericDataItem {
+  id: string; // This will be the actual notification._id
+  userNotificationId: string; // This will be the user notification document _id
+  title: string;
+  content: string;
   type:
     | "info"
     | "success"
@@ -47,11 +99,17 @@ interface NotificationData extends GenericDataItem {
     | "system"
     | "payment";
   isRead: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  priority: "low" | "medium" | "high" | "urgent";
-  category: string;
+  createdAt: string;
+  updatedAt: string;
+  priority: "default" | "normal" | "medium" | "high";
+  category?: string;
   actionUrl?: string;
+  sentBy?: {
+    id: string;
+    fullName: string;
+    email: string;
+    role: string;
+  };
   metadata?: {
     userId?: string;
     userName?: string;
@@ -68,181 +126,49 @@ interface NotificationData extends GenericDataItem {
   };
 }
 
-const generateMockNotifications = (): NotificationData[] => {
-  const baseDate = new Date("2025-08-31T10:00:00Z");
-
-  const staticNotifications: NotificationData[] = [
-    {
-      id: "1",
-      title: "New Trail Registration",
-      message: "John Doe has registered for the Rocky Mountain Trail hike",
-      type: "user",
-      isRead: false,
-      createdAt: new Date(baseDate.getTime() - 1000 * 60 * 5), // 5 minutes ago
-      updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 5),
-      priority: "medium",
-      category: "Hiking",
-      metadata: {
-        userId: "user_123",
-        userName: "John Doe",
-        userAvatar: "/placeholder.svg",
-        trailName: "Rocky Mountain Trail",
-      },
-    },
-    {
-      id: "2",
-      title: "Camping Reservation Confirmed",
-      message:
-        "Reservation for $199.99 confirmed for Campsite #COL-2025-001 at Estes Park",
-      type: "payment",
-      isRead: false,
-      createdAt: new Date(baseDate.getTime() - 1000 * 60 * 15), // 15 minutes ago
-      updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 15),
-      priority: "high",
-      category: "Travel",
-      metadata: {
-        amount: 199.99,
-        reservationId: "COL-2025-001",
-        userId: "user_456",
-        userName: "Sarah Johnson",
-        location: "Estes Park",
-      },
-    },
-    {
-      id: "3",
-      title: "Trail Maintenance Scheduled",
-      message:
-        "Scheduled maintenance on Colorado Trail begins at 6:00 AM MST. Expected closure: 2 hours",
-      type: "system",
-      isRead: true,
-      createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 2), // 2 hours ago
-      updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 30),
-      priority: "urgent",
-      category: "Outdoor Management",
-      metadata: {
-        trailName: "Colorado Trail",
-      },
-    },
-    {
-      id: "4",
-      title: "Wildlife Alert",
-      message: "Bear sighting reported near Boulder Flatirons trail",
-      type: "warning",
-      isRead: false,
-      createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 1), // 1 hour ago
-      updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 1),
-      priority: "urgent",
-      category: "Wildlife",
-      metadata: {
-        location: "Boulder Flatirons",
-        sightingType: "Bear",
-      },
-    },
-    {
-      id: "5",
-      title: "Trail Map Backup Completed",
-      message:
-        "Daily backup of Colorado trail maps completed. 1.5GB of data backed up.",
-      type: "success",
-      isRead: true,
-      createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 6), // 6 hours ago
-      updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 3),
-      priority: "low",
-      category: "System",
-      metadata: {
-        backupSize: "1.5GB",
-        backupLocation: "AWS S3",
-      },
-    },
-    {
-      id: "6",
-      title: "Gear Rental Request",
-      message:
-        "User Emma Wilson has requested to rent hiking gear for Pikes Peak",
-      type: "info",
-      isRead: false,
-      createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 12), // 12 hours ago
-      updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * 12),
-      priority: "medium",
-      category: "Outdoor Gear",
-      metadata: {
-        userId: "user_789",
-        userName: "Emma Wilson",
-        userAvatar: "/placeholder.svg",
-        gearType: "Hiking Gear",
-        location: "Pikes Peak",
-      },
-    },
-  ];
-
-  // Generate additional mock data with deterministic values
-  const additionalNotifications = Array.from({ length: 25 }, (_, i) => {
-    const index = i + 7;
-    const categories = [
-      "Hiking",
-      "Travel",
-      "Outdoor Management",
-      "Wildlife",
-      "Outdoor Gear",
-    ];
-    const types: NotificationData["type"][] = [
-      "info",
-      "success",
-      "warning",
-      "error",
-      "user",
-      "system",
-      "payment",
-    ];
-    const priorities: NotificationData["priority"][] = [
-      "low",
-      "medium",
-      "high",
-      "urgent",
-    ];
-    const trails = [
-      "Pikes Peak",
-      "Garden of the Gods",
-      "Maroon Bells",
-      "Great Sand Dunes",
-      "Mesa Verde",
-    ];
-    const locations = [
-      "Estes Park",
-      "Boulder",
-      "Aspen",
-      "Durango",
-      "Telluride",
-    ];
-
-    return {
-      id: `${index}`,
-      title: `Colorado Activity Update ${index}`,
-      message: `Update for ${categories[i % 5]} at ${locations[i % 5]}`,
-      type: types[i % 7],
-      isRead: i % 3 === 0,
-      createdAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * (i + 1)),
-      updatedAt: new Date(baseDate.getTime() - 1000 * 60 * 60 * (i + 1)),
-      priority: priorities[i % 4],
-      category: categories[i % 5],
-      metadata: {
-        userId: `user_${index}`,
-        userName: `User ${index}`,
-        location: locations[i % 5],
-        trailName: trails[i % 5],
-      },
+// Updated API response interface to match actual structure
+interface NotificationsApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    notifications: UserNotificationItem[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
     };
-  });
-
-  return [...staticNotifications, ...additionalNotifications];
-};
-
+    stats: {
+      counts: {
+        total: number;
+        unread: number;
+        read: number;
+      };
+      typeDistribution: Array<{
+        _id: string;
+        count: number;
+        unreadCount: number;
+      }>;
+      priorityDistribution: Array<{
+        _id: string;
+        count: number;
+        unreadCount: number;
+      }>;
+      summary: {
+        totalNotifications: number;
+        readNotifications: number;
+        unreadNotifications: number;
+        readPercentage: number;
+      };
+    };
+  };
+}
 
 // Column configuration for ViewModal
 const notificationColumns: ColumnConfig[] = [
   { key: "id", label: "ID", type: "text" },
   { key: "title", label: "Title", type: "text" },
-  { key: "message", label: "Message", type: "text" },
+  { key: "content", label: "Message", type: "text" },
   {
     key: "type",
     label: "Type",
@@ -262,10 +188,10 @@ const notificationColumns: ColumnConfig[] = [
     label: "Priority",
     type: "select",
     options: [
-      { value: "low", label: "Low" },
+      { value: "default", label: "Default" },
+      { value: "normal", label: "Normal" },
       { value: "medium", label: "Medium" },
       { value: "high", label: "High" },
-      { value: "urgent", label: "Urgent" },
     ],
   },
   { key: "category", label: "Category", type: "text" },
@@ -286,8 +212,18 @@ const notificationColumns: ColumnConfig[] = [
   { key: "updateType", label: "Update Type", type: "text" },
 ];
 
+// Helper function to safely convert value to Date
+const safeToDate = (value: unknown): Date | null => {
+  if (!value) return null;
+  if (value instanceof Date) return value;
+  if (typeof value === "string" || typeof value === "number") {
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
+  }
+  return null;
+};
+
 export default function Notifications() {
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [selectedNotification, setSelectedNotification] =
     useState<NotificationData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -295,11 +231,9 @@ export default function Notifications() {
   const [isClient, setIsClient] = useState(false);
   const itemsPerPage = 20;
 
-  // Initialize notifications only on client side
-  useEffect(() => {
-    setIsClient(true);
-    setNotifications(generateMockNotifications());
-  }, []);
+  const [markAsRead] = useMarkNotificationAsReadMutation();
+  const [markAllAsReadMutation] = useMarkAllNotificationsAsReadMutation();
+  const [deleteNotification] = useDeleteUserNotificationMutation();
 
   // Search and filter state
   const [searchFilterState, setSearchFilterState] = useState<SearchFilterState>(
@@ -312,6 +246,58 @@ export default function Notifications() {
       itemsPerPage: 10,
     }
   );
+
+  const {
+    data: notificationsResponse,
+    isLoading,
+    refetch,
+  } = useGetUserNotificationsQuery({
+    page: currentPage,
+    limit: itemsPerPage,
+    search: searchFilterState.search,
+    ...searchFilterState.filters,
+  }) as {
+    data: NotificationsApiResponse | undefined;
+    isLoading: boolean;
+    refetch: () => void;
+  };
+
+  // Transform API response to component format with proper memoization
+  const notifications = useMemo(() => {
+    if (!notificationsResponse?.data?.notifications) {
+      return [];
+    }
+
+    return notificationsResponse.data.notifications.map(
+      (notif: UserNotificationItem): NotificationData => ({
+        // Use the actual notification ID from the populated notificationId
+        id: notif.notificationId._id,
+        // Keep track of the user notification document ID for operations that need it
+        userNotificationId: notif._id,
+        title: notif.notificationId.title,
+        content: notif.notificationId.content,
+        type: notif.notificationId.type as NotificationData["type"],
+        isRead: notif.isRead, // Use the user notification's isRead status
+        createdAt: notif.notificationId.createdAt,
+        updatedAt: notif.notificationId.updatedAt,
+        priority: notif.notificationId.priority,
+        category: notif.notificationId.type,
+        sentBy: notif.notificationId.sentBy,
+        metadata: notif.notificationId.metadata as NotificationData["metadata"],
+        // Required for GenericDataItem
+        name: notif.notificationId.title,
+        // Flatten metadata for ViewModal compatibility
+        ...notif.notificationId.metadata,
+      })
+    );
+  }, [notificationsResponse?.data?.notifications]);
+
+  const unreadCount = notificationsResponse?.data?.stats?.counts?.unread || 0;
+
+  // Initialize client state
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Search and filter configuration
   const searchFilterConfig: SearchFilterConfig = {
@@ -339,10 +325,10 @@ export default function Notifications() {
         type: "select",
         placeholder: "All Priorities",
         options: [
-          { value: "low", label: "Low" },
+          { value: "default", label: "Default" },
+          { value: "normal", label: "Normal" },
           { value: "medium", label: "Medium" },
           { value: "high", label: "High" },
-          { value: "urgent", label: "Urgent" },
         ],
       },
       {
@@ -400,13 +386,13 @@ export default function Notifications() {
   // Get priority color
   const getPriorityColor = (priority: NotificationData["priority"]) => {
     switch (priority) {
-      case "urgent":
-        return "bg-red-100 text-red-800 border-red-200";
       case "high":
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "bg-red-100 text-red-800 border-red-200";
       case "medium":
+        return "bg-orange-100 text-orange-800 border-orange-200";
+      case "normal":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "low":
+      case "default":
         return "bg-gray-100 text-gray-800 border-gray-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -433,61 +419,82 @@ export default function Notifications() {
   // Handle notification click - opens modal and marks as read
   const handleNotificationClick = useCallback(
     (notification: NotificationData) => {
-      // Flatten notification data for ViewModal
-      const flattenedNotification: GenericDataItem = {
-        ...notification,
-        ...notification.metadata, // Spread metadata to top level
-        createdAt: notification.createdAt.toISOString(),
-        updatedAt: notification.updatedAt.toISOString(),
-      };
-
-      setSelectedNotification(flattenedNotification as NotificationData);
+      setSelectedNotification(notification);
       setIsModalOpen(true);
 
-      // Mark as read if unread
-      if (!notification.isRead) {
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notification.id
-              ? { ...n, isRead: true, updatedAt: new Date() }
-              : n
-          )
-        );
+      // Mark as read if unread and has valid user notification ID
+      if (!notification.isRead && notification.userNotificationId) {
+        markAsRead(notification.userNotificationId)
+          .unwrap()
+          .then(() => {
+            refetch();
+          })
+          .catch((error) => {
+            console.error("Error marking notification as read:", error);
+            toast.error("Failed to mark notification as read");
+          });
       }
     },
-    []
+    [markAsRead, refetch]
   );
 
   // Toggle read status
   const toggleReadStatus = useCallback(
-    (id: string, event: React.MouseEvent) => {
+    (userNotificationId: string, event: React.MouseEvent) => {
       event.stopPropagation();
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n.id === id ? { ...n, isRead: !n.isRead, updatedAt: new Date() } : n
-        )
-      );
+      if (!userNotificationId) {
+        console.error("Invalid user notification ID");
+        return;
+      }
+      markAsRead(userNotificationId)
+        .unwrap()
+        .then(() => {
+          refetch();
+          toast.success("Notification status updated");
+        })
+        .catch((error) => {
+          console.error("Error toggling read status:", error);
+          toast.error("Failed to update notification status");
+        });
     },
-    []
+    [markAsRead, refetch]
   );
 
-  // Delete notification
-  const deleteNotification = useCallback(
-    (id: string, event: React.MouseEvent) => {
+  // Delete notification handler
+  const deleteNotificationHandler = useCallback(
+    (userNotificationId: string, event: React.MouseEvent) => {
       event.stopPropagation();
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      if (!userNotificationId) {
+        console.error("Invalid user notification ID");
+        return;
+      }
+      deleteNotification(userNotificationId)
+        .unwrap()
+        .then(() => {
+          toast.success("Notification deleted");
+          refetch();
+        })
+        .catch((error) => {
+          toast.error(error?.data?.message || "Failed to delete notification");
+        });
     },
-    []
+    [deleteNotification, refetch]
   );
 
-  // Mark all as read
-  const markAllAsRead = useCallback(() => {
-    setNotifications((prev) =>
-      prev.map((n) => ({ ...n, isRead: true, updatedAt: new Date() }))
-    );
-  }, []);
+  // Mark all as read handler
+  const markAllAsReadHandler = useCallback(() => {
+    markAllAsReadMutation()
+      .unwrap()
+      .then(() => {
+        toast.success("All notifications marked as read");
+        refetch();
+      })
+      .catch((error) => {
+        toast.error(error?.data?.message || "Failed to mark all as read");
+      });
+  }, [markAllAsReadMutation, refetch]);
 
-  // Filter and sort notifications
+  // Filter and sort notifications with improved type safety
   const filteredAndSortedNotifications = useMemo(() => {
     const filtered = notifications.filter((notification) => {
       // Search filter
@@ -496,7 +503,7 @@ export default function Notifications() {
         notification.title
           .toLowerCase()
           .includes(searchFilterState.search.toLowerCase()) ||
-        notification.message
+        notification.content
           .toLowerCase()
           .includes(searchFilterState.search.toLowerCase());
 
@@ -506,30 +513,46 @@ export default function Notifications() {
           if (key === "isRead") {
             return notification.isRead === (value === "true");
           }
-          return notification[key as keyof NotificationData] === value;
+          const notificationValue = notification[key as keyof NotificationData];
+          return notificationValue === value;
         }
       );
 
       return searchMatch && filtersMatch;
     });
 
-    // Sort
+    // Sort with improved type safety
     if (searchFilterState.sortBy) {
       filtered.sort((a, b) => {
-        const aValue = a[searchFilterState.sortBy as keyof NotificationData];
-        const bValue = b[searchFilterState.sortBy as keyof NotificationData];
+        const sortKey = searchFilterState.sortBy as keyof NotificationData;
+        const aValue = a[sortKey];
+        const bValue = b[sortKey];
 
         let comparison = 0;
 
-        // Handle different types properly
-        if (typeof aValue === "string" && typeof bValue === "string") {
+        // Handle date fields specifically
+        if (sortKey === "createdAt" || sortKey === "updatedAt") {
+          const dateA = safeToDate(aValue);
+          const dateB = safeToDate(bValue);
+
+          if (dateA && dateB) {
+            comparison = dateA.getTime() - dateB.getTime();
+          } else if (dateA) {
+            comparison = 1;
+          } else if (dateB) {
+            comparison = -1;
+          }
+        }
+        // Handle string fields
+        else if (typeof aValue === "string" && typeof bValue === "string") {
           comparison = aValue.localeCompare(bValue);
-        } else if (typeof aValue === "number" && typeof bValue === "number") {
-          comparison = aValue - bValue;
-        } else if (aValue instanceof Date && bValue instanceof Date) {
-          comparison = aValue.getTime() - bValue.getTime();
-        } else {
-          // Convert to string for comparison as fallback
+        }
+        // Handle boolean fields
+        else if (typeof aValue === "boolean" && typeof bValue === "boolean") {
+          comparison = aValue === bValue ? 0 : aValue ? 1 : -1;
+        }
+        // Fallback: convert to string for comparison
+        else {
           const aStr = String(aValue || "");
           const bStr = String(bValue || "");
           comparison = aStr.localeCompare(bStr);
@@ -558,15 +581,21 @@ export default function Notifications() {
     setCurrentPage(1);
   }, [searchFilterState]);
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
-
   // Show loading state during hydration
-  if (!isClient) {
+  if (!isClient || isLoading) {
     return (
       <div className="p-3 md:p-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
+          <CircularLoader
+            size={60}
+            thickness={5}
+            gap={4}
+            message=""
+            outerColor="border-primary"
+            innerColor="border-red-500"
+            textColor="text-blue-600"
+            className="py-12"
+            showMessage={false}
+          />
       </div>
     );
   }
@@ -596,7 +625,7 @@ export default function Notifications() {
 
         <div className="flex gap-2">
           <Button
-            onClick={markAllAsRead}
+            onClick={markAllAsReadHandler}
             variant="outline"
             size="sm"
             disabled={unreadCount === 0}
@@ -633,7 +662,7 @@ export default function Notifications() {
         ) : (
           currentNotifications.map((notification) => (
             <div
-              key={notification.id}
+              key={notification.userNotificationId}
               onClick={() => handleNotificationClick(notification)}
               className={cn(
                 "relative bg-white border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md",
@@ -666,7 +695,7 @@ export default function Notifications() {
                       </div>
 
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                        {notification.message}
+                        {notification.content}
                       </p>
 
                       <div className="flex items-center gap-2 flex-wrap">
@@ -681,12 +710,12 @@ export default function Notifications() {
                         </Badge>
 
                         <Badge variant="secondary" className="text-xs">
-                          {notification.category}
+                          {notification.category || notification.type}
                         </Badge>
 
                         <div className="flex items-center text-xs text-gray-500">
                           <Clock className="w-3 h-3 mr-1" />
-                          {formatTimeAgo(notification.createdAt)}
+                          {formatTimeAgo(new Date(notification.createdAt))}
                         </div>
                       </div>
                     </div>
@@ -705,7 +734,9 @@ export default function Notifications() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={(e) => toggleReadStatus(notification.id, e)}
+                          onClick={(e) =>
+                            toggleReadStatus(notification.userNotificationId, e)
+                          }
                         >
                           <EyeOff className="w-4 h-4 mr-2" />
                           Mark as {notification.isRead ? "Unread" : "Read"}
@@ -713,7 +744,10 @@ export default function Notifications() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={(e) =>
-                            deleteNotification(notification.id, e)
+                            deleteNotificationHandler(
+                              notification.userNotificationId,
+                              e
+                            )
                           }
                           className="text-red-600 focus:text-red-600"
                         >

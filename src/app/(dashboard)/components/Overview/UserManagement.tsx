@@ -1,6 +1,5 @@
 // src\app\(dashboard)\components\Overview\UserManagement.tsx
 "use client";
-import { usersData } from "@/data/usersDataSets";
 import { useState } from "react";
 import type {
   GenericDataItem,
@@ -13,6 +12,12 @@ import type {
 } from "@/types/dynamicTableTypes";
 import { DynamicTable } from "@/components/common/DynamicTable";
 import { Eye, Edit, Trash } from "lucide-react";
+import {
+  useGetAllUsersQuery,
+  useDeleteUserMutation,
+  useChangeUserStatusMutation,
+} from "@/store/api/usersApi";
+import { formatDateTime, getImageUrl } from "@/lib/utils";
 
 interface UserManagementProps {
   itemsPerPage?: number;
@@ -27,10 +32,34 @@ export default function UserManagement({
   buttonText = "Show all",
   pageUrl = "/manage-users",
 }: UserManagementProps) {
-  const [users, setUsers] = useState<GenericDataItem[]>(
-    usersData as GenericDataItem[]
-  );
-  const [isLoading, setIsLoading] = useState(false);
+  const [page] = useState(1);
+  const [filters] = useState<Record<string, unknown>>({});
+
+  const {
+    data: usersResponse,
+    isLoading,
+    refetch,
+  } = useGetAllUsersQuery({
+    page,
+    limit: itemsPerPage,
+    ...filters,
+  });
+
+  const [deleteUser] = useDeleteUserMutation();
+  const [changeUserStatus] = useChangeUserStatusMutation();
+
+  const users =
+    usersResponse?.data?.result?.map((user) => ({
+      ...user,
+      id: user._id || user.id,
+      name: user.fullName,
+      avatar: user.image ? getImageUrl(user.image) : undefined,
+      status: user.status?.toLowerCase() || "inactive",
+      role: user.role?.toLowerCase() || "user",
+      lastUpdated: formatDateTime(user.updatedAt),
+    })) || [];
+
+  // console.log("Get all user:::", users);
 
   // Column Configuration for User Table
   const userColumns: ColumnConfig[] = [
@@ -49,6 +78,35 @@ export default function UserManagement({
       sortable: true,
       searchable: true,
       width: "250px",
+    },
+    {
+      key: "role",
+      label: "Role",
+      type: "select",
+      sortable: true,
+      filterable: true,
+      width: "120px",
+      align: "center",
+      options: [
+        {
+          value: "user",
+          label: "User",
+          color: "#E7F3FF",
+          textColor: "#0369A1",
+        },
+        {
+          value: "admin",
+          label: "Admin",
+          color: "#FEF3C7",
+          textColor: "#D97706",
+        },
+        {
+          value: "super_admin",
+          label: "Super Admin",
+          color: "#F3E8FF",
+          textColor: "#7C3AED",
+        },
+      ],
     },
     {
       key: "status",
@@ -91,128 +149,23 @@ export default function UserManagement({
         },
       ],
     },
+    // {
+    //   key: "lastUpdated",
+    //   label: "Last Updated",
+    //   sortable: true,
+    //   width: "200px",
+    // },
   ];
 
-  // Form Field Configuration for User Edit Modal
+  // Form Field Configuration for User Status Update Modal (Admin can only update status)
   const userFormFields: FormFieldConfig[] = [
-    // Personal Information Section
-    {
-      key: "firstName",
-      label: "First Name",
-      type: "text",
-      required: true,
-      section: "personal",
-      gridCol: "half",
-      validation: {
-        minLength: 2,
-        maxLength: 50,
-      },
-    },
-    {
-      key: "lastName",
-      label: "Last Name",
-      type: "text",
-      required: true,
-      section: "personal",
-      gridCol: "half",
-      validation: {
-        minLength: 2,
-        maxLength: 50,
-      },
-    },
-    {
-      key: "email",
-      label: "Email Address",
-      type: "email",
-      required: true,
-      section: "personal",
-      gridCol: "half",
-      validation: {
-        pattern: "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
-      },
-    },
-    {
-      key: "phone",
-      label: "Phone Number",
-      type: "tel",
-      section: "personal",
-      gridCol: "half",
-      placeholder: "+1-555-0123",
-    },
-    {
-      key: "username",
-      label: "Username",
-      type: "text",
-      required: true,
-      section: "personal",
-      gridCol: "half",
-      validation: {
-        minLength: 3,
-        maxLength: 20,
-        pattern: "^[a-zA-Z0-9_]+$",
-      },
-    },
-    {
-      key: "dateOfBirth",
-      label: "Date of Birth",
-      type: "date",
-      section: "personal",
-      gridCol: "half",
-    },
-    {
-      key: "gender",
-      label: "Gender",
-      type: "select",
-      section: "personal",
-      gridCol: "half",
-      options: [
-        { value: "male", label: "Male" },
-        { value: "female", label: "Female" },
-        { value: "other", label: "Other" },
-        { value: "prefer-not-to-say", label: "Prefer not to say" },
-      ],
-    },
-    {
-      key: "avatar",
-      label: "Profile Picture",
-      type: "file",
-      section: "personal",
-      gridCol: "half",
-      placeholder: "Upload profile picture (max 5MB)",
-    },
-    // Address Information Section
-    {
-      key: "address",
-      label: "Address",
-      type: "textarea",
-      section: "address",
-      gridCol: "half",
-      placeholder: "123 Main Street, Apt 4B",
-    },
-    {
-      key: "country",
-      label: "Country",
-      type: "select",
-      section: "address",
-      gridCol: "half",
-      options: [
-        { value: "United States", label: "United States" },
-        { value: "Canada", label: "Canada" },
-        { value: "United Kingdom", label: "United Kingdom" },
-        { value: "Australia", label: "Australia" },
-        { value: "Germany", label: "Germany" },
-        { value: "France", label: "France" },
-        { value: "Other", label: "Other" },
-      ],
-    },
-    // Account & Access Section
     {
       key: "status",
       label: "Status",
       type: "select",
       required: true,
       section: "account",
-      gridCol: "half",
+      gridCol: "full",
       options: [
         { value: "active", label: "Active" },
         { value: "inactive", label: "Inactive" },
@@ -224,6 +177,16 @@ export default function UserManagement({
 
   // Filter Configuration for User Table
   const userFilters: FilterConfig[] = [
+    {
+      key: "role",
+      label: "Role",
+      type: "select",
+      options: [
+        { value: "user", label: "User" },
+        { value: "admin", label: "Admin" },
+        { value: "super_admin", label: "Super Admin" },
+      ],
+    },
     {
       key: "status",
       label: "Status",
@@ -242,23 +205,25 @@ export default function UserManagement({
     {
       key: "view",
       label: "",
-      icon: <Eye className='w-4 h-4' />,
+      icon: <Eye className="w-4 h-4" />,
       variant: "ghost",
-      onClick: (item) => console.log("View user:", item.name),
+      onClick: (item) =>
+        console.log("View user:", item.name, "ID:", item.id || item._id),
     },
     {
       key: "edit",
       label: "",
-      icon: <Edit className='w-4 h-4' />,
+      icon: <Edit className="w-4 h-4" />,
       variant: "ghost",
-      onClick: (item) => console.log("Edit user:", item.name),
+      onClick: (item) =>
+        console.log("Edit user:", item.name, "ID:", item.id || item._id),
     },
     {
       key: "delete",
       label: "",
-      icon: <Trash className='w-5 h-5 text-red-500' />,
+      icon: <Trash className="w-5 h-5 text-red-500" />,
       variant: "ghost",
-      onClick: (item) => console.log("Edit user:", item.name),
+      onClick: (item) => handleUserDelete(item.id),
     },
   ];
 
@@ -278,48 +243,66 @@ export default function UserManagement({
     loadingMessage: "Loading users...",
   };
 
-  // Edit Modal Configuration for User Form
+  // Edit Modal Configuration for User Status Update
   const userEditModalConfig: EditModalConfig = {
-    title: "Edit User",
-    description: "Update user information and settings",
-    width: "xl",
+    title: "Update User Status",
+    description: "Change user account status",
+    width: "md",
     sections: [
       {
-        key: "personal",
-        title: "Personal Information",
-        description: "Basic personal details and contact information",
-      },
-      {
-        key: "address",
-        title: "Address Information",
-        description: "Location and address details",
-      },
-      {
-        key: "professional",
-        title: "Professional Information",
-        description: "Job-related details and organizational information",
-      },
-      {
         key: "account",
-        title: "Account & Access",
-        description: "Account status, permissions, and security settings",
+        title: "Account Status",
+        description: "Update the user's account status",
       },
     ],
   };
 
   const handleDataChange = (newData: GenericDataItem[]) => {
-    setUsers(newData);
     console.log("Users data changed:", newData);
+    // Refetch data to get latest from server
+    refetch();
   };
 
-  const handleUserEdit = (user: GenericDataItem) => {
-    console.log("User edited:", user);
-    // Here you would typically make an API call to update the user
+  const handleUserEdit = async (user: GenericDataItem) => {
+    try {
+      const userId = user.id || user._id;
+      if (!userId) {
+        console.error("User ID not found");
+        return;
+      }
+
+      console.log("Updating user status:", user);
+
+      // Only update status for admin users
+      if (user.status) {
+        await changeUserStatus({
+          id: userId,
+          status: user.status.toUpperCase(), // Convert to uppercase to match API expectation
+        }).unwrap();
+
+        console.log("User status updated successfully");
+        refetch();
+      }
+    } catch (error) {
+      console.error("Error updating user status:", error);
+    }
   };
 
-  const handleUserDelete = (userId: string) => {
-    console.log("User deleted:", userId);
-    // Here you would typically make an API call to delete the user
+  const handleUserDelete = async (userId: string) => {
+    try {
+      if (!userId || userId === "undefined") {
+        console.error("Invalid user ID for deletion:", userId);
+        return;
+      }
+
+      console.log("Deleting user with ID:", userId);
+
+      await deleteUser(userId).unwrap();
+      console.log("User deleted successfully");
+      refetch();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+    }
   };
 
   const handleUsersSelect = (selectedIds: string[]) => {
@@ -360,17 +343,11 @@ export default function UserManagement({
   };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setUsers([...usersData] as GenericDataItem[]);
-      setIsLoading(false);
-      console.log("Users data refreshed");
-    }, 1000);
+    refetch();
   };
 
   return (
-    <div className='mx-auto'>
+    <div className="mx-auto">
       <DynamicTable
         data={users}
         columns={userColumns}

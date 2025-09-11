@@ -8,9 +8,12 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes"; // Add this import if using next-themes
+import { useTheme } from "next-themes";
 import { LogOut, PanelLeftOpen, PanelRightOpen, X } from "lucide-react";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
+import { useDispatch } from "react-redux";
+import { logout as logoutAction } from "@/store/slices/authSlice";
+import { logout as axiosLogout } from "@/lib/api/axios";
 
 interface DashboardWrapperProps {
   children: React.ReactNode;
@@ -18,7 +21,8 @@ interface DashboardWrapperProps {
 
 export default function DashboardWrapper({ children }: DashboardWrapperProps) {
   const pathname = usePathname();
-  const { theme } = useTheme(); // Add this if using next-themes
+  const { theme } = useTheme();
+  const dispatch = useDispatch();
   const [open, setOpen] = React.useState(false);
   const [sidebarWidth, setSidebarWidth] = React.useState(220);
   const [isResizing, setIsResizing] = React.useState(false);
@@ -35,13 +39,13 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
   const getIconColors = (isActive: boolean, isDark: boolean) => {
     if (isActive) {
       return {
-        primary: isDark ? "#FFFF00" : "#4693D9",
-        secondary: isDark ? "#FFFF00" : "#4693D9",
+        primary: isDark ? "#FFFF00" : "#4dba28",
+        secondary: isDark ? "#FFFF00" : "#4dba28",
       };
     }
     return {
-      primary: isDark ? "#FFFF00" : "#4693D9",
-      secondary: isDark ? "#FFFF00" : "#4693D9",
+      primary: isDark ? "#FFFF00" : "#4dba28",
+      secondary: isDark ? "#FFFF00" : "#4dba28",
     };
   };
 
@@ -71,7 +75,6 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
       href: "/manage-categories",
       iconSrc: "https://cdn.lordicon.com/dutqakce.json",
     },
-
     {
       label: "Banner",
       href: "/banner",
@@ -99,11 +102,18 @@ export default function DashboardWrapper({ children }: DashboardWrapperProps) {
     setShowLogoutModal(true);
   };
 
-  const handleConfirmLogout = () => {
-    // Implement your logout logic here
-    console.log("User logged out successfully");
-    setShowLogoutModal(false);
-    // Add your logout logic here (e.g., clear tokens, redirect to login)
+  const handleConfirmLogout = async () => {
+    try {
+      dispatch(logoutAction());
+      await axiosLogout();
+      setShowLogoutModal(false);
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setShowLogoutModal(false);
+      if (typeof window !== "undefined") {
+        window.location.href = "/login";
+      }
+    }
   };
 
   const handleCancelLogout = () => {

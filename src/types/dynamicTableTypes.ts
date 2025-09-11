@@ -4,11 +4,14 @@ import type React from "react";
 export type DataValue = string | number | boolean | null | undefined;
 
 export interface GenericDataItem {
+  _id?: string;
   id: string;
   name?: string;
   avatar?: string;
   subtitle?: string;
   status?: string;
+  createdAt?: string;
+  updatedAt?: string;
   [key: string]: DataValue | DataValue[] | File[] | unknown;
 }
 

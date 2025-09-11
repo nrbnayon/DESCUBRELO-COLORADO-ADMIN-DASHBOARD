@@ -20,15 +20,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { resetPasswordValidationSchema } from "@/lib/formDataValidation";
+import { useResetPasswordMutation } from "@/store/api/authApi";
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordValidationSchema>;
 
 export default function ResetPassword() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const router = useRouter();
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const {
     register,
@@ -93,43 +94,36 @@ export default function ResetPassword() {
   }, [router, setValue]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
-    setIsLoading(true);
-
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Log the form data to console (excluding password for security)
-      console.log("Reset Password Data:", {
+      const result = await resetPassword({
         email: data.email,
-        passwordLength: data.newPassword.length,
-        timestamp: new Date().toISOString(),
-      });
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword,
+      }).unwrap();
 
-      // Simulate successful password reset
-      toast.success("Password reset successful!", {
-        description: "Your password has been updated successfully.",
-        duration: 2000,
-      });
+      if (result.success) {
+        toast.success("Password reset successful!", {
+          description: "Your password has been updated successfully.",
+          duration: 2000,
+        });
 
-      // Clear all reset-related data from localStorage
-      localStorage.removeItem("resetEmail");
-      localStorage.removeItem("otpVerified");
-      localStorage.removeItem("verificationTime");
-      localStorage.removeItem("otpSentTime");
+        // Clear all reset-related data from localStorage
+        localStorage.removeItem("resetEmail");
+        localStorage.removeItem("otpVerified");
+        localStorage.removeItem("verificationTime");
+        localStorage.removeItem("otpSentTime");
 
-      // Redirect to success page after a short delay
-      setTimeout(() => {
-        router.push("/reset-success");
-      }, 1000);
+        // Redirect to success page after a short delay
+        setTimeout(() => {
+          router.push("/reset-success");
+        }, 1000);
+      }
     } catch (error) {
-      console.error("Reset password error:", error);
+      const err = error as { data?: { message?: string } };
       toast.error("Password reset failed", {
-        description: "Please try again later.",
+        description: err.data?.message || "Please try again later.",
         duration: 3000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

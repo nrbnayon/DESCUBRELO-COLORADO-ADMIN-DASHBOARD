@@ -14,13 +14,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { loginValidationSchema } from "@/lib/formDataValidation";
+import { useLoginMutation } from "@/store/api/authApi";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "@/store/slices/authSlice";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 type LoginFormData = z.infer<typeof loginValidationSchema>;
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
+  const [login, { isLoading }] = useLoginMutation();
 
   const {
     register,
@@ -40,47 +45,50 @@ export default function LoginForm() {
   const rememberMe = watch("rememberMe");
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
-
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Log the form data to console
-      console.log("Login Form Data:", {
+      const result = await login({
         email: data.email,
         password: data.password,
-        rememberMe: data.rememberMe,
-        timestamp: new Date().toISOString(),
-      });
+      }).unwrap();
 
-      // Simulate successful login
-      toast.success("Login successful!", {
-        description: `Welcome back, ${data.email}!`,
-        duration: 2000,
-      });
+      if (result.success) {
+        const userRole = result.data.user.role;
+        if (userRole !== "ADMIN" && userRole !== "SUPER_ADMIN") {
+          toast.error("Access denied", {
+            description: "Only administrators can access this dashboard.",
+            duration: 3000,
+          });
+          return;
+        }
 
-      // Redirect to dashboard after a short delay
-      setTimeout(() => {
+        dispatch(setCredentials(result.data));
+
+        toast.success("Login successful!", {
+          description: `Welcome back, ${result.data.user.fullName}!`,
+          duration: 2000,
+        });
+
         router.push("/overview");
-      }, 1000);
+      }
     } catch (error) {
-      console.error("Login error:", error);
+      let errorMessage = "Please check your credentials and try again.";
+
+      if (error && typeof error === "object" && "data" in error) {
+        const fetchError = error as FetchBaseQueryError;
+        if (
+          fetchError.data &&
+          typeof fetchError.data === "object" &&
+          "message" in fetchError.data
+        ) {
+          errorMessage = (fetchError.data as { message: string }).message;
+        }
+      }
+
       toast.error("Login failed", {
-        description: "Please check your credentials and try again.",
+        description: errorMessage,
         duration: 3000,
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  const handleDemoLogin = () => {
-    setValue("email", "demo@gmail.com");
-    setValue("password", "demo123");
-    toast.info("Demo credentials filled", {
-      description: "Click Login to continue with demo account",
-    });
   };
 
   return (
@@ -103,15 +111,6 @@ export default function LoginForm() {
           <p className="text-sm sm:text-base lg:text-lg opacity-90 px-2 sm:px-0">
             Sign in to access your dashboard and manage everything
           </p>
-          <div className="pt-2 sm:pt-4 space-y-3">
-            <Button
-              variant="outline"
-              onClick={handleDemoLogin}
-              className="bg-white/10 border-white/20 hover:text-white hover:bg-white/20 w-full backdrop-blur-sm text-sm sm:text-base"
-            >
-              Try Demo Login
-            </Button>
-          </div>
         </div>
       </div>
 

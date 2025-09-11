@@ -1,6 +1,5 @@
 // src\app\(dashboard)\components\Subscription\UserSubscriptions.tsx
 "use client";
-import { usersData } from "@/data/usersDataSets";
 import { useState } from "react";
 import type {
   GenericDataItem,
@@ -11,6 +10,8 @@ import type {
 } from "@/types/dynamicTableTypes";
 import { DynamicTable } from "@/components/common/DynamicTable";
 import Lordicon from "@/components/lordicon/lordicon-wrapper";
+import { useGetAllUsersQuery } from "@/store/api/usersApi";
+import { getImageUrl } from "@/lib/utils";
 
 interface UserManagementProps {
   itemsPerPage?: number;
@@ -25,10 +26,27 @@ export default function UserSubscriptions({
   buttonText = "Show all",
   pageUrl = "/users-subscription",
 }: UserManagementProps) {
-  const [users, setUsers] = useState<GenericDataItem[]>(
-    usersData as GenericDataItem[]
-  );
-  const [isLoading, setIsLoading] = useState(false);
+  const [page] = useState(1);
+  const [filters] = useState<Record<string, unknown>>({});
+
+  const {
+    data: usersResponse,
+    isLoading,
+    refetch,
+  } = useGetAllUsersQuery({
+    page,
+    limit: itemsPerPage,
+    isSubscribed: true, // Only get subscribed users
+    ...filters,
+  });
+
+  const users =
+    usersResponse?.data?.result?.map((user) => ({
+      ...user,
+      name: user.fullName,
+      avatar: user.image ? getImageUrl(user.image) : undefined,
+      accountType: user.subscription?.plan || "free",
+    })) || [];
 
   // Column Configuration for User Table
   const userColumns: ColumnConfig[] = [
@@ -59,25 +77,25 @@ export default function UserSubscriptions({
       align: "center",
       options: [
         {
-          value: "active",
+          value: "ACTIVE",
           label: "Active",
           color: "#ECFDF3",
           textColor: "#027A48",
         },
         {
-          value: "inactive",
+          value: "INACTIVE",
           label: "Inactive",
           color: "#FFF9E0",
           textColor: "#C8AA00",
         },
         {
-          value: "blocked",
+          value: "BLOCKED",
           label: "Blocked",
           color: "#FEF3F2",
           textColor: "#B42318",
         },
         {
-          value: "pending",
+          value: "PENDING",
           label: "Pending",
           color: "#F3F4F6",
           textColor: "#374151",
@@ -100,7 +118,7 @@ export default function UserSubscriptions({
           textColor: "#374151",
         },
         {
-          value: "basic",
+          value: "base",
           label: "Basic",
           color: "#ECFDF3",
           textColor: "#027A48",
@@ -112,7 +130,7 @@ export default function UserSubscriptions({
           textColor: "#C8AA00",
         },
         {
-          value: "enterprise",
+          value: "enterprice",
           label: "Enterprise",
           color: "#DBEAFE",
           textColor: "#1E3A8A",
@@ -120,7 +138,6 @@ export default function UserSubscriptions({
       ],
     },
   ];
-
 
   // Filter Configuration for User Table
   const userFilters: FilterConfig[] = [
@@ -130,25 +147,25 @@ export default function UserSubscriptions({
       type: "select",
       options: [
         {
-          value: "active",
+          value: "ACTIVE",
           label: "Active",
           color: "#ECFDF3",
           textColor: "#027A48",
         },
         {
-          value: "inactive",
+          value: "INACTIVE",
           label: "Inactive",
           color: "#FFF9E0",
           textColor: "#C8AA00",
         },
         {
-          value: "blocked",
+          value: "BLOCKED",
           label: "Blocked",
           color: "#FEF3F2",
           textColor: "#B42318",
         },
         {
-          value: "pending",
+          value: "PENDING",
           label: "Pending",
           color: "#F3F4F6",
           textColor: "#374151",
@@ -167,7 +184,7 @@ export default function UserSubscriptions({
           textColor: "#374151",
         },
         {
-          value: "basic",
+          value: "base",
           label: "Basic",
           color: "#ECFDF3",
           textColor: "#027A48",
@@ -179,7 +196,7 @@ export default function UserSubscriptions({
           textColor: "#C8AA00",
         },
         {
-          value: "enterprise",
+          value: "enterprice",
           label: "Enterprise",
           color: "#DBEAFE",
           textColor: "#1E3A8A",
@@ -226,12 +243,10 @@ export default function UserSubscriptions({
     loadingMessage: "Loading users...",
   };
 
-
   const handleDataChange = (newData: GenericDataItem[]) => {
-    setUsers(newData);
     console.log("Users data changed:", newData);
+    refetch();
   };
-
 
   const handleUsersSelect = (selectedIds: string[]) => {
     console.log("Selected users:", selectedIds);
@@ -271,13 +286,7 @@ export default function UserSubscriptions({
   };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setUsers([...usersData] as GenericDataItem[]);
-      setIsLoading(false);
-      console.log("Users data refreshed");
-    }, 1000);
+    refetch();
   };
 
   return (
