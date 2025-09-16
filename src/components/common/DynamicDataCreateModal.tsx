@@ -603,7 +603,6 @@ export function DynamicDataCreateModal({
               height={200}
             />
           );
-
         case "select":
           return (
             <Select
@@ -1049,6 +1048,15 @@ export function DynamicDataCreateModal({
             </div>
           );
 
+        case "custom":
+          if (field.render) {
+            return field.render(
+              value,
+              (key: string, val: unknown) => handleInputChange(key, val),
+              formData
+            );
+          }
+          return null;
         default:
           return null;
       }

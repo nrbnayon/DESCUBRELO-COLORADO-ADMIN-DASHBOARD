@@ -33,6 +33,7 @@ import {
 import { getImageUrl } from "@/lib/utils";
 import { toast } from "sonner";
 import { useGetActiveCategoriesQuery } from "@/store/api/categoriesApi";
+import MapCoordinateSelector from "@/components/common/MapSelector";
 
 // Define Post interface based on API response
 interface Post {
@@ -545,14 +546,7 @@ export default function ManagementPosts({
       label: "Type",
       type: "text",
       required: true,
-      // options: categoriesResponse?.data?.map((category) => ({
-      //   value: category.name,
-      //   label: category.name,
-      // })) || [
-      //   { value: "Concert", label: "Concert" },
-      //   { value: "Food", label: "Food" },
-      //   { value: "Hiking", label: "Hiking" },
-      // ],
+      placeholder: "Enter the project type (e.g Hiking)",
       section: "basic",
       gridCol: "half",
     },
@@ -635,7 +629,7 @@ export default function ManagementPosts({
     },
     {
       key: "phone",
-      label: "Contact Number",
+      label: "Phone Number",
       type: "tel",
       required: false,
       placeholder: "+1234567890",
@@ -654,50 +648,7 @@ export default function ManagementPosts({
       },
       helpText: "Enter phone number with country code (e.g., +1234567890)",
     },
-    {
-      key: "latitude",
-      label: "Latitude",
-      type: "number",
-      required: false,
-      placeholder: "37.7749",
-      section: "location",
-      gridCol: "half",
-      validation: {
-        min: -90,
-        max: 90,
-        custom: (value: unknown) => {
-          if (!value || value === "") return null;
-          const num = parseFloat(String(value));
-          if (isNaN(num)) return "Please enter a valid latitude number";
-          if (num < -90 || num > 90)
-            return "Latitude must be between -90 and 90 degrees";
-          return null;
-        },
-      },
-      helpText: "Valid range: -90 to +90 degrees",
-    },
-    {
-      key: "longitude",
-      label: "Longitude",
-      type: "number",
-      required: false,
-      placeholder: "-122.4194",
-      section: "location",
-      gridCol: "half",
-      validation: {
-        min: -180,
-        max: 180,
-        custom: (value: unknown) => {
-          if (!value || value === "") return null;
-          const num = parseFloat(String(value));
-          if (isNaN(num)) return "Please enter a valid longitude number";
-          if (num < -180 || num > 180)
-            return "Longitude must be between -180 and 180 degrees";
-          return null;
-        },
-      },
-      helpText: "Valid range: -180 to +180 degrees",
-    },
+
     {
       key: "openingHours",
       label: "Opening Hours",
@@ -788,6 +739,57 @@ export default function ManagementPosts({
       section: "social",
       gridCol: "half",
     },
+
+    {
+      key: "mapSelector",
+      label: "Location Selection",
+      type: "custom",
+      required: false,
+      section: "location",
+      gridCol: "full",
+      helpText:
+        "Click on the map to select coordinates and automatically generate bounding boxes",
+      render: (value, onChange, formData) => {
+        return (
+          <MapCoordinateSelector
+            onCoordinatesChange={(coords) => {
+              // Update main coordinates
+              onChange("latitude", coords.lat);
+              onChange("longitude", coords.lng);
+            }}
+            onBoundingBoxChange={(bounds) => {
+              // Update offline data bounding box
+              onChange(
+                "offlineData.tileBounds.southwest.latitude",
+                bounds.southwest.lat
+              );
+              onChange(
+                "offlineData.tileBounds.southwest.longitude",
+                bounds.southwest.lng
+              );
+              onChange(
+                "offlineData.tileBounds.northeast.latitude",
+                bounds.northeast.lat
+              );
+              onChange(
+                "offlineData.tileBounds.northeast.longitude",
+                bounds.northeast.lng
+              );
+            }}
+            initialCoordinates={
+              formData.latitude && formData.longitude
+                ? {
+                    lat: Number(formData.latitude),
+                    lng: Number(formData.longitude),
+                  }
+                : { lat: 39.7392, lng: -104.9903 }
+            }
+            radiusKm={5}
+          />
+        );
+      },
+    },
+
     {
       key: "offlineSupported",
       label: "Offline Supported",
@@ -868,66 +870,7 @@ export default function ManagementPosts({
       helpText: "Maximum zoom level for offline maps (0-22)",
       condition: (formData) => Boolean(formData.offlineSupported),
     },
-    {
-      key: "offlineData.tileBounds.southwest.latitude",
-      label: "Southwest Latitude",
-      type: "number",
-      required: false,
-      placeholder: "37.7639",
-      validation: {
-        min: -90,
-        max: 90,
-      },
-      section: "offline",
-      gridCol: "half",
-      helpText: "Southwest corner latitude for tile bounds",
-      condition: (formData) => Boolean(formData.offlineSupported),
-    },
-    {
-      key: "offlineData.tileBounds.southwest.longitude",
-      label: "Southwest Longitude",
-      type: "number",
-      required: false,
-      placeholder: "-122.4304",
-      validation: {
-        min: -180,
-        max: 180,
-      },
-      section: "offline",
-      gridCol: "half",
-      helpText: "Southwest corner longitude for tile bounds",
-      condition: (formData) => Boolean(formData.offlineSupported),
-    },
-    {
-      key: "offlineData.tileBounds.northeast.latitude",
-      label: "Northeast Latitude",
-      type: "number",
-      required: false,
-      placeholder: "37.7859",
-      validation: {
-        min: -90,
-        max: 90,
-      },
-      section: "offline",
-      gridCol: "half",
-      helpText: "Northeast corner latitude for tile bounds",
-      condition: (formData) => Boolean(formData.offlineSupported),
-    },
-    {
-      key: "offlineData.tileBounds.northeast.longitude",
-      label: "Northeast Longitude",
-      type: "number",
-      required: false,
-      placeholder: "-122.4084",
-      validation: {
-        min: -180,
-        max: 180,
-      },
-      section: "offline",
-      gridCol: "half",
-      helpText: "Northeast corner longitude for tile bounds",
-      condition: (formData) => Boolean(formData.offlineSupported),
-    },
+
     {
       key: "status",
       label: "Status",

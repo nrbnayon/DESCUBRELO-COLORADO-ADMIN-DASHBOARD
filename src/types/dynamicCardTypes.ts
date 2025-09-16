@@ -83,7 +83,8 @@ export type FieldType =
   | "autocomplete"
   | "pdf"
   | "hidden"
-  | "markdown";
+  | "markdown"
+  | "custom";
 
 export type GridColType = "full" | "half" | "third" | "quarter";
 export type AlignType = "left" | "center" | "right";
@@ -179,6 +180,11 @@ export interface FormField {
   showWhen?: (data: GenericDataItem) => boolean;
   transform?: (value: unknown) => unknown;
   className?: string;
+  render?: (
+    value: unknown,
+    onChange: (key: string, value: unknown) => void,
+    formData: Record<string, unknown>
+  ) => React.ReactNode;
   [key: string]: string | unknown;
 }
 

@@ -22,9 +22,9 @@ import { useVerifyEmailMutation } from "@/store/api/authApi";
 const otpSchema = z.object({
   otp: z
     .string()
-    .min(6, "OTP must be 6 digits")
-    .max(6, "OTP must be 6 digits")
-    .regex(/^\d{6}$/, "OTP must contain only numbers"),
+    .min(4, "OTP must be 4 digits")
+    .max(4, "OTP must be 4 digits")
+    .regex(/^\d{4}$/, "OTP must contain only numbers"),
 });
 
 type OtpFormData = z.infer<typeof otpSchema>;
@@ -239,7 +239,7 @@ export default function VerifyOtp() {
               Enter Verification Code
             </h2>
             <p className="text-muted-foreground text-xs sm:text-sm px-2 sm:px-0">
-              We&lsquo;ve sent a 6-digit code to{" "}
+              We&lsquo;ve sent a 4-digit code to{" "}
               <span className="text-indigo-600 dark:text-indigo-400 break-all">
                 {email}
               </span>
@@ -258,7 +258,7 @@ export default function VerifyOtp() {
                 </label>
                 <div className="flex justify-center">
                   <InputOTP
-                    maxLength={6}
+                    maxLength={4}
                     value={otp}
                     onChange={handleOtpChange}
                     disabled={isLoading || timeLeft === 0}
@@ -278,14 +278,6 @@ export default function VerifyOtp() {
                       />
                       <InputOTPSlot
                         index={3}
-                        className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
-                      />
-                      <InputOTPSlot
-                        index={4}
-                        className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
-                      />
-                      <InputOTPSlot
-                        index={5}
                         className="w-10 h-10 sm:w-12 sm:h-12 text-base sm:text-lg border-primary/30 bg-input text-foreground"
                       />
                     </InputOTPGroup>

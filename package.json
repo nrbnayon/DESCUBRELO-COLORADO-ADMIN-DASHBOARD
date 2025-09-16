@@ -30,7 +30,6 @@
     "@tabler/icons-react": "^3.34.0",
     "@types/js-cookie": "^3.0.6",
     "@uiw/react-md-editor": "^4.0.8",
-    "ai": "^4.3.16",
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

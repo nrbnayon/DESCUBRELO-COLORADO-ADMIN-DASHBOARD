@@ -92,7 +92,7 @@ export const postsApi = createApi({
       }
     >({
       query: (params) => ({
-        url: "/admin/all",
+        url: "/list/all",
         params,
       }),
       providesTags: ["Posts"],
